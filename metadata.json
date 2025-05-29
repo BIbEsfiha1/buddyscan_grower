@@ -1,0 +1,6 @@
+
+{
+  "name": "BuddyScan",
+  "description": "BuddyScan: A web application to manage and track cannabis plant cultivation, including diary entries, photos, and AI-powered insights.",
+  "requestFramePermissions": []
+}

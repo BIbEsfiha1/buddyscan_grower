@@ -1,0 +1,21 @@
+{
+	"siteId": "efc9e546-5d6f-429b-9bb4-117f3aecb032",
+	"geolocation": {
+		"data": {
+			"city": "Rio de Janeiro",
+			"country": {
+				"code": "BR",
+				"name": "Brazil"
+			},
+			"subdivision": {
+				"code": "RJ",
+				"name": "Rio de Janeiro"
+			},
+			"timezone": "America/Sao_Paulo",
+			"latitude": -22.9072,
+			"longitude": -43.1883,
+			"postalCode": "22270"
+		},
+		"timestamp": 1748465801452
+	}
+}

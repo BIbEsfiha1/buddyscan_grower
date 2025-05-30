@@ -100,9 +100,18 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     if (!response.ok) {
-      const errorMessage = responseData.error || 
-                         responseData.message || 
-                         `Erro na requisição: ${response.statusText}`;
+      let errorMessage = response.statusText; // Fallback error message
+      if (responseData) {
+        if (typeof responseData.error === 'string' && responseData.error) {
+          errorMessage = responseData.error;
+        } else if (typeof responseData.details === 'string' && responseData.details) {
+          errorMessage = responseData.details;
+        } else if (typeof responseData.message === 'string' && responseData.message) {
+          errorMessage = responseData.message;
+        } else if (responseData.supabaseError && typeof responseData.supabaseError.message === 'string' && responseData.supabaseError.message) {
+          errorMessage = responseData.supabaseError.message;
+        }
+      }
       throw new Error(errorMessage);
     }
 

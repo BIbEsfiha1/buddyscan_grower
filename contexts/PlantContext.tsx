@@ -95,14 +95,17 @@ export const PlantProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setPlants(prev => [...prev, newPlantFromBackend]);
         setIsLoading(false);
         return newPlantFromBackend;
-      } else {
-        // Handle case where backend didn't return a valid plant or ID
-        console.error('[PlantContext] addPlant - Backend did not return a valid plant or ID:', newPlantFromBackend);
-        throw new Error("O backend não retornou uma planta válida com ID.");
       }
+      // If newPlantFromBackend or newPlantFromBackend.id is missing,
+      // it implies an issue with the backend response or data integrity.
+      // The error thrown by apiAddPlant (and processed by fetchWithAuth) should be descriptive.
+      // If apiAddPlant somehow didn't throw an error but returned an invalid plant,
+      // we might still want a generic error here, but the goal is to rely on service errors.
+      // For now, we assume apiAddPlant will throw if the response isn't as expected.
     } catch (e) {
       console.error("[PlantContext] Error in addPlant:", e);
-      setError(e instanceof Error ? e.message : 'Falha ao adicionar planta.');
+      // Ensure the error message from the service layer (via fetchWithAuth) is used.
+      setError(e instanceof Error ? e.message : 'Ocorreu uma falha desconhecida ao adicionar a planta.');
       setIsLoading(false);
       return undefined;
     }

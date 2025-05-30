@@ -12,7 +12,7 @@ export default function NovaPlantaPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
-  const { addPlant } = usePlantContext();
+  const { addPlant, error: plantContextError } = usePlantContext(); // Renamed to avoid conflict with error in catch block
 
   // Verifica se há um cultivoId na URL
   useEffect(() => {
@@ -52,10 +52,13 @@ export default function NovaPlantaPage() {
         setToast({ message: 'Planta adicionada com sucesso!', type: 'success' });
         setTimeout(() => navigate(`/cultivo/${cultivoId}`), 1400);
       } else {
-        setToast({ message: 'Erro ao adicionar planta: Nenhum detalhe retornado.', type: 'error' });
+        // Use the error from PlantContext if addPlant returned undefined
+        setToast({ message: `Erro ao adicionar planta: ${plantContextError || 'Nenhum detalhe retornado.'}`, type: 'error' });
       }
     } catch (error: any) {
-      setToast({ message: 'Erro ao adicionar planta: ' + (error.message || error), type: 'error' });
+      // This catch block handles errors thrown by addPlant or other unforeseen errors in the try block.
+      // The plantContextError is more for the case where addPlant completes but returns undefined.
+      setToast({ message: `Erro ao adicionar planta: ${error.message || plantContextError || 'Ocorreu um erro inesperado.'}`, type: 'error' });
     } finally {
       setSaving(false);
     }

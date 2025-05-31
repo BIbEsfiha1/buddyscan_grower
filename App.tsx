@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import PlantDetailPage from './pages/PlantDetailPage';
 import PlantStatisticsPage from './pages/PlantStatisticsPage';
 import GardenStatisticsPage from './pages/GardenStatisticsPage';
+import AllPlantsPage from './pages/AllPlantsPage'; // Import the new page
 import CultivosPage from './pages/CultivosPage';
 import NovoCultivoPage from './pages/NovoCultivoPage';
 import NovaPlantaPage from './pages/NovaPlantaPage';
@@ -89,6 +90,14 @@ const App: React.FC = () => {
                 <GardenStatisticsPage />
               </ProtectedRoute>
             } 
+          />
+          <Route
+            path="/plants"
+            element={
+              <ProtectedRoute>
+                <AllPlantsPage />
+              </ProtectedRoute>
+            }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

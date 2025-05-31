@@ -11,8 +11,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",
     "@yudiel/react-qr-scanner": "^2.3.1",
+    "jspdf": "^3.0.1",
     "netlify-identity-widget": "^1.9.2",
-    "qrcode": "^1.5.3",
+    "qrcode": "^1.5.4",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

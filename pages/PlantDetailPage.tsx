@@ -105,10 +105,38 @@ const PlantDetailPage: React.FC = () => {
   useEffect(() => {
     return () => {
       if (plantId && plant) {
-        updatePlantDetails(plantId, checklistState);
+        const currentChecklistSnapshot = checklistState;
+
+        const payload: Partial<Plant> = {
+          lastDailyCheckDate: currentChecklistSnapshot.lastDailyCheckDate,
+          dailyWatered: currentChecklistSnapshot.dailyWatered,
+          dailyNutrients: currentChecklistSnapshot.dailyNutrients,
+          dailyLightAdjustment: currentChecklistSnapshot.dailyLightAdjustment,
+          dailyPestCheck: currentChecklistSnapshot.dailyPestCheck,
+          dailyRotation: currentChecklistSnapshot.dailyRotation,
+        };
+
+        // IMPORTANT: Strip undefined keys from THIS payload first
+        Object.keys(payload).forEach(keyStr => {
+          const key = keyStr as keyof typeof payload;
+          if (payload[key] === undefined) {
+            delete payload[key];
+          }
+        });
+
+        // THEN check if there's anything left to send
+        if (Object.keys(payload).length > 0) {
+          updatePlantDetails(plantId, payload);
+        } else {
+          // This log should now correctly trigger if the snapshot leads to an empty payload
+          console.log('[PlantDetailPage] useEffect cleanup: Payload effectively empty after stripping undefineds, not calling updatePlantDetails. Snapshot was:', currentChecklistSnapshot);
+        }
+      } else {
+        // Log if plantId or plant is missing
+        console.log('[PlantDetailPage] useEffect cleanup: plantId or plant missing, not calling updatePlantDetails. plantId:', plantId, 'plant:', plant);
       }
     };
-  }, [plantId, plant, checklistState]);
+  }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
 
   const handleTaskToggle = async (taskId: keyof Plant, checked: boolean) => {
     if (!plant) return;

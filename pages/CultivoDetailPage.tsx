@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Cultivo, Plant, PlantOperationalStatus, PlantStage } from '../types'; // Adicionado PlantStage
-import { generateQRCodesPDF } from '../../utils/pdfUtils';
+// import { generateQRCodesPDF } from '../../utils/pdfUtils'; // Removed static import
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -86,9 +86,10 @@ const CultivoDetailPage: React.FC = () => {
     setIsGeneratingPDF(true);
     setToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
     try {
+      // Dynamically import the PDF generation utility
+      const { generateQRCodesPDF } = await import('../utils/pdfUtils.ts'); // Ensure path is correct
       await generateQRCodesPDF(plants, cultivo.name);
-      // Success is implicit if no error is thrown by generateQRCodesPDF, as it handles download.
-      // setToast({ message: 'PDF gerado com sucesso!', type: 'success' }); // Optional success toast
+      // Success toast is optional as download starts
     } catch (error: any) {
       console.error("Error generating QR Code PDF:", error);
       setToast({ message: `Erro ao gerar PDF: ${error.message || 'Falha desconhecida'}`, type: 'error' });

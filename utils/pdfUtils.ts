@@ -23,6 +23,8 @@ async function getQRCodeDataURL(qrValue: string, size: number): Promise<string> 
 }
 
 export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) => {
+  console.log('[generateQRCodesPDF] Received plants data:', JSON.stringify(plants, null, 2)); // Log received plant data
+
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

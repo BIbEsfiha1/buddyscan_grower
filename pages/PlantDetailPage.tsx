@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plant, PlantStage, DiaryEntry, PlantHealthStatus } from '../types';
+import { Plant, PlantStage, DiaryEntry, PlantHealthStatus, NewDiaryEntryData } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 import DiaryEntryItem from '../components/DiaryEntryItem';
 import DailyChecklist from '../components/DailyChecklist';
@@ -32,6 +32,7 @@ const PlantDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'info' | 'diary' | 'checklist'>('info');
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [newDiaryNote, setNewDiaryNote] = useState('');
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -138,6 +139,39 @@ const PlantDetailPage: React.FC = () => {
       }
     };
   }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
+
+  const handleSaveNewDiaryEntry = async () => {
+    if (!plantId || !plant || !newDiaryNote.trim()) {
+      setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
+      return;
+    }
+
+    const entryData: NewDiaryEntryData = {
+      notes: newDiaryNote.trim(),
+      stage: plant.currentStage, // Use current plant's stage
+      photos: [], // No photo upload in this step
+      // Other optional fields like ph, ec, temp can be added later
+    };
+
+    try {
+      const newEntry = await addNewDiaryEntry(plantId, entryData);
+      if (newEntry) {
+        setNewDiaryNote(''); // Clear textarea
+        setToast({ message: 'Entrada do diário salva!', type: 'success' });
+        // The diaryEntries list should update automatically if PlantContext handles state correctly
+        // Or explicitly call loadPlantData() if diaryEntries are not updating automatically from context.
+        // For now, assume context updates will trigger re-render of diaryEntries.
+        // To be safe and ensure list updates:
+        const entries = await getDiaryEntries(plantId);
+        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+
+      } else {
+        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
+      }
+    } catch (error: any) {
+      setToast({ message: `Erro: ${error.message || 'Falha ao salvar entrada.'}`, type: 'error' });
+    }
+  };
 
   const handleTaskToggle = async (taskId: keyof Plant, checked: boolean) => {
     if (!plant) return;
@@ -482,6 +516,26 @@ const PlantDetailPage: React.FC = () => {
               {activeTab === 'diary' && (
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Diário da Planta</h2>
+
+                  <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Nova Entrada no Diário</h3>
+                    <textarea
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Escreva suas observações, ações tomadas, etc..."
+                      value={newDiaryNote}
+                      onChange={(e) => setNewDiaryNote(e.target.value)}
+                    ></textarea>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={handleSaveNewDiaryEntry}
+                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                        disabled={!newDiaryNote.trim()}
+                      >
+                        Salvar Entrada
+                      </button>
+                    </div>
+                  </div>
+
                   {diaryEntries.length > 0 ? (
                     <div className="space-y-4">
                       {diaryEntries.map(entry => (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // Icons
 import LeafIcon from './icons/LeafIcon';
@@ -11,6 +12,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email || 'Usuário';
+  let initials = 'U'; // Default to 'U' for Usuário
+  if (user?.user_metadata?.full_name) {
+    initials = user.user_metadata.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  } else if (user?.email) {
+    initials = user.email.substring(0, 2).toUpperCase();
+  }
   
   // Define navigation items with icons
   const navItems = [
@@ -92,11 +102,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center text-white font-medium">
-              JS
+              {initials}
             </div>
             <div className="flex-1">
-              <div className="text-sm font-medium text-white">John Smith</div>
-              <div className="text-xs text-gray-400">Master Grower</div>
+              <div className="text-sm font-medium text-white">{displayName}</div>
             </div>
           </div>
         </div>

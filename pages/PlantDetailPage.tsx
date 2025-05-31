@@ -126,14 +126,15 @@ const PlantDetailPage: React.FC = () => {
 
         // THEN check if there's anything left to send
         if (Object.keys(payload).length > 0) {
-          updatePlantDetails(plantId, payload);
+          // updatePlantDetails(plantId, payload); // <-- THIS LINE IS REMOVED/COMMENTED OUT
+          console.log('[PlantDetailPage] useEffect cleanup: Would have updated with payload:', payload, 'Snapshot was:', currentChecklistSnapshot);
         } else {
           // This log should now correctly trigger if the snapshot leads to an empty payload
-          console.log('[PlantDetailPage] useEffect cleanup: Payload effectively empty after stripping undefineds, not calling updatePlantDetails. Snapshot was:', currentChecklistSnapshot);
+          console.log('[PlantDetailPage] useEffect cleanup: Payload effectively empty after stripping undefineds. Snapshot was:', currentChecklistSnapshot);
         }
       } else {
         // Log if plantId or plant is missing
-        console.log('[PlantDetailPage] useEffect cleanup: plantId or plant missing, not calling updatePlantDetails. plantId:', plantId, 'plant:', plant);
+        console.log('[PlantDetailPage] useEffect cleanup: plantId or plant missing. plantId:', plantId, 'plant:', plant);
       }
     };
   }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies

@@ -218,7 +218,7 @@ const DashboardPage: React.FC = () => {
             />
             <StatsCard 
               title="Temperatura Média" 
-              value={`${stats.avgTemperature}°C`} 
+              value={`${Math.round(stats.avgTemperature)}°C`}
               change="Dentro do ideal"
               trend="neutral"
               color="yellow"

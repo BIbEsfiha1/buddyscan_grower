@@ -6,32 +6,32 @@ interface PlantCardProps {
   onClick?: () => void;
 }
 
-import { usePlantContext } from '../contexts/PlantContext';
-import { PlantOperationalStatus } from '../types';
+// import { usePlantContext } from '../contexts/PlantContext'; // Removed as updatePlantDetails is no longer used
+// import { PlantOperationalStatus } from '../types'; // Removed as it's no longer used
 
 const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
 
-  const { updatePlantDetails } = usePlantContext();
-  const [isMarkingLost, setIsMarkingLost] = React.useState(false);
-  const [markLostSuccess, setMarkLostSuccess] = React.useState(false);
-  const [markLostError, setMarkLostError] = React.useState<string | null>(null);
+  // const { updatePlantDetails } = usePlantContext(); // Removed
+  // const [isMarkingLost, setIsMarkingLost] = React.useState(false); // Removed
+  // const [markLostSuccess, setMarkLostSuccess] = React.useState(false); // Removed
+  // const [markLostError, setMarkLostError] = React.useState<string | null>(null); // Removed
 
-  const handleMarkAsLost = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsMarkingLost(true);
-    setMarkLostSuccess(false);
-    setMarkLostError(null);
-    try {
-      await updatePlantDetails(plant.id, { operationalStatus: PlantOperationalStatus.LOST });
-      setMarkLostSuccess(true);
-      setTimeout(() => setMarkLostSuccess(false), 2000);
-    } catch (error: any) {
-      setMarkLostError('Erro ao marcar como removida.');
-      setTimeout(() => setMarkLostError(null), 2500);
-    } finally {
-      setIsMarkingLost(false);
-    }
-  };
+  // const handleMarkAsLost = async (e: React.MouseEvent) => { // Removed
+  //   e.preventDefault();
+  //   setIsMarkingLost(true);
+  //   setMarkLostSuccess(false);
+  //   setMarkLostError(null);
+  //   try {
+  //     await updatePlantDetails(plant.id, { operationalStatus: PlantOperationalStatus.LOST });
+  //     setMarkLostSuccess(true);
+  //     setTimeout(() => setMarkLostSuccess(false), 2000);
+  //   } catch (error: any) {
+  //     setMarkLostError('Erro ao marcar como removida.');
+  //     setTimeout(() => setMarkLostError(null), 2500);
+  //   } finally {
+  //     setIsMarkingLost(false);
+  //   }
+  // };
 
   return (
     <div className="relative group">
@@ -65,8 +65,8 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
         <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-green-100/60 to-transparent dark:from-slate-800/60 pointer-events-none" />
       </div>
 
-      {/* Botão de ação rápida para remover por doença */}
-      {plant.operationalStatus !== PlantOperationalStatus.LOST && (
+      {/* Botão de ação rápida para remover por doença - REMOVED */}
+      {/* {plant.operationalStatus !== PlantOperationalStatus.LOST && (
         <div className="absolute top-2 right-2 z-10">
           <button
             className={`px-2 py-1 rounded text-xs font-bold shadow transition-colors duration-200 ${isMarkingLost ? 'bg-red-400 text-white' : 'bg-red-100 text-red-700 hover:bg-red-500 hover:text-white'} ${markLostSuccess ? 'bg-green-500 text-white' : ''}`}
@@ -80,7 +80,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
             <span className="block text-xs text-red-600 mt-1">{markLostError}</span>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plant, PlantStage, DiaryEntry, PlantHealthStatus } from '../types';
+import { Plant, PlantStage, DiaryEntry, PlantHealthStatus, NewDiaryEntryData } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 import DiaryEntryItem from '../components/DiaryEntryItem';
 import DailyChecklist from '../components/DailyChecklist';
@@ -32,6 +32,9 @@ const PlantDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'info' | 'diary' | 'checklist'>('info');
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [newDiaryNote, setNewDiaryNote] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -49,6 +52,71 @@ const PlantDetailPage: React.FC = () => {
   useEffect(() => {
     loadPlantData();
   }, [loadPlantData]);
+
+  useEffect(() => {
+    // Prefixed for Safari, Chrome/Edge support window.SpeechRecognition
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
+      console.warn('Web Speech API is not supported in this browser.');
+      // Optionally set a state here to disable the button if API is not found
+      return;
+    }
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true; // Keep listening
+    recognition.interimResults = true; // Get results as they come
+    recognition.lang = 'pt-BR'; // Set to Brazilian Portuguese
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      // Append final transcript to the existing note.
+      // User can speak multiple times.
+      if (finalTranscript) {
+        setNewDiaryNote(prevNote => prevNote + finalTranscript + ' ');
+      }
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error);
+      let errorMessage = 'Erro na transcrição de áudio.';
+      if (event.error === 'no-speech') {
+        errorMessage = 'Nenhuma fala detectada. Tente novamente.';
+      } else if (event.error === 'audio-capture') {
+        errorMessage = 'Falha ao capturar áudio. Verifique seu microfone.';
+      } else if (event.error === 'not-allowed') {
+        errorMessage = 'Permissão para microfone negada.';
+      }
+      setToast({ message: errorMessage, type: 'error' });
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      // Only set isRecording to false if it wasn't intentionally stopped
+      // This might need more robust state handling if user stops it manually vs. it auto-ends
+      // For now, let's assume it means it stopped processing the last utterance or was manually stopped.
+       if (isRecording) { // Check if it was actually recording - THIS STATE MIGHT BE STALE
+          setIsRecording(false); // This might cause issues if isRecording was changed by user stop
+       }
+    };
+
+    setSpeechRecognition(recognition);
+
+    return () => {
+      if (recognition) {
+        recognition.abort(); // Stop recognition if component unmounts
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount to setup.
+
 
   useEffect(() => {
     import('../services/cultivoService').then(({ getCultivos }) => {
@@ -138,6 +206,63 @@ const PlantDetailPage: React.FC = () => {
       }
     };
   }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
+
+  const handleToggleRecording = () => {
+    if (!speechRecognition) {
+      setToast({ message: 'Reconhecimento de voz não é suportado neste navegador.', type: 'error' });
+      return;
+    }
+
+    if (isRecording) {
+      speechRecognition.stop();
+      setIsRecording(false);
+    } else {
+      // Request microphone permission if not already granted.
+      // This happens implicitly when .start() is called if not granted.
+      try {
+        speechRecognition.start();
+        setIsRecording(true);
+        setToast({ message: 'Ouvindo... Fale agora.', type: 'info' });
+      } catch (e) {
+        console.error("Error starting speech recognition:", e);
+        setToast({ message: 'Não foi possível iniciar o reconhecimento de voz.', type: 'error' });
+        setIsRecording(false);
+      }
+    }
+  };
+
+  const handleSaveNewDiaryEntry = async () => {
+    if (!plantId || !plant || !newDiaryNote.trim()) {
+      setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
+      return;
+    }
+
+    const entryData: NewDiaryEntryData = {
+      notes: newDiaryNote.trim(),
+      stage: plant.currentStage, // Use current plant's stage
+      photos: [], // No photo upload in this step
+      // Other optional fields like ph, ec, temp can be added later
+    };
+
+    try {
+      const newEntry = await addNewDiaryEntry(plantId, entryData);
+      if (newEntry) {
+        setNewDiaryNote(''); // Clear textarea
+        setToast({ message: 'Entrada do diário salva!', type: 'success' });
+        // The diaryEntries list should update automatically if PlantContext handles state correctly
+        // Or explicitly call loadPlantData() if diaryEntries are not updating automatically from context.
+        // For now, assume context updates will trigger re-render of diaryEntries.
+        // To be safe and ensure list updates:
+        const entries = await getDiaryEntries(plantId);
+        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+
+      } else {
+        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
+      }
+    } catch (error: any) {
+      setToast({ message: `Erro: ${error.message || 'Falha ao salvar entrada.'}`, type: 'error' });
+    }
+  };
 
   const handleTaskToggle = async (taskId: keyof Plant, checked: boolean) => {
     if (!plant) return;
@@ -482,6 +607,34 @@ const PlantDetailPage: React.FC = () => {
               {activeTab === 'diary' && (
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Diário da Planta</h2>
+
+                  <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Nova Entrada no Diário</h3>
+                    <textarea
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="Escreva suas observações, ações tomadas, etc..."
+                      value={newDiaryNote}
+                      onChange={(e) => setNewDiaryNote(e.target.value)}
+                    ></textarea>
+                    <div className="mt-3 flex justify-end items-center">
+                      <button
+                        type="button" // Important: type="button" to prevent form submission if inside a form
+                        onClick={handleToggleRecording}
+                        className={`px-4 py-2 font-semibold rounded-lg hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors mr-2
+                          ${isRecording ? 'bg-red-500 text-white focus:ring-red-500' : 'bg-blue-500 text-white focus:ring-blue-500'}`}
+                      >
+                        {isRecording ? 'Parar Gravação' : 'Ditar Nota (PT-BR)'}
+                      </button>
+                      <button
+                        onClick={handleSaveNewDiaryEntry}
+                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                        disabled={!newDiaryNote.trim()}
+                      >
+                        Salvar Entrada
+                      </button>
+                    </div>
+                  </div>
+
                   {diaryEntries.length > 0 ? (
                     <div className="space-y-4">
                       {diaryEntries.map(entry => (

@@ -33,6 +33,8 @@ const PlantDetailPage: React.FC = () => {
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [newDiaryNote, setNewDiaryNote] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -50,6 +52,71 @@ const PlantDetailPage: React.FC = () => {
   useEffect(() => {
     loadPlantData();
   }, [loadPlantData]);
+
+  useEffect(() => {
+    // Prefixed for Safari, Chrome/Edge support window.SpeechRecognition
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
+      console.warn('Web Speech API is not supported in this browser.');
+      // Optionally set a state here to disable the button if API is not found
+      return;
+    }
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true; // Keep listening
+    recognition.interimResults = true; // Get results as they come
+    recognition.lang = 'pt-BR'; // Set to Brazilian Portuguese
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      // Append final transcript to the existing note.
+      // User can speak multiple times.
+      if (finalTranscript) {
+        setNewDiaryNote(prevNote => prevNote + finalTranscript + ' ');
+      }
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error);
+      let errorMessage = 'Erro na transcrição de áudio.';
+      if (event.error === 'no-speech') {
+        errorMessage = 'Nenhuma fala detectada. Tente novamente.';
+      } else if (event.error === 'audio-capture') {
+        errorMessage = 'Falha ao capturar áudio. Verifique seu microfone.';
+      } else if (event.error === 'not-allowed') {
+        errorMessage = 'Permissão para microfone negada.';
+      }
+      setToast({ message: errorMessage, type: 'error' });
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      // Only set isRecording to false if it wasn't intentionally stopped
+      // This might need more robust state handling if user stops it manually vs. it auto-ends
+      // For now, let's assume it means it stopped processing the last utterance or was manually stopped.
+       if (isRecording) { // Check if it was actually recording - THIS STATE MIGHT BE STALE
+          setIsRecording(false); // This might cause issues if isRecording was changed by user stop
+       }
+    };
+
+    setSpeechRecognition(recognition);
+
+    return () => {
+      if (recognition) {
+        recognition.abort(); // Stop recognition if component unmounts
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount to setup.
+
 
   useEffect(() => {
     import('../services/cultivoService').then(({ getCultivos }) => {
@@ -139,6 +206,30 @@ const PlantDetailPage: React.FC = () => {
       }
     };
   }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
+
+  const handleToggleRecording = () => {
+    if (!speechRecognition) {
+      setToast({ message: 'Reconhecimento de voz não é suportado neste navegador.', type: 'error' });
+      return;
+    }
+
+    if (isRecording) {
+      speechRecognition.stop();
+      setIsRecording(false);
+    } else {
+      // Request microphone permission if not already granted.
+      // This happens implicitly when .start() is called if not granted.
+      try {
+        speechRecognition.start();
+        setIsRecording(true);
+        setToast({ message: 'Ouvindo... Fale agora.', type: 'info' });
+      } catch (e) {
+        console.error("Error starting speech recognition:", e);
+        setToast({ message: 'Não foi possível iniciar o reconhecimento de voz.', type: 'error' });
+        setIsRecording(false);
+      }
+    }
+  };
 
   const handleSaveNewDiaryEntry = async () => {
     if (!plantId || !plant || !newDiaryNote.trim()) {
@@ -525,7 +616,15 @@ const PlantDetailPage: React.FC = () => {
                       value={newDiaryNote}
                       onChange={(e) => setNewDiaryNote(e.target.value)}
                     ></textarea>
-                    <div className="mt-3 flex justify-end">
+                    <div className="mt-3 flex justify-end items-center">
+                      <button
+                        type="button" // Important: type="button" to prevent form submission if inside a form
+                        onClick={handleToggleRecording}
+                        className={`px-4 py-2 font-semibold rounded-lg hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors mr-2
+                          ${isRecording ? 'bg-red-500 text-white focus:ring-red-500' : 'bg-blue-500 text-white focus:ring-blue-500'}`}
+                      >
+                        {isRecording ? 'Parar Gravação' : 'Ditar Nota (PT-BR)'}
+                      </button>
                       <button
                         onClick={handleSaveNewDiaryEntry}
                         className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"

@@ -87,7 +87,7 @@ const CultivoDetailPage: React.FC = () => {
     setToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
     try {
       // Dynamically import the PDF generation utility
-      const { generateQRCodesPDF } = await import('../../utils/pdfUtils.ts'); // Ensure path is correct
+      const { generateQRCodesPDF } = await import('../utils/pdfUtils.ts'); // Ensure path is correct
       await generateQRCodesPDF(plants, cultivo.name);
       // Success toast is optional as download starts
     } catch (error: any) {

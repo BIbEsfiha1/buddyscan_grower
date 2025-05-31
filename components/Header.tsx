@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import PlusIcon from './icons/PlusIcon';
 
 interface HeaderProps {
@@ -15,6 +16,14 @@ const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenScannerModal
 }) => {
+  const { user } = useAuth();
+  let initials = 'U';
+  if (user?.user_metadata?.full_name) {
+    initials = user.user_metadata.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  } else if (user?.email) {
+    initials = user.email.substring(0, 2).toUpperCase();
+  }
+
   return (
     <header className="bg-gray-900 border-b border-gray-800 px-4 py-3">
       <div className="flex items-center justify-between">
@@ -79,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
           {/* Profile */}
           <Link to="/profile" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-medium">
-              JS
+              {initials}
             </div>
           </Link>
         </div>

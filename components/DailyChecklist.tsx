@@ -83,7 +83,7 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
               key={item.id}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 shadow-sm relative overflow-hidden
                 ${isChecked ? 'bg-green-50 border-green-400 dark:bg-green-900/30' : 'bg-slate-50 border-slate-200 dark:bg-slate-700/40 dark:border-slate-600'}
-                ${isChecked ? 'animate-[pulse_0.6s]' : ''}
+                ${isChecked ? '' : ''}
               `}
               style={{ minHeight: 56 }}
             >
@@ -91,7 +91,7 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 type="button"
                 aria-label={item.label}
                 className={`rounded-full p-2 transition-all duration-300 ease-in-out flex items-center justify-center
-                  ${isChecked ? 'bg-green-500 text-white scale-110 shadow-lg animate-bounce' : 'bg-slate-200 dark:bg-slate-600 text-slate-500'}
+                  ${isChecked ? 'bg-green-500 text-white scale-110 shadow-lg' : 'bg-slate-200 dark:bg-slate-600 text-slate-500'}
                 `}
                 onClick={() => onTaskToggle(item.id as keyof Plant, !isChecked)}
                 title={item.label}

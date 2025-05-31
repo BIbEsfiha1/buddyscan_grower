@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Cultivo, Plant, PlantOperationalStatus, PlantStage } from '../types'; // Adicionado PlantStage
+import { generateQRCodesPDF } from '../../utils/pdfUtils';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -22,6 +23,7 @@ const CultivoDetailPage: React.FC = () => {
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Novo: função para buscar plantas separadamente
   const fetchPlants = async () => {
@@ -75,6 +77,25 @@ const CultivoDetailPage: React.FC = () => {
       return () => clearTimeout(t);
     }
   }, [toast]);
+
+  const handlePrintQRCodes = async () => {
+    if (!cultivo || plants.length === 0) {
+      setToast({ message: 'Nenhuma planta neste cultivo para imprimir QR codes.', type: 'info' });
+      return;
+    }
+    setIsGeneratingPDF(true);
+    setToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
+    try {
+      await generateQRCodesPDF(plants, cultivo.name);
+      // Success is implicit if no error is thrown by generateQRCodesPDF, as it handles download.
+      // setToast({ message: 'PDF gerado com sucesso!', type: 'success' }); // Optional success toast
+    } catch (error: any) {
+      console.error("Error generating QR Code PDF:", error);
+      setToast({ message: `Erro ao gerar PDF: ${error.message || 'Falha desconhecida'}`, type: 'error' });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   const handleFinishCultivo = async () => {
     if (!cultivoId) {
@@ -237,11 +258,24 @@ const CultivoDetailPage: React.FC = () => {
       <div className="mb-2">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Plantas deste cultivo</h2>
-          <button
-            onClick={fetchPlants}
-            className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 rounded hover:bg-green-200 dark:hover:bg-green-800 transition"
-            title="Atualizar lista de plantas"
-          >Atualizar</button>
+          <div className="flex items-center gap-2"> {/* Added a div to group buttons */}
+            <button
+              onClick={handlePrintQRCodes}
+              className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+              title="Imprimir Etiquetas QR do Cultivo"
+              disabled={isGeneratingPDF || plants.length === 0}
+            >
+              {/* Optional: <PrinterIcon className="w-4 h-4 mr-1 inline" /> */}
+              {isGeneratingPDF ? 'Gerando PDF...' : 'Imprimir Etiquetas QR'}
+            </button>
+            <button
+              onClick={fetchPlants} // Existing button
+              className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 rounded hover:bg-green-200 dark:hover:bg-green-800 transition"
+              title="Atualizar lista de plantas"
+            >
+              Atualizar
+            </button>
+          </div>
         </div>
         {plants.length === 0 ? (
           <div className="text-gray-400 dark:text-gray-500 text-center py-6">Nenhuma planta cadastrada ainda.</div>

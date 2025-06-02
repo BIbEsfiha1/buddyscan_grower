@@ -439,9 +439,9 @@ const PlantDetailPage: React.FC = () => {
             <div className="border-b border-gray-200 dark:border-gray-700">
               <div className="flex flex-col md:flex-row p-6">
                 <div className="md:w-1/4 mb-6 md:mb-0 flex justify-center">
-                  {plant && plant.photoUrl ? (
+                  {plant && plant.imageUrl ? (
                     <img
-                      src={plant.photoUrl}
+                      src={plant.imageUrl}
                       alt={plant.name}
                       className="w-48 h-48 object-cover rounded-lg shadow-md"
                     />

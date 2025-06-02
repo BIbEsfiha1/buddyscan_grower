@@ -12,7 +12,7 @@ export default function NovaPlantaPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
-  const { addPlant } = usePlantContext();
+  const { addPlant, error: plantContextError } = usePlantContext();
 
   // Verifica se há um cultivoId na URL
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function NovaPlantaPage() {
         setToast({ message: 'Planta adicionada com sucesso!', type: 'success' });
         setTimeout(() => navigate(`/cultivo/${cultivoId}`), 1400);
       } else {
-        setToast({ message: 'Erro ao adicionar planta: Nenhum detalhe retornado.', type: 'error' });
+        setToast({ message: `Erro ao adicionar planta: ${plantContextError || 'Nenhum detalhe retornado.'}`, type: 'error' });
       }
     } catch (error: any) {
       setToast({ message: 'Erro ao adicionar planta: ' + (error.message || error), type: 'error' });

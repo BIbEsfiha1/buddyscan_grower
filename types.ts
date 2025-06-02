@@ -54,7 +54,6 @@ export interface Plant {
   latestEc?: number;
   latestPh?: number;
   imageUrl?: string; 
-  photoUrl?: string; // Adicionado para consistência com o uso em PlantDetailPage
   genetics?: string;
   medium?: string;
   notes?: string; 

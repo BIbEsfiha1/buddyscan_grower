@@ -264,7 +264,7 @@ const DashboardPage: React.FC = () => {
                 <p>Você ainda não tem plantas cadastradas. Clique no botão + para adicionar sua primeira planta.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {plants.slice(0, 6).map(plant => (
                   <PlantCard 
                     key={plant.id} 

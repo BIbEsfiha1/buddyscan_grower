@@ -29,7 +29,7 @@ const PlantDetailPage: React.FC = () => {
   const [cultivos, setCultivos] = useState<{ id: string; name: string }[]>([]);
   const [selectedCultivo, setSelectedCultivo] = useState<string | undefined>(undefined);
   const [movingCultivo, setMovingCultivo] = useState(false);
-  const [activeTab, setActiveTab] = useState<'info' | 'diary' | 'checklist'>('info');
+  const [activeTab, setActiveTab] = useState<'actions' | 'diary' | 'checklist'>('actions');
   const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [newDiaryNote, setNewDiaryNote] = useState('');
@@ -437,23 +437,27 @@ const PlantDetailPage: React.FC = () => {
             )}
             {/* Header com imagem e infos principais */}
             <div className="border-b border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col md:flex-row p-6">
-                <div className="md:w-1/4 mb-6 md:mb-0 flex justify-center">
+              {/* 1. Layout Principal: flex-col md:flex-row e space-y-4 md:space-y-0 */}
+              <div className="flex flex-col md:flex-row p-6 space-y-4 md:space-y-0 md:space-x-6">
+                {/* 2. Bloco da Imagem: w-full sm:w-1/2 md:w-1/4 mx-auto */}
+                <div className="w-full sm:w-1/2 md:w-1/4 mb-6 md:mb-0 flex flex-col items-center mx-auto">
                   {plant && plant.imageUrl ? (
                     <img
                       src={plant.imageUrl}
                       alt={plant.name}
-                      className="w-48 h-48 object-cover rounded-lg shadow-md"
+                      // Ajuste da imagem: w-full h-auto dentro de um contêiner com max-w
+                      className="w-full max-w-xs h-auto object-cover rounded-lg shadow-md sm:max-w-none sm:w-48 sm:h-48"
                     />
                   ) : (
-                    <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                    <div className="w-full max-w-xs h-48 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center sm:w-48 sm:h-48">
                       <LeafIcon className="w-16 h-16 text-gray-400 dark:text-gray-500" />
                     </div>
                   )}
                 </div>
-                <div className="md:w-2/4 md:px-6">
-                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{plant.name}</h1>
-                  <div className="flex items-center space-x-2 mb-3">
+                {/* 3. Bloco de Informações: w-full md:w-2/4 */}
+                <div className="w-full md:w-2/4 md:px-0"> {/* Removido md:px-6 pois o parent já tem padding e space-x */}
+                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 text-center md:text-left">{plant.name}</h1>
+                  <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${healthColor}-100 text-${healthColor}-800 dark:bg-${healthColor}-900 dark:text-${healthColor}-200`}>
                       {plant ? plant.healthStatus || 'Status desconhecido' : 'Status desconhecido'}
                     </span>
@@ -491,13 +495,16 @@ const PlantDetailPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="md:w-1/4 flex flex-col items-center justify-center border-t pt-4 md:pt-0 md:border-t-0 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-6">
+                {/* 4. Bloco do QR Code: w-full sm:w-1/2 md:w-1/4 mx-auto */}
+                <div className="w-full sm:w-1/2 md:w-1/4 flex flex-col items-center justify-center border-t pt-4 md:pt-0 md:border-t-0 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-6 mx-auto">
                   {plant.qrCodeValue && (
-                    <div className="flex flex-col items-center">
-                      <QRCodeSVG value={plant.qrCodeValue} size={128} includeMargin={true} className="mb-2" />
+                    <div className="flex flex-col items-center w-full">
+                      {/* QR Code responsivo */}
+                      <QRCodeSVG value={plant.qrCodeValue} size={128} includeMargin={true} className="mb-2 w-full max-w-[128px] h-auto" />
                       <button
                         onClick={handleDownloadQrCode}
-                        className="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                        // Botão responsivo
+                        className="mt-2 w-full max-w-xs sm:max-w-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -511,20 +518,22 @@ const PlantDetailPage: React.FC = () => {
               {plant.notes && (
                 <div className="px-6 pb-6">
                   <h3 className="font-medium text-gray-900 dark:text-white mb-2">Notas</h3>
-                  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md">
-                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{plant.notes}</p>
+                  {/* 6. Seção de Notas da Planta: max-h-XX overflow-y-auto */}
+                  <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md max-h-40 overflow-y-auto">
+                    <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{plant.notes}</p>
                   </div>
                 </div>
               )}
             </div>
             {/* Tabs e conteúdo */}
             <div className="px-6 pt-4 border-b border-gray-200 dark:border-gray-700">
-              <nav className="flex -mb-px space-x-8" aria-label="Tabs">
+              {/* 5. Abas de Navegação: overflow-x-auto */}
+              <nav className="flex -mb-px space-x-8 overflow-x-auto" aria-label="Tabs">
                 <button
-                  onClick={() => setActiveTab('info')}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'info' ? 'text-green-600 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'}`}
+                  onClick={() => setActiveTab('actions')}
+                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'actions' ? 'text-green-600 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'}`}
                 >
-                  Informações
+                  Ações
                 </button>
                 <button
                   onClick={() => setActiveTab('checklist')}
@@ -541,7 +550,7 @@ const PlantDetailPage: React.FC = () => {
               </nav>
             </div>
             <div className="p-6">
-              {activeTab === 'info' && (
+              {activeTab === 'actions' && (
                 <>
                   <div className="flex flex-wrap gap-2 mb-6">
                     {plant.qrCodeValue && (

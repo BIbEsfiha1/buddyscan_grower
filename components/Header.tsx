@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
-          <h1 className="text-xl font-bold text-white">{title}</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-white">{title}</h1>
         </div>
         
         {/* Right: Actions */}

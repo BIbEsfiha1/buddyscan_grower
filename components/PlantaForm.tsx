@@ -117,6 +117,7 @@ export default function PlantaForm({ initialValues, onSubmit, loading }: PlantaF
                 setOtherSubstrate('');
               }
             }}
+            data-testid="substrate-select" // Adicionado
           >
             {SUBSTRATE_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>
@@ -139,6 +140,7 @@ export default function PlantaForm({ initialValues, onSubmit, loading }: PlantaF
               value={otherSubstrate}
               onChange={(e) => setOtherSubstrate(e.target.value)}
               required={substrate === 'Outro'} // Torna obrigatório se 'Outro' for selecionado
+              data-testid="other-substrate-input" // Adicionado
             />
           </div>
         )}

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import PlusIcon from './icons/PlusIcon';
+import ProfileDropdown from './ProfileDropdown';
 
 interface HeaderProps {
   title: string;
@@ -16,7 +17,11 @@ const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenScannerModal
 }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Ensure logout is extracted
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+
+  console.log('[Header.tsx] Rendering. User:', user, 'isProfileDropdownOpen:', isProfileDropdownOpen);
+
   let initials = 'U';
   if (user?.user_metadata?.full_name) {
     initials = user.user_metadata.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -85,12 +90,31 @@ const Header: React.FC<HeaderProps> = ({
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900"></span>
           </button>
           
-          {/* Profile */}
-          <Link to="/profile" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-medium">
+          {/* Profile Trigger */}
+          <div className="relative"> {/* Ensures ProfileDropdown is positioned relative to this */}
+            <div
+              onClick={() => {
+                console.log('[Header.tsx] Profile icon clicked. Current isProfileDropdownOpen:', isProfileDropdownOpen);
+                setIsProfileDropdownOpen(prev => !prev);
+              }}
+              id="user-menu-button"
+              aria-expanded={isProfileDropdownOpen}
+              aria-haspopup="true"
+              role="button" // Para acessibilidade
+              tabIndex={0}  // Para acessibilidade (permite foco com teclado)
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsProfileDropdownOpen(prev => !prev); }} // Para acessibilidade com teclado
+              className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-medium cursor-pointer focus:outline-none ring-2 ring-transparent focus:ring-emerald-500"
+            >
               {initials}
             </div>
-          </Link>
+
+            <ProfileDropdown
+              isOpen={isProfileDropdownOpen}
+              onClose={() => setIsProfileDropdownOpen(false)}
+              onLogout={logout} // logout from useAuth
+              user={user}     // user from useAuth
+            />
+          </div>
         </div>
       </div>
       

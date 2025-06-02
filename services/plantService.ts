@@ -3,35 +3,6 @@
 import { Plant, DiaryEntry, NewPlantData } from '../types';
 import netlifyIdentity from 'netlify-identity-widget';
 
-// Interface para os dados da planta como esperado pela API (sem o ID do usuário, que será adicionado no backend)
-// This PlantData is still used by updatePlant. For addPlant, we'll use NewPlantData.
-// Ideally, qrCodeValue should not be part of the data sent for creation if it's derived from ID.
-// For update, qrCodeValue (being the ID) should not be updatable.
-interface PlantData { 
-  id?: string; // Opcional ao criar, obrigatório ao atualizar
-  name: string;
-  qrCodeValue?: string; // Made optional for now, as addPlant will not send it.
-  species?: string;
-  purchaseDate?: string;
-  lastWatering?: string;
-  lightRequirement?: string;
-  notes?: string;
-  imageUrl?: string;
-  // Campos de diário não são gerenciados diretamente aqui mais, mas via DiaryEntry[] em Plant
-
-  // Campos de status e estágio
-  operationalStatus?: string;
-  currentStage?: string;
-
-  // Campos do Checklist Diário adicionados de types.ts Plant interface
-  lastDailyCheckDate?: string; // YYYY-MM-DD
-  dailyWatered?: boolean;
-  dailyNutrients?: boolean;
-  dailyPestCheck?: boolean;
-  dailyLightAdjustment?: boolean;
-  dailyRotation?: boolean;
-}
-
 const API_BASE_URL = '/.netlify/functions';
 
 // Helper para realizar chamadas autenticadas
@@ -71,7 +42,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       responseData = responseText ? JSON.parse(responseText) : {};
     } catch (e) {
       console.error(`[fetchWithAuth] Failed to parse JSON response from ${endpoint}:`, responseText);
-      throw new Error('Resposta inválida do servidor');
+      throw new Error(`Falha ao processar resposta do servidor (${response.status} ${response.statusText}). Resposta: ${responseText.substring(0, 200)}`);
     }
 
     console.log(`[fetchWithAuth] Response from ${endpoint}:`, {
@@ -152,7 +123,7 @@ export const addPlant = async (plantData: NewPlantData): Promise<Plant> => {
 };
 
 // Update plant with proper data formatting
-export const updatePlant = async (plantId: string, plantData: Partial<Omit<PlantData, 'id'>>): Promise<Plant> => {
+export const updatePlant = async (plantId: string, plantData: Partial<Omit<Plant, 'id'>>): Promise<Plant> => {
   // Create a new object to avoid mutating the original
   const updateData = { ...plantData };
   

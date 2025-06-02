@@ -80,6 +80,8 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       latestPh: 'latest_ph',
       imageUrl: 'image_url',
       notes: 'notes',
+      genetics: 'genetics',
+      medium: 'medium',
       lastDailyCheckDate: 'last_daily_check_date',
       dailyWatered: 'daily_watered',
       dailyNutrients: 'daily_nutrients',

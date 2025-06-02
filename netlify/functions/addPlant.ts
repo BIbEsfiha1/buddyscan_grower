@@ -115,35 +115,9 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     console.log('[addPlant] Plant inserted successfully. ID:', insertedPlant.id);
     console.log('[addPlant] Full insertedPlant object:', JSON.stringify(insertedPlant, null, 2));
 
-    // 2. Atualizar qr_code_value com o id gerado
-    console.log(`[addPlant] Attempting to update qr_code_value for plant ID ${insertedPlant.id} with value ${insertedPlant.id}`);
-    const { data: updatedPlant, error: updateError } = await supabase
-      .from('plants')
-      .update({ qr_code_value: insertedPlant.id })
-      .eq('id', insertedPlant.id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[addPlant] Erro ao atualizar qr_code_value no Supabase:', updateError);
-      console.error(`[addPlant] Details - Plant ID: ${insertedPlant.id}, Value for qr_code_value: ${insertedPlant.id}`);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          error: 'Erro ao atualizar qr_code_value.',
-          details: updateError.message,
-          supabaseError: updateError,
-          insertedPlant: insertedPlant
-        }),
-      };
-    }
-
-    console.log('[addPlant] qr_code_value updated successfully.');
-    console.log('[addPlant] Full updatedPlant object after qr_code_value update:', JSON.stringify(updatedPlant, null, 2));
-
     return {
       statusCode: 201, // 201 Created
-      body: JSON.stringify(updatedPlant),
+      body: JSON.stringify(insertedPlant),
     };
   } catch (e: any) {
     console.error('[addPlant] Erro ao processar requisição em addPlant:', e);

@@ -31,7 +31,7 @@ export default function NovaPlantaPage() {
   }, [toast]);
 
   // Handler para submissão do formulário usando o método principal
-  const handlePlantaSubmit = async (values: { name: string; strain: string; birthDate: string }) => {
+  const handlePlantaSubmit = async (values: { name: string; strain: string; birthDate: string; substrate: string }) => {
     if (!cultivoId) {
       setToast({ message: 'ID do cultivo não encontrado', type: 'error' });
       return;

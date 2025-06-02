@@ -144,7 +144,7 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
           return (
             <li
               key={item.id}
-              className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 shadow-sm relative overflow-hidden
+              className={`flex items-start sm:items-center gap-3 p-3 rounded-xl border transition-all duration-300 shadow-sm relative overflow-hidden
                 ${isChecked ? 'bg-green-50 border-green-400 dark:bg-green-900/30' : 'bg-slate-50 border-slate-200 dark:bg-slate-700/40 dark:border-slate-600'}
                 ${isChecked ? '' : ''}
               `}
@@ -163,7 +163,7 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
                   {isChecked ? <CheckCircleIcon className="w-6 h-6" /> : item.icon}
                 </span>
               </button>
-              <span className={`text-base font-medium transition-colors duration-300 ${isChecked ? 'text-green-700 dark:text-green-300 line-through' : 'text-slate-700 dark:text-slate-200'}`}>{item.label}</span>
+              <span className={`flex-1 text-base font-medium transition-colors duration-300 ${isChecked ? 'text-green-700 dark:text-green-300 line-through' : 'text-slate-700 dark:text-slate-200'}`}>{item.label}</span>
               {isChecked && (
                 <span className="absolute right-4 top-4 text-green-400 animate-fade-in text-xs font-semibold">Concluído!</span>
               )}

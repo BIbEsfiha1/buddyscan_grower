@@ -71,7 +71,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
             <XMarkIcon className="w-6 h-6" />
           </Button>
         </div>
-        <div className="max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="max-h-[90vh] overflow-y-auto pr-2 custom-scrollbar">
          {children}
         </div>
       </div>

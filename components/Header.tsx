@@ -19,6 +19,9 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const { user, logout } = useAuth(); // Ensure logout is extracted
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+
+  console.log('[Header.tsx] Rendering. User:', user, 'isProfileDropdownOpen:', isProfileDropdownOpen);
+
   let initials = 'U';
   if (user?.user_metadata?.full_name) {
     initials = user.user_metadata.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -89,16 +92,21 @@ const Header: React.FC<HeaderProps> = ({
           
           {/* Profile Trigger */}
           <div className="relative"> {/* Ensures ProfileDropdown is positioned relative to this */}
-            <button
-              onClick={() => setIsProfileDropdownOpen(prev => !prev)}
-              className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-medium cursor-pointer focus:outline-none ring-2 ring-transparent focus:ring-emerald-500"
+            <div
+              onClick={() => {
+                console.log('[Header.tsx] Profile icon clicked. Current isProfileDropdownOpen:', isProfileDropdownOpen);
+                setIsProfileDropdownOpen(prev => !prev);
+              }}
               id="user-menu-button"
               aria-expanded={isProfileDropdownOpen}
               aria-haspopup="true"
-              type="button" // Good practice for buttons not submitting forms
+              role="button" // Para acessibilidade
+              tabIndex={0}  // Para acessibilidade (permite foco com teclado)
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsProfileDropdownOpen(prev => !prev); }} // Para acessibilidade com teclado
+              className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-medium cursor-pointer focus:outline-none ring-2 ring-transparent focus:ring-emerald-500"
             >
               {initials}
-            </button>
+            </div>
 
             <ProfileDropdown
               isOpen={isProfileDropdownOpen}

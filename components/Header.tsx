@@ -22,7 +22,6 @@ const Header: React.FC<HeaderProps> = ({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { t } = useTranslation();
 
-  console.log('[Header.tsx] Rendering. User:', user, 'isProfileDropdownOpen:', isProfileDropdownOpen);
 
   let initials = 'U';
   if (user?.user_metadata?.full_name) {
@@ -96,7 +95,6 @@ const Header: React.FC<HeaderProps> = ({
           <div className="relative"> {/* Ensures ProfileDropdown is positioned relative to this */}
             <div
               onClick={() => {
-                console.log('[Header.tsx] Profile icon clicked. Current isProfileDropdownOpen:', isProfileDropdownOpen);
                 setIsProfileDropdownOpen(prev => !prev);
               }}
               id="user-menu-button"

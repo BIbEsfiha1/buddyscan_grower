@@ -26,7 +26,6 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     }
     headers.set('Authorization', `Bearer ${token}`);
 
-    console.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
     
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
       ...options,
@@ -43,10 +42,6 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       throw new Error('Resposta inválida do servidor');
     }
 
-    console.log(`[fetchWithAuth] Response from ${endpoint}:`, {
-      status: response.status,
-      data: responseData
-    });
 
     if (response.status === 401) {
       netlifyIdentity.logout();
@@ -119,7 +114,6 @@ export const addCultivo = async (cultivoData: { name: string; startDate: string;
 
 export const getCultivos = async (): Promise<Cultivo[]> => {
   try {
-    console.log('[getCultivos] Fetching cultivos');
     const result = await fetchWithAuth('getCultivos');
     
     // Ensure all dates are properly parsed
@@ -144,7 +138,6 @@ export const getPlantsByCultivo = async (cultivoId: string): Promise<Plant[]> =>
       return [];
     }
     
-    console.log(`[getPlantsByCultivo] Fetching plants for cultivo ${cultivoId}`);
     const result = await fetchWithAuth(`getPlants?cultivoId=${encodeURIComponent(cultivoId)}`);
     
     // Ensure all dates are properly parsed and handle potential null/undefined
@@ -182,7 +175,6 @@ export const updateCultivo = async (cultivoId: string, cultivoData: Partial<Omit
       }
     });
 
-    console.log('[updateCultivo] Sending update data:', { id: cultivoId, ...updateData });
     
     const result = await fetchWithAuth('updateCultivo', {
       method: 'PUT',

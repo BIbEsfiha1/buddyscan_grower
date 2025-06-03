@@ -449,7 +449,7 @@ const PlantDetailPage: React.FC = () => {
             {/* Header com imagem e infos principais */}
             <div className="border-b border-gray-200 dark:border-gray-700">
               {/* 1. Layout Principal responsivo */}
-              <div className="grid gap-6 p-6 md:grid-cols-3">
+              <div className="grid gap-6 p-6 sm:grid-cols-2 md:grid-cols-3">
                 {/* 2. Bloco da Imagem */}
                 <div className="w-full sm:w-1/2 md:col-span-1 mb-6 md:mb-0 flex flex-col items-center mx-auto">
                   {plant && plant.imageUrl ? (

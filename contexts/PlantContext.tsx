@@ -8,7 +8,7 @@ import {
   deletePlant as apiDeletePlant,
   addDiaryEntry as apiAddDiaryEntry,
   getDiaryEntries as apiGetDiaryEntriesByPlantId, 
-} from '../services/plantService'; // Mock service
+} from '../services/plantService';
 
 // Re-export NewDiaryEntryData so it can be imported from this module
 export type { NewDiaryEntryData };

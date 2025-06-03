@@ -40,8 +40,6 @@ export const CULTIVATION_TYPE_OPTIONS = [
 
 
 export const GENERIC_ERROR_MESSAGE = "Ocorreu um erro. Por favor, tente novamente.";
-export const MOCK_USER_ID = "user_default_01";
-export const MOCK_AUTHOR_NAME = "Cultivador";
 
 export const INITIAL_PLANT_DATA_COUNT = 0; 
 export const INITIAL_DIARY_ENTRIES_PER_PLANT = 0; 

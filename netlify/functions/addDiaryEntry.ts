@@ -20,6 +20,17 @@ export const handler: Handler = async (event, context) => {
     return { statusCode: 401, body: JSON.stringify({ error: 'Usuário não autenticado.' }) };
   }
   const userId = user.sub;
+  const userEmail = (user as any).email || `${userId}@example.com`;
+
+  // Ensure a corresponding Supabase auth user exists so the foreign key is valid
+  try {
+    const { data: existingUser } = await supabase.auth.admin.getUserById(userId);
+    if (!existingUser) {
+      await supabase.auth.admin.createUser({ id: userId, email: userEmail, email_confirm: true });
+    }
+  } catch (err) {
+    console.error('Failed to ensure Supabase user', err);
+  }
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Método não permitido. Use POST.' }), headers: { Allow: 'POST' } };

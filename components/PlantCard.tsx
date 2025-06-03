@@ -37,10 +37,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
     <div className="relative group">
       <div
         onClick={onClick ? onClick : () => window.location.href = `/plant/${plant.id}`}
-        className="cursor-pointer block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700"
-        style={{
-          minHeight: 320,
-        }}
+        className="cursor-pointer block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 min-h-[320px] sm:min-h-[360px]"
       >
         {/* Elemento decorativo de folha */}
         <div className="absolute -top-5 -left-5 w-20 h-20 opacity-10 dark:opacity-5 pointer-events-none" style={{
@@ -49,7 +46,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
           transform: 'rotate(-30deg)'
         }} />
         {/* Imagem da planta */}
-        <div className="h-48 w-full overflow-hidden rounded-t-3xl">
+        <div className="h-48 sm:h-56 md:h-64 w-full overflow-hidden rounded-t-3xl">
           <img
             src={plant.imageUrl || `https://picsum.photos/seed/${plant.id}/300/200`}
             alt={plant.name}

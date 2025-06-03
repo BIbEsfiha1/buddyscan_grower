@@ -12,6 +12,20 @@ interface HamburgerMenuProps {
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose }) => {
   const auth = useAuth();
+  const [lastPlantId, setLastPlantId] = React.useState<string | null>(null);
+  const [lastPlantName, setLastPlantName] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        setLastPlantId(localStorage.getItem('lastPlantId'));
+        setLastPlantName(localStorage.getItem('lastPlantName'));
+      } catch {
+        setLastPlantId(null);
+        setLastPlantName(null);
+      }
+    }
+  }, []);
 
   const handleLogout = () => {
     auth.logout();
@@ -73,13 +87,13 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose }) => {
             >
               Estatísticas do Jardim
             </Link>
-            {/* Estatísticas da Planta - TODO: tornar dinâmico pelo último plantId visitado/contexto */}
+            {/* Estatísticas da Planta - linkado à última planta visitada, se disponível */}
             <Link
-              to="/plant/ultima/statistics"
+              to={lastPlantId ? `/plant/${lastPlantId}/statistics` : '/plants'}
               className="block px-4 py-3 text-base font-medium text-green-700 rounded-lg hover:bg-green-100 dark:text-green-300 dark:hover:bg-slate-700 transition-colors"
               onClick={onClose}
             >
-              Estatísticas da Planta
+              {lastPlantName ? `Estatísticas de ${lastPlantName}` : 'Estatísticas da Planta'}
             </Link>
             {/* Adicionar outros links conforme necessário */}
             {/* Exemplo: Adicionar Planta, Escanear QR Code - estes já estão no DashboardPage, mas podem ser adicionados aqui também se fizer sentido */}

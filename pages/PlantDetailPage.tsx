@@ -54,6 +54,19 @@ const PlantDetailPage: React.FC = () => {
   }, [loadPlantData]);
 
   useEffect(() => {
+    if (plantId && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('lastPlantId', plantId);
+        if (plant && plant.name) {
+          localStorage.setItem('lastPlantName', plant.name);
+        }
+      } catch {
+        // ignore write errors (e.g. private mode)
+      }
+    }
+  }, [plantId, plant]);
+
+  useEffect(() => {
     // Prefixed for Safari, Chrome/Edge support window.SpeechRecognition
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
@@ -142,6 +155,17 @@ const PlantDetailPage: React.FC = () => {
       if (res.status === 204) {
         setShowRemoveByDiseaseModal(false);
         setRemoveByDiseaseNote('');
+        try {
+          if (typeof window !== 'undefined') {
+            const lastId = localStorage.getItem('lastPlantId');
+            if (lastId === plantId) {
+              localStorage.removeItem('lastPlantId');
+              localStorage.removeItem('lastPlantName');
+            }
+          }
+        } catch {
+          // ignore
+        }
         window.location.href = '/';
         return;
       } else {

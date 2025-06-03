@@ -194,42 +194,28 @@ const PlantDetailPage: React.FC = () => {
     }
   }, [plant]);
 
+  // Persist checklist state when component unmounts
   useEffect(() => {
     return () => {
-      if (plantId && plant) {
-        const currentChecklistSnapshot = checklistState;
-
-        const payload: Partial<Plant> = {
-          lastDailyCheckDate: currentChecklistSnapshot.lastDailyCheckDate,
-          dailyWatered: currentChecklistSnapshot.dailyWatered,
-          dailyNutrients: currentChecklistSnapshot.dailyNutrients,
-          dailyLightAdjustment: currentChecklistSnapshot.dailyLightAdjustment,
-          dailyPestCheck: currentChecklistSnapshot.dailyPestCheck,
-          dailyRotation: currentChecklistSnapshot.dailyRotation,
-        };
-
-        // IMPORTANT: Strip undefined keys from THIS payload first
-        Object.keys(payload).forEach(keyStr => {
-          const key = keyStr as keyof typeof payload;
-          if (payload[key] === undefined) {
-            delete payload[key];
-          }
-        });
-
-        // THEN check if there's anything left to send
-        if (Object.keys(payload).length > 0) {
-          // updatePlantDetails(plantId, payload); // <-- THIS LINE IS REMOVED/COMMENTED OUT
-          console.log('[PlantDetailPage] useEffect cleanup: Would have updated with payload:', payload, 'Snapshot was:', currentChecklistSnapshot);
-        } else {
-          // This log should now correctly trigger if the snapshot leads to an empty payload
-          console.log('[PlantDetailPage] useEffect cleanup: Payload effectively empty after stripping undefineds. Snapshot was:', currentChecklistSnapshot);
+      if (!plantId || !plant) return;
+      const payload: Partial<Plant> = {
+        lastDailyCheckDate: checklistState.lastDailyCheckDate,
+        dailyWatered: checklistState.dailyWatered,
+        dailyNutrients: checklistState.dailyNutrients,
+        dailyLightAdjustment: checklistState.dailyLightAdjustment,
+        dailyPestCheck: checklistState.dailyPestCheck,
+        dailyRotation: checklistState.dailyRotation,
+      };
+      Object.keys(payload).forEach(key => {
+        if (payload[key as keyof typeof payload] === undefined) {
+          delete payload[key as keyof typeof payload];
         }
-      } else {
-        // Log if plantId or plant is missing
-        console.log('[PlantDetailPage] useEffect cleanup: plantId or plant missing. plantId:', plantId, 'plant:', plant);
+      });
+      if (Object.keys(payload).length > 0) {
+        updatePlantDetails(plantId, payload);
       }
     };
-  }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
+  }, [plantId, plant, checklistState, updatePlantDetails]);
 
   const handleToggleRecording = () => {
     if (!speechRecognition) {
@@ -462,10 +448,10 @@ const PlantDetailPage: React.FC = () => {
             )}
             {/* Header com imagem e infos principais */}
             <div className="border-b border-gray-200 dark:border-gray-700">
-              {/* 1. Layout Principal: flex-col md:flex-row e space-y-4 md:space-y-0 */}
-              <div className="flex flex-col md:flex-row p-6 space-y-4 md:space-y-0 md:space-x-6">
-                {/* 2. Bloco da Imagem: w-full sm:w-1/2 md:w-1/4 mx-auto */}
-                <div className="w-full sm:w-1/2 md:w-1/4 mb-6 md:mb-0 flex flex-col items-center mx-auto">
+              {/* 1. Layout Principal responsivo */}
+              <div className="grid gap-6 p-6 md:grid-cols-3">
+                {/* 2. Bloco da Imagem */}
+                <div className="w-full sm:w-1/2 md:col-span-1 mb-6 md:mb-0 flex flex-col items-center mx-auto">
                   {plant && plant.imageUrl ? (
                     <img
                       src={plant.imageUrl}
@@ -479,8 +465,8 @@ const PlantDetailPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {/* 3. Bloco de Informações: w-full md:w-2/4 */}
-                <div className="w-full md:w-2/4 md:px-0"> {/* Removido md:px-6 pois o parent já tem padding e space-x */}
+                {/* 3. Bloco de Informações */}
+                <div className="w-full md:col-span-2 md:px-0">
                   <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 text-center md:text-left">{plant.name}</h1>
                   <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${healthColor}-100 text-${healthColor}-800 dark:bg-${healthColor}-900 dark:text-${healthColor}-200`}>
@@ -520,8 +506,8 @@ const PlantDetailPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {/* 4. Bloco do QR Code: w-full sm:w-1/2 md:w-1/4 mx-auto */}
-                <div className="w-full sm:w-1/2 md:w-1/4 flex flex-col items-center justify-center border-t pt-4 md:pt-0 md:border-t-0 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-6 mx-auto">
+                {/* 4. Bloco do QR Code */}
+                <div className="w-full sm:w-1/2 md:col-span-1 flex flex-col items-center justify-center border-t pt-4 md:pt-0 md:border-t-0 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-6 mx-auto">
                   {plant.qrCodeValue && (
                     <div className="flex flex-col items-center w-full">
                       {/* QR Code responsivo */}

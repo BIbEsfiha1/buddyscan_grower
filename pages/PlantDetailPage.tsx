@@ -306,6 +306,7 @@ const PlantDetailPage: React.FC = () => {
       updated = { ...updated, [taskId]: checked, lastDailyCheckDate: today };
     }
     setChecklistState(updated);
+    setPlant(prev => (prev ? { ...prev, ...updated } : prev));
 
     // Só persiste se houver mudanças reais e não for payload vazio
     const payload: Partial<Plant> = {
@@ -488,7 +489,7 @@ const PlantDetailPage: React.FC = () => {
                     <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">ID: {plant ? plant.id : ''}</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
                     <div className="flex flex-col">
                       <span className="text-gray-500 dark:text-gray-400">Strain</span>
                       <span className="font-medium text-gray-900 dark:text-white">{plant.strain || 'N/A'}</span>
@@ -634,7 +635,7 @@ const PlantDetailPage: React.FC = () => {
               {activeTab === 'checklist' && (
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Checklist Diário</h2>
-                  <DailyChecklist plant={plant} onTaskToggle={handleTaskToggle} />
+                  <DailyChecklist plant={{ ...plant, ...checklistState }} onTaskToggle={handleTaskToggle} />
                 </div>
               )}
               {activeTab === 'diary' && (

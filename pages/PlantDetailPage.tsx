@@ -488,7 +488,7 @@ const PlantDetailPage: React.FC = () => {
                     <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">ID: {plant ? plant.id : ''}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <div className="flex flex-col">
                       <span className="text-gray-500 dark:text-gray-400">Strain</span>
                       <span className="font-medium text-gray-900 dark:text-white">{plant.strain || 'N/A'}</span>

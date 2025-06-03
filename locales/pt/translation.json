@@ -1,0 +1,26 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "plants": "Plantas",
+    "cultivos": "Cultivos",
+    "scanner": "Scanner QR",
+    "statistics": "Estatísticas",
+    "settings": "Configurações"
+  },
+  "profile": {
+    "my_profile": "Meu Perfil",
+    "logout": "Sair",
+    "language": "Idioma"
+  },
+  "header": {
+    "search": "Buscar plantas...",
+    "open_menu": "Abrir menu",
+    "scan_qr": "Escanear QR",
+    "add_plant": "Adicionar Planta"
+  },
+  "language": {
+    "english": "Inglês",
+    "portuguese": "Português"
+  },
+  "loading": "Carregando..."
+}

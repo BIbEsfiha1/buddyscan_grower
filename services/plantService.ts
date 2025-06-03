@@ -157,51 +157,41 @@ export const deletePlant = async (id: string): Promise<void> => {
   // Não retorna nada em caso de sucesso (204 No Content)
 };
 
-// --- Funções para Entradas do Diário (Ainda usando localStorage como placeholder) ---
-// TODO: Migrar o gerenciamento de DiaryEntries para o backend (Supabase)
-// Isso exigirá uma nova tabela no Supabase (ex: 'diary_entries') e novas Netlify Functions.
+// --- Funções para Entradas do Diário utilizando Supabase ---
 
-const DIARY_KEY_PREFIX = 'diaryEntries_';
-
-export const getDiaryEntries = (plantId: string): DiaryEntry[] => {
-  console.warn('getDiaryEntries ainda usa localStorage. TODO: Migrar para Supabase.');
-  const storedEntries = localStorage.getItem(`${DIARY_KEY_PREFIX}${plantId}`);
-  return storedEntries ? JSON.parse(storedEntries) : [];
+export const getDiaryEntries = async (plantId: string): Promise<DiaryEntry[]> => {
+  const result = await fetchWithAuth(`getDiaryEntries?plantId=${plantId}`);
+  return convertKeysToCamelCase(result);
 };
 
 // Corrected parameter type for entry: Omit<DiaryEntry, 'id' | 'timestamp'>
-// Corrected property from 'date' to 'timestamp'
-export const addDiaryEntry = (plantId: string, entry: Omit<DiaryEntry, 'id' | 'timestamp'>): DiaryEntry => {
-  console.warn('addDiaryEntry ainda usa localStorage. TODO: Migrar para Supabase.');
-  const entries = getDiaryEntries(plantId);
-  const newEntry: DiaryEntry = {
-    ...entry,
-    id: Date.now().toString(), // Simples ID único
-    timestamp: new Date().toISOString(), // Corrected from 'date'
-  };
-  entries.push(newEntry);
-  localStorage.setItem(`${DIARY_KEY_PREFIX}${plantId}`, JSON.stringify(entries));
-  return newEntry;
+export const addDiaryEntry = async (
+  plantId: string,
+  entry: Omit<DiaryEntry, 'id' | 'timestamp'>
+): Promise<DiaryEntry> => {
+  const result = await fetchWithAuth('addDiaryEntry', {
+    method: 'POST',
+    body: JSON.stringify({ ...entry, plantId }),
+  });
+  return convertKeysToCamelCase(result);
 };
 
 // Corrected parameter type for updatedEntryData: Partial<Omit<DiaryEntry, 'id' | 'timestamp'>>
-export const updateDiaryEntry = (plantId: string, entryId: string, updatedEntryData: Partial<Omit<DiaryEntry, 'id' | 'timestamp'>>): DiaryEntry | null => {
-  console.warn('updateDiaryEntry ainda usa localStorage. TODO: Migrar para Supabase.');
-  const entries = getDiaryEntries(plantId);
-  const entryIndex = entries.findIndex(e => e.id === entryId);
-  if (entryIndex === -1) return null;
-
-  const updatedEntry = { ...entries[entryIndex], ...updatedEntryData };
-  entries[entryIndex] = updatedEntry;
-  localStorage.setItem(`${DIARY_KEY_PREFIX}${plantId}`, JSON.stringify(entries));
-  return updatedEntry;
+export const updateDiaryEntry = async (
+  plantId: string,
+  entryId: string,
+  updatedEntryData: Partial<Omit<DiaryEntry, 'id' | 'timestamp'>>
+): Promise<DiaryEntry | null> => {
+  const result = await fetchWithAuth('updateDiaryEntry', {
+    method: 'PUT',
+    body: JSON.stringify({ id: entryId, plantId, ...updatedEntryData }),
+  });
+  return convertKeysToCamelCase(result);
 };
 
-export const deleteDiaryEntry = (plantId: string, entryId: string): boolean => {
-  console.warn('deleteDiaryEntry ainda usa localStorage. TODO: Migrar para Supabase.');
-  let entries = getDiaryEntries(plantId);
-  const initialLength = entries.length;
-  entries = entries.filter(e => e.id !== entryId);
-  localStorage.setItem(`${DIARY_KEY_PREFIX}${plantId}`, JSON.stringify(entries));
-  return entries.length < initialLength;
+export const deleteDiaryEntry = async (plantId: string, entryId: string): Promise<boolean> => {
+  await fetchWithAuth(`deleteDiaryEntry?id=${entryId}&plantId=${plantId}`, {
+    method: 'DELETE',
+  });
+  return true;
 };

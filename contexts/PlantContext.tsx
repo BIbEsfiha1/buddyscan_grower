@@ -122,9 +122,27 @@ export const PlantProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
+  const fetchDiaryEntries = useCallback(async (plantId: string) => {
+    setIsLoading(true);
+    try {
+      const entries = await apiGetDiaryEntriesByPlantId(plantId);
+      setDiaryEntries(prev => ({ ...prev, [plantId]: entries }));
+      setIsLoading(false);
+      return entries;
+    } catch (e) {
+      setError(`Falha ao carregar entradas do diário para planta ${plantId}.`);
+      setIsLoading(false);
+      return [];
+    }
+  }, []);
+
   const getDiaryEntries = useCallback((plantId: string) => {
+    if (!diaryEntries[plantId]) {
+      // Fetch asynchronously if not already loaded
+      fetchDiaryEntries(plantId).catch(() => undefined);
+    }
     return diaryEntries[plantId] || [];
-  }, [diaryEntries]);
+  }, [diaryEntries, fetchDiaryEntries]);
 
   const deletePlant = useCallback(async (plantId: string) => {
     setIsLoading(true);
@@ -140,20 +158,6 @@ export const PlantProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
-  const fetchDiaryEntries = useCallback(async (plantId: string) => {
-    setIsLoading(true);
-    try {
-      const entries = await apiGetDiaryEntriesByPlantId(plantId);
-      setDiaryEntries(prev => ({ ...prev, [plantId]: entries }));
-      setIsLoading(false);
-      return entries;
-    } catch (e) {
-      setError(`Falha ao carregar entradas do diário para planta ${plantId}.`);
-      setIsLoading(false);
-      return [];
-    }
-  }, []);
-  
   const addNewDiaryEntry = useCallback(async (plantId: string, entryData: NewDiaryEntryData) => {
     setIsLoading(true);
     try {

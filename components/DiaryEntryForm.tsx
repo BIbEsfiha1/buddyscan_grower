@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { DiaryEntry, PlantStage, Photo, NewPhoto, NewDiaryEntryData } from '../types'; // Import centralized types
 import { PLANT_STAGES_OPTIONS, DEFAULT_AI_PROMPT } from '../constants';
 import ImageUpload from './ImageUpload';
-import { getMockImageDiagnosis } from '../services/geminiService'; // Using the mock Gemini service
+import { getImageDiagnosis } from '../services/geminiService';
 import LoadingSpinner from './LoadingSpinner';
 import Button from './Button';
 
@@ -57,7 +57,7 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
     setIsDiagnosing(true);
     setDiagnosisError(null);
     try {
-        const diagnosis = await getMockImageDiagnosis(base64, DEFAULT_AI_PROMPT);
+        const diagnosis = await getImageDiagnosis(base64, DEFAULT_AI_PROMPT);
         setUploadedPhotos(prevPhotos => prevPhotos.map(p => 
             p.urlOriginal === base64 ? { ...p, aiSummary: diagnosis.summary, aiRawJson: diagnosis.rawJson } : p
         ));

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { User } from 'netlify-identity-widget'; // Assuming User type is available from this import
 
 interface ProfileDropdownProps {
@@ -11,6 +12,7 @@ interface ProfileDropdownProps {
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, onLogout, user }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t, i18n } = useTranslation();
 
   // Effect to handle clicks outside the dropdown to close it
   useEffect(() => {
@@ -50,7 +52,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, onLo
         role="menuitem"
         onClick={onClose} // Also close dropdown when a link is clicked
       >
-        Meu Perfil
+        {t('profile.my_profile')}
       </Link>
       <button
         onClick={() => {
@@ -60,7 +62,21 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, onLo
         className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white w-full text-left"
         role="menuitem"
       >
-        Sair
+        {t('profile.logout')}
+      </button>
+      <div className="border-t border-gray-700 my-1"></div>
+      <div className="px-4 py-1 text-xs text-gray-400">{t('profile.language')}</div>
+      <button
+        onClick={() => i18n.changeLanguage('en')}
+        className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white w-full text-left"
+      >
+        {t('language.english')}
+      </button>
+      <button
+        onClick={() => i18n.changeLanguage('pt')}
+        className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white w-full text-left"
+      >
+        {t('language.portuguese')}
       </button>
     </div>
   );

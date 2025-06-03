@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -26,6 +27,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { t } = useTranslation();
   const base =
     'inline-flex items-center justify-center rounded-full font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm';
   const variants: Record<string, string> = {
@@ -64,7 +66,7 @@ const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <span className="flex items-center gap-2">
           <span className="w-4 h-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
-          <span>{typeof children === 'string' ? 'Carregando...' : children}</span>
+          <span>{typeof children === 'string' ? t('loading') : children}</span>
         </span>
       ) : (
         children

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import CameraIcon from './icons/CameraIcon'; 
 import XMarkIcon from './icons/XMarkIcon'; 
 import { MAX_IMAGE_SIZE_MB, ACCEPTED_IMAGE_TYPES } from '../constants';
@@ -10,7 +11,9 @@ interface ImageUploadProps {
   onImageRemoved?: () => void; 
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, label = "Adicionar Foto", currentImageUrl, onImageRemoved }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, label, currentImageUrl, onImageRemoved }) => {
+  const { t } = useTranslation();
+  const displayLabel = label || t('form.main_photo');
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,13 +21,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, label = "Adi
     const file = event.target.files?.[0];
     if (file) {
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-        setError(`Tipo de arquivo inválido. Aceitos: ${ACCEPTED_IMAGE_TYPES.join(', ')}`);
+        setError(t('image_upload.invalid_type', { types: ACCEPTED_IMAGE_TYPES.join(', ') }));
         setPreview(null);
         if(onImageRemoved) onImageRemoved();
         return;
       }
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-        setError(`Arquivo muito grande. Máximo: ${MAX_IMAGE_SIZE_MB}MB`);
+        setError(t('image_upload.too_large', { size: MAX_IMAGE_SIZE_MB }));
         setPreview(null);
         if(onImageRemoved) onImageRemoved();
         return;
@@ -60,11 +63,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, label = "Adi
     <div className="space-y-2 w-full">
       {preview ? (
         <div className="relative group w-full aspect-video sm:aspect-square max-w-sm mx-auto bg-gray-100 dark:bg-slate-700 rounded-lg overflow-hidden shadow-md">
-          <img src={preview} alt="Preview da planta" className="w-full h-full object-cover" />
+          <img src={preview} alt={t('image_upload.preview_alt')} className="w-full h-full object-cover" />
           <button
             onClick={handleRemoveImage}
             className="absolute top-2.5 right-2.5 bg-black bg-opacity-60 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-opacity-80 focus:opacity-100"
-            aria-label="Remover imagem"
+            aria-label={t('image_upload.remove_image')}
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -75,8 +78,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, label = "Adi
           className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl cursor-pointer bg-gray-50 dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-150"
         >
           <CameraIcon className="w-12 h-12 text-gray-400 dark:text-slate-500 mb-2.5" />
-          <span className="text-sm text-[#3E3E3E] dark:text-slate-300 font-medium">{label}</span>
-          <span className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">Max {MAX_IMAGE_SIZE_MB}MB. JPG, PNG, WEBP</span>
+          <span className="text-sm text-[#3E3E3E] dark:text-slate-300 font-medium">{displayLabel}</span>
+          <span className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">{t('image_upload.max_size', { size: MAX_IMAGE_SIZE_MB })}</span>
           <input
             id="image-upload-input"
             type="file"

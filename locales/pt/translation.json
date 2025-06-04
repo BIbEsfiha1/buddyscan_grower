@@ -18,6 +18,48 @@
     "scan_qr": "Escanear QR",
     "add_plant": "Adicionar Planta"
   },
+  "dashboard": {
+    "quick_actions": "Ações Rápidas",
+    "my_plants": "Minhas Plantas",
+    "view_all": "Ver Todas",
+    "no_plants": "Você ainda não tem plantas cadastradas. Clique no botão + para adicionar sua primeira planta.",
+    "recent_activity": "Atividades Recentes",
+    "activity_watered": "Planta regada",
+    "activity_new_plant": "Nova planta adicionada",
+    "activity_qr_scanned": "QR Code escaneado",
+    "total_plants": "Total de Plantas",
+    "active_zones": "Zonas Ativas",
+    "avg_temperature": "Temperatura Média",
+    "error_loading_plants": "Erro ao carregar plantas",
+    "add_modal_title": "Adicionar Nova Planta",
+    "adding_plant": "Adicionando planta...",
+    "no_activity": "Adicione plantas para ver o histórico de atividades"
+  },
+  "form": {
+    "name": "Nome da Planta",
+    "strain": "Strain",
+    "birth_date": "Data de Nascimento",
+    "current_stage": "Estágio Atual",
+    "health_status": "Status de Saúde",
+    "operational_status": "Status Operacional",
+    "cultivation_type": "Tipo de Cultivo",
+    "select_option": "Selecione...",
+    "substrate": "Substrato",
+    "estimated_harvest": "Data Estimada de Colheita",
+    "notes": "Notas Gerais",
+    "main_photo": "Foto Principal da Planta"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "save": "Salvar"
+  },
+  "image_upload": {
+    "invalid_type": "Tipo de arquivo inválido. Aceitos: {{types}}",
+    "too_large": "Arquivo muito grande. Máximo: {{size}}MB",
+    "preview_alt": "Pré-visualização da planta",
+    "remove_image": "Remover imagem",
+    "max_size": "Máx {{size}}MB. JPG, PNG, WEBP"
+  },
   "language": {
     "english": "Inglês",
     "portuguese": "Português"

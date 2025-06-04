@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData } from '../types';
 import { 
   PLANT_STAGES_OPTIONS, 
@@ -27,6 +28,7 @@ import LeafIcon from '../components/icons/LeafIcon';
 const DashboardPage: React.FC = () => {
   const { plants, isLoading, error, addPlant } = usePlantContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
@@ -198,17 +200,17 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatsCard 
-              title="Total de Plantas" 
-              value={stats.totalPlants} 
-              change="+2 esta semana" 
+            <StatsCard
+              title={t('dashboard.total_plants')}
+              value={stats.totalPlants}
+              change="+2" // placeholder
               trend="up"
-              icon={<LeafIcon className="w-5 h-5" />} 
+              icon={<LeafIcon className="w-5 h-5" />}
               color="green"
             />
-            <StatsCard 
-              title="Zonas Ativas" 
-              value={stats.activeZones} 
+            <StatsCard
+              title={t('dashboard.active_zones')}
+              value={stats.activeZones}
               color="blue"
               icon={
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -216,10 +218,10 @@ const DashboardPage: React.FC = () => {
                 </svg>
               }
             />
-            <StatsCard 
-              title="Temperatura Média" 
+            <StatsCard
+              title={t('dashboard.avg_temperature')}
               value={`${Math.round(stats.avgTemperature)}°C`}
-              change="Dentro do ideal"
+              change=""
               trend="neutral"
               color="yellow"
               icon={
@@ -233,7 +235,7 @@ const DashboardPage: React.FC = () => {
 
           {/* Quick Actions */}
           <section className="bg-gray-800/50 p-4 rounded-xl">
-            <h2 className="text-xl font-bold mb-4 text-white">Ações Rápidas</h2>
+            <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.quick_actions')}</h2>
             <QuickActions 
               onAddPlant={() => setIsAddModalOpen(true)}
               onScanQR={() => setIsScannerModalOpen(true)}
@@ -245,9 +247,9 @@ const DashboardPage: React.FC = () => {
           {/* Plants List */}
           <section className="bg-gray-800/50 p-4 rounded-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Minhas Plantas</h2>
+              <h2 className="text-xl font-bold text-white">{t('dashboard.my_plants')}</h2>
               <Link to="/plants" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">
-                Ver Todas
+                {t('dashboard.view_all')}
               </Link>
             </div>
             
@@ -257,11 +259,11 @@ const DashboardPage: React.FC = () => {
               </div>
             ) : error ? (
               <div className="bg-red-900/30 text-red-300 p-4 rounded-lg">
-                <p>Erro ao carregar plantas: {error}</p>
+                <p>{t('dashboard.error_loading_plants')}: {error}</p>
               </div>
             ) : plants.length === 0 ? (
               <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg">
-                <p>Você ainda não tem plantas cadastradas. Clique no botão + para adicionar sua primeira planta.</p>
+                <p>{t('dashboard.no_plants')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -278,7 +280,7 @@ const DashboardPage: React.FC = () => {
           
           {/* Recent Activity */}
           <section className="bg-gray-800/50 p-4 rounded-xl">
-            <h2 className="text-xl font-bold mb-4 text-white">Atividades Recentes</h2>
+            <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.recent_activity')}</h2>
             <div className="space-y-3">
               {plants.length > 0 ? (
                 <div className="space-y-3">
@@ -299,7 +301,7 @@ const DashboardPage: React.FC = () => {
                       <LeafIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-white">Nova planta adicionada</h3>
+                      <h3 className="font-medium text-white">{t('dashboard.activity_new_plant')}</h3>
                       <p className="text-sm text-gray-400">5 horas atrás</p>
                     </div>
                   </div>
@@ -311,14 +313,14 @@ const DashboardPage: React.FC = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-medium text-white">QR Code escaneado</h3>
+                      <h3 className="font-medium text-white">{t('dashboard.activity_qr_scanned')}</h3>
                       <p className="text-sm text-gray-400">1 dia atrás</p>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-gray-800 p-3 rounded-lg text-gray-400 text-center">
-                  Adicione plantas para ver o histórico de atividades
+                  {t('dashboard.no_activity')}
                 </div>
               )}
             </div>
@@ -326,29 +328,29 @@ const DashboardPage: React.FC = () => {
         </main>
       </div>
       
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Adicionar Nova Planta" size="xl">
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('dashboard.add_modal_title')} size="xl">
         <form onSubmit={handleAddPlant} className="space-y-4">
           {isAddingPlant ? (
             <div className="flex justify-center items-center py-2">
               <LoadingSpinner size="md" />
-              <span className="ml-2 text-gray-600 dark:text-slate-300 text-sm">Adicionando planta...</span>
+              <span className="ml-2 text-gray-600 dark:text-slate-300 text-sm">{t('dashboard.adding_plant')}</span>
             </div>
           ) : (
             <>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200">Nome da Planta *</label>
+                <label htmlFor="name" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200">{t('form.name')} *</label>
                 <input type="text" name="name" id="name" value={newPlantForm.name} onChange={handleInputChange} required className={inputStyle} />
               </div>
               <div>
-                <label htmlFor="strain" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Strain *</label>
+                <label htmlFor="strain" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.strain')} *</label>
                 <input type="text" name="strain" id="strain" value={newPlantForm.strain} onChange={handleInputChange} required className={inputStyle} />
               </div>
               <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Data de Nascimento *</label>
+                <label htmlFor="birthDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.birth_date')} *</label>
                 <input type="date" name="birthDate" id="birthDate" value={newPlantForm.birthDate} onChange={handleInputChange} required className={`${inputStyle} dark:[color-scheme:dark]`} />
               </div>
               <div>
-                <label htmlFor="currentStage" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Estágio Atual *</label>
+                <label htmlFor="currentStage" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.current_stage')} *</label>
                 <select name="currentStage" id="currentStage" value={newPlantForm.currentStage} onChange={handleInputChange} required className={selectStyle}>
                   {PLANT_STAGES_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -356,7 +358,7 @@ const DashboardPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="healthStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Status de Saúde *</label>
+                <label htmlFor="healthStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.health_status')} *</label>
                 <select name="healthStatus" id="healthStatus" value={newPlantForm.healthStatus} onChange={handleInputChange} required className={selectStyle}>
                   {PLANT_HEALTH_STATUS_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -364,7 +366,7 @@ const DashboardPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="operationalStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Status Operacional *</label>
+                <label htmlFor="operationalStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.operational_status')} *</label>
                 <select name="operationalStatus" id="operationalStatus" value={newPlantForm.operationalStatus} onChange={handleInputChange} required className={selectStyle}>
                   {PLANT_OPERATIONAL_STATUS_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -372,27 +374,27 @@ const DashboardPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="cultivationType" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Tipo de Cultivo</label>
+                <label htmlFor="cultivationType" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.cultivation_type')}</label>
                 <select name="cultivationType" id="cultivationType" value={newPlantForm.cultivationType || ''} onChange={handleInputChange} className={selectStyle}>
-                  <option value="">Selecione...</option>
+                  <option value="">{t('form.select_option')}</option>
                   {CULTIVATION_TYPE_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label htmlFor="substrate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Substrato</label>
+                <label htmlFor="substrate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.substrate')}</label>
                 <input type="text" name="substrate" id="substrate" value={newPlantForm.substrate || ''} onChange={handleInputChange} className={inputStyle} placeholder="Ex: Coco, Perlita, Mix próprio"/>
               </div>
               <div>
-                <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Data Estimada de Colheita</label>
+                <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.estimated_harvest')}</label>
                 <input type="date" name="estimatedHarvestDate" id="estimatedHarvestDate" value={newPlantForm.estimatedHarvestDate || ''} onChange={handleInputChange} className={`${inputStyle} dark:[color-scheme:dark]`} />
               </div>
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">Notas Gerais</label>
+                <label htmlFor="notes" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.notes')}</label>
                 <textarea name="notes" id="notes" value={newPlantForm.notes || ''} onChange={handleInputChange} rows={3} className={`${inputStyle} min-h-[60px]`} />
               </div>
-              <ImageUpload onImageUploaded={handleImageUploaded} onImageRemoved={handleImageRemoved} label="Foto Principal da Planta"/>
+              <ImageUpload onImageUploaded={handleImageUploaded} onImageRemoved={handleImageRemoved} label={t('form.main_photo')}/>
             </>
           )}
           {addPlantError && (
@@ -407,7 +409,7 @@ const DashboardPage: React.FC = () => {
               size="md"
               onClick={() => setIsAddModalOpen(false)}
             >
-              Cancelar
+              {t('actions.cancel')}
             </Button>
             <Button
               type="submit"
@@ -416,17 +418,17 @@ const DashboardPage: React.FC = () => {
               loading={isAddingPlant}
               className="ml-2"
             >
-              Salvar
+              {t('actions.save')}
             </Button>
           </div>
         </form>
       </Modal>
 
       {/* QR Code Scanner Modal */}
-      <Modal 
-        isOpen={isScannerModalOpen} 
-        onClose={() => setIsScannerModalOpen(false)} 
-        title="Escanear QR Code da Planta"
+      <Modal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        title={t('header.scan_qr')}
         size="sm"
       >
         {scannerError && (

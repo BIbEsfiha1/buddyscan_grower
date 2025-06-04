@@ -18,6 +18,48 @@
     "scan_qr": "Scan QR",
     "add_plant": "Add Plant"
   },
+  "dashboard": {
+    "quick_actions": "Quick Actions",
+    "my_plants": "My Plants",
+    "view_all": "View All",
+    "no_plants": "You have no plants yet. Click the + button to add your first plant.",
+    "recent_activity": "Recent Activity",
+    "activity_watered": "Plant watered",
+    "activity_new_plant": "New plant added",
+    "activity_qr_scanned": "QR Code scanned",
+    "total_plants": "Total Plants",
+    "active_zones": "Active Zones",
+    "avg_temperature": "Average Temperature",
+    "error_loading_plants": "Error loading plants",
+    "add_modal_title": "Add New Plant",
+    "adding_plant": "Adding plant...",
+    "no_activity": "Add plants to see activity history"
+  },
+  "form": {
+    "name": "Plant Name",
+    "strain": "Strain",
+    "birth_date": "Birth Date",
+    "current_stage": "Current Stage",
+    "health_status": "Health Status",
+    "operational_status": "Operational Status",
+    "cultivation_type": "Cultivation Type",
+    "select_option": "Select...",
+    "substrate": "Substrate",
+    "estimated_harvest": "Estimated Harvest Date",
+    "notes": "General Notes",
+    "main_photo": "Main Plant Photo"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "image_upload": {
+    "invalid_type": "Invalid file type. Allowed: {{types}}",
+    "too_large": "File too large. Max: {{size}}MB",
+    "preview_alt": "Plant preview",
+    "remove_image": "Remove image",
+    "max_size": "Max {{size}}MB. JPG, PNG, WEBP"
+  },
   "language": {
     "english": "English",
     "portuguese": "Portuguese"

@@ -5,15 +5,63 @@ import PlantCard from '../components/PlantCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Header from '../components/Header'; // Re-use header for consistent look
 import Sidebar from '../components/Sidebar'; // Re-use sidebar
+import Button from '../components/Button';
+import Toast from '../components/Toast';
+import { Cultivo } from '../types';
 // ArrowLeftIcon is not used in the provided JSX, so commenting out for now.
 // import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 
 const AllPlantsPage: React.FC = () => {
-  const { plants, isLoading, error } = usePlantContext();
+  const { plants, isLoading, error, updatePlantDetails, refreshPlants } = usePlantContext();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [selectionMode, setSelectionMode] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [cultivos, setCultivos] = React.useState<Cultivo[]>([]);
+  const [selectedCultivo, setSelectedCultivo] = React.useState('');
+  const [moving, setMoving] = React.useState(false);
+  const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  React.useEffect(() => {
+    if (selectionMode) {
+      import('../services/cultivoService').then(m => m.getCultivos().then(setCultivos).catch(() => setCultivos([])));
+    }
+  }, [selectionMode]);
+
+  React.useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 2500);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleMove = async () => {
+    if (!selectedCultivo || selectedIds.size === 0) return;
+    setMoving(true);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => updatePlantDetails(id, { cultivoId: selectedCultivo })));
+      await refreshPlants();
+      setToast({ message: 'Plantas movidas com sucesso!', type: 'success' });
+      setSelectionMode(false);
+      setSelectedIds(new Set());
+      setSelectedCultivo('');
+    } catch (err: any) {
+      setToast({ message: 'Erro ao mover plantas: ' + (err.message || err), type: 'error' });
+    } finally {
+      setMoving(false);
+    }
+  };
 
   return (
+    <>
     <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -29,6 +77,14 @@ const AllPlantsPage: React.FC = () => {
             <span className="mx-2">&gt;</span>
             <span className="font-semibold text-gray-200">Todas as Plantas</span>
           </nav>
+          {!selectionMode && plants.length > 0 && (
+            <div className="flex justify-end">
+              <Button variant="secondary" onClick={() => setSelectionMode(true)}>Mover Plantas</Button>
+            </div>
+          )}
+          {selectionMode && (
+            <div className="text-sm text-gray-300">{selectedIds.size} selecionada(s). Toque nas plantas para selecionar.</div>
+          )}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <LoadingSpinner size="lg" />
@@ -53,7 +109,10 @@ const AllPlantsPage: React.FC = () => {
                 <PlantCard
                   key={plant.id}
                   plant={plant}
-                  onClick={() => navigate(`/plant/${plant.id}`)}
+                  onClick={selectionMode ? undefined : () => navigate(`/plant/${plant.id}`)}
+                  selectable={selectionMode}
+                  selected={selectedIds.has(plant.id)}
+                  onSelectToggle={() => toggleSelect(plant.id)}
                 />
               ))}
             </div>
@@ -61,6 +120,32 @@ const AllPlantsPage: React.FC = () => {
         </main>
       </div>
     </div>
+    {selectionMode && (
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-800/90 backdrop-blur p-3 flex items-center gap-2">
+        <select
+          className="flex-1 bg-gray-700 text-white rounded px-2 py-1"
+          value={selectedCultivo}
+          onChange={e => setSelectedCultivo(e.target.value)}
+        >
+          <option value="">Escolha o cultivo</option>
+          {cultivos.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleMove}
+          disabled={moving || selectedIds.size === 0 || !selectedCultivo}
+          loading={moving}
+        >
+          Mover
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>Cancelar</Button>
+      </div>
+    )}
+    {toast && <Toast message={toast.message} type={toast.type} />}
+    </>
   );
 };
 

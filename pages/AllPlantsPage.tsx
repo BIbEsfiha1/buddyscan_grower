@@ -12,6 +12,16 @@ const AllPlantsPage: React.FC = () => {
   const { plants, isLoading, error } = usePlantContext();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+
+  const filteredPlants = React.useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return plants.filter(
+      p =>
+        p.name.toLowerCase().includes(term) ||
+        (p.strain && p.strain.toLowerCase().includes(term))
+    );
+  }, [plants, searchTerm]);
 
   return (
     <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
@@ -29,6 +39,16 @@ const AllPlantsPage: React.FC = () => {
             <span className="mx-2">&gt;</span>
             <span className="font-semibold text-gray-200">Todas as Plantas</span>
           </nav>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Buscar planta..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              aria-label="Buscar planta"
+              className="w-full sm:w-80 px-4 py-2 rounded-lg bg-slate-800 placeholder-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+          </div>
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <LoadingSpinner size="lg" />
@@ -49,12 +69,16 @@ const AllPlantsPage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {plants.map(plant => (
-                <PlantCard
-                  key={plant.id}
-                  plant={plant}
-                />
-              ))}
+              {filteredPlants.length === 0 ? (
+                <p className="col-span-full text-center text-gray-400">Nenhuma planta encontrada.</p>
+              ) : (
+                filteredPlants.map(plant => (
+                  <PlantCard
+                    key={plant.id}
+                    plant={plant}
+                  />
+                ))
+              )}
             </div>
           )}
         </main>

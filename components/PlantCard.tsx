@@ -39,6 +39,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
       <Link
         to={`/plant/${plant.id}`}
         onClick={onClick}
+        aria-label={`Ver detalhes da planta ${plant.name}`}
         className="block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 min-h-72"
       >
         {/* Elemento decorativo de folha */}

@@ -52,6 +52,8 @@ const CultivosPage: React.FC = () => {
     </div>
   );
 
+  const hasCultivos = cultivos.length > 0;
+
   return (
     <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900">
       {/* Toast global */}
@@ -79,11 +81,13 @@ const CultivosPage: React.FC = () => {
         </Link>
       </div>
 
+      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">
+        {hasCultivos ? `Meus Cultivos (${cultivos.length})` : 'Meus Cultivos'}
+      </h1>
+
       {/* Lista de cultivos */}
       <div className="mt-2">
-        {cultivos.length === 0 ? (
-          <div className="text-gray-400 dark:text-gray-500 text-center py-8">Nenhum cultivo cadastrado ainda.</div>
-        ) : (
+        {hasCultivos ? (
           <div className="grid grid-cols-1 gap-3">
             {cultivos.map((cultivo) => (
               <Link to={`/cultivo/${cultivo.id}`} key={cultivo.id} className="block group">
@@ -98,6 +102,11 @@ const CultivosPage: React.FC = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        ) : (
+          <div className="text-gray-400 dark:text-gray-500 text-center py-8">
+            Nenhum cultivo cadastrado ainda.<br />
+            <Link to="/novo-cultivo" className="underline text-green-700 dark:text-green-300">Crie seu primeiro cultivo</Link>
           </div>
         )}
       </div>

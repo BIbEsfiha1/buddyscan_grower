@@ -15,8 +15,8 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
 
   try {
     const { name, startDate, notes, userId, plants } = JSON.parse(event.body || '{}');
-    if (!name || !startDate || !userId || !Array.isArray(plants) || plants.length === 0) {
-      console.log('[addCultivo] Missing required fields:', { name, startDate, userId, plants });
+    if (!name || !startDate || !userId) {
+      console.log('[addCultivo] Missing required fields:', { name, startDate, userId });
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Missing required fields.' })
@@ -37,33 +37,37 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
       };
     }
 
-    // 2. Criar as plantas associadas
-    // Corrige automaticamente o campo 'nome' para 'name' se vier do frontend
-    // Converte campos camelCase para snake_case para compatibilidade com o banco
-    const plantsToInsert = plants.map((plant: any) => {
-      const { nome, birthDate, currentStage, healthStatus, operationalStatus, ...rest } = plant;
-      return {
-        ...rest,
-        name: plant.name || nome, // Usa 'name' se existir, senão usa 'nome'
-        birth_date: birthDate,
-        current_stage: currentStage,
-        health_status: healthStatus,
-        operational_status: operationalStatus,
-        cultivo_id: cultivo.id,
-        user_id: userId,
-      };
-    });
-    console.log('[addCultivo] Plants to insert:', plantsToInsert);
-    const { data: createdPlants, error: plantsError } = await supabase
-      .from('plants')
-      .insert(plantsToInsert)
-      .select();
-    console.log('[addCultivo] Plants insert result:', { createdPlants, plantsError });
-    if (plantsError) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Erro ao criar plantas', details: plantsError })
-      };
+    let createdPlants = [];
+    if (Array.isArray(plants) && plants.length > 0) {
+      // 2. Criar as plantas associadas
+      // Corrige automaticamente o campo 'nome' para 'name' se vier do frontend
+      // Converte campos camelCase para snake_case para compatibilidade com o banco
+      const plantsToInsert = plants.map((plant: any) => {
+        const { nome, birthDate, currentStage, healthStatus, operationalStatus, ...rest } = plant;
+        return {
+          ...rest,
+          name: plant.name || nome, // Usa 'name' se existir, senão usa 'nome'
+          birth_date: birthDate,
+          current_stage: currentStage,
+          health_status: healthStatus,
+          operational_status: operationalStatus,
+          cultivo_id: cultivo.id,
+          user_id: userId,
+        };
+      });
+      console.log('[addCultivo] Plants to insert:', plantsToInsert);
+      const { data: plantsResult, error: plantsError } = await supabase
+        .from('plants')
+        .insert(plantsToInsert)
+        .select();
+      console.log('[addCultivo] Plants insert result:', { plantsResult, plantsError });
+      if (plantsError) {
+        return {
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Erro ao criar plantas', details: plantsError })
+        };
+      }
+      createdPlants = plantsResult || [];
     }
 
     console.log('[addCultivo] Success:', { cultivo, createdPlants });

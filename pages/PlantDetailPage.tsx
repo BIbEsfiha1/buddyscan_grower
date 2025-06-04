@@ -21,6 +21,14 @@ const PlantDetailPage: React.FC = () => {
     getDiaryEntries,
   } = usePlantContext();
 
+  const STATIC_CHECKLIST_FIELDS = [
+    'dailyWatered',
+    'dailyNutrients',
+    'dailyLightAdjustment',
+    'dailyPestCheck',
+    'dailyRotation',
+  ] as const;
+
   const [plant, setPlant] = useState<Plant | null | undefined>(null);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [showRemoveByDiseaseModal, setShowRemoveByDiseaseModal] = useState(false);
@@ -34,7 +42,7 @@ const PlantDetailPage: React.FC = () => {
   const [newDiaryNote, setNewDiaryNote] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
-  const [checklistState, setChecklistState] = useState<Partial<Plant>>({});
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -158,53 +166,35 @@ const PlantDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (plant) {
-      const today = new Date().toISOString().split('T')[0];
-      const isToday = plant.lastDailyCheckDate === today;
-      setChecklistState({
-        lastDailyCheckDate: plant.lastDailyCheckDate,
-        dailyWatered: isToday ? plant.dailyWatered : false,
-        dailyNutrients: isToday ? plant.dailyNutrients : false,
-        dailyLightAdjustment: isToday ? plant.dailyLightAdjustment : false,
-        dailyPestCheck: isToday ? plant.dailyPestCheck : false,
-        dailyRotation: isToday ? plant.dailyRotation : false,
+    if (!plant || !plantId) return;
+    const today = new Date().toISOString().split('T')[0];
+    let stored: Record<string, boolean> = {};
+    try {
+      const str = localStorage.getItem(`checklist_${plantId}_${today}`);
+      if (str) stored = JSON.parse(str);
+    } catch {}
+    if (plant.lastDailyCheckDate === today) {
+      STATIC_CHECKLIST_FIELDS.forEach(field => {
+        stored[field] = !!(plant as any)[field];
       });
     }
-  }, [plant]);
+    setChecklistState(stored);
+  }, [plant, plantId]);
 
-  const handleTaskToggle = async (taskId: keyof Plant, checked: boolean) => {
-    if (!plant) return;
+  const handleTaskToggle = async (taskId: string, checked: boolean) => {
+    if (!plantId) return;
     const today = new Date().toISOString().split('T')[0];
-    let updated = { ...checklistState };
-    if (plant.lastDailyCheckDate !== today) {
-      updated = {
-        lastDailyCheckDate: today,
-        dailyWatered: false,
-        dailyNutrients: false,
-        dailyLightAdjustment: false,
-        dailyPestCheck: false,
-        dailyRotation: false,
-        [taskId]: checked,
-      };
-    } else {
-      updated = { ...updated, [taskId]: checked, lastDailyCheckDate: today };
-    }
+    const updated = { ...checklistState, [taskId]: checked };
     setChecklistState(updated);
+    try {
+      localStorage.setItem(`checklist_${plantId}_${today}`, JSON.stringify(updated));
+    } catch {}
 
-    const payload: Partial<Plant> = {
-      lastDailyCheckDate: updated.lastDailyCheckDate,
-      dailyWatered: updated.dailyWatered,
-      dailyNutrients: updated.dailyNutrients,
-      dailyLightAdjustment: updated.dailyLightAdjustment,
-      dailyPestCheck: updated.dailyPestCheck,
-      dailyRotation: updated.dailyRotation,
-    };
-    Object.keys(payload).forEach(key => {
-      if (payload[key as keyof typeof payload] === undefined) {
-        delete payload[key as keyof typeof payload];
-      }
-    });
-    if (Object.keys(payload).length > 0 && plantId) {
+    if (STATIC_CHECKLIST_FIELDS.includes(taskId as any)) {
+      const payload: Partial<Plant> = { lastDailyCheckDate: today };
+      STATIC_CHECKLIST_FIELDS.forEach(field => {
+        payload[field] = updated[field] || false;
+      });
       try {
         await updatePlantDetails(plantId, payload);
       } catch (err: any) {
@@ -474,7 +464,11 @@ const PlantDetailPage: React.FC = () => {
               <section className="lg:col-span-2 flex flex-col gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Checklist Diário</h2>
-                  <DailyChecklist plant={plant} onTaskToggle={handleTaskToggle} />
+                  <DailyChecklist
+                    stage={plant.currentStage}
+                    checklistState={checklistState}
+                    onTaskToggle={handleTaskToggle}
+                  />
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Diário da Planta</h2>

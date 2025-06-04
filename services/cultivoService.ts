@@ -81,7 +81,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   }
 };
 
-export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; plants: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants: Plant[] }> => {
+export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; plants?: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
   try {
     const user = netlifyIdentity.currentUser();
     if (!user) {
@@ -98,16 +98,19 @@ export const addCultivo = async (cultivoData: { name: string; startDate: string;
     }
 
     // The user ID will be extracted from the JWT token in the Netlify function
+    const bodyData: any = {
+      ...cultivoData,
+      // Ensure startDate is properly formatted
+      startDate: new Date(cultivoData.startDate).toISOString(),
+    };
+    if (!bodyData.plants) delete bodyData.plants;
+
     const result = await fetchWithAuth('addCultivo', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...cultivoData,
-        // Ensure startDate is properly formatted
-        startDate: new Date(cultivoData.startDate).toISOString(),
-      }),
+      body: JSON.stringify(bodyData),
     });
     
     return result;

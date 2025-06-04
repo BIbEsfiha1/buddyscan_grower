@@ -4,50 +4,27 @@ import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
 
-interface NovaPlantaForm {
-  name: string;
-  strain: string;
-  birthDate: string;
-}
-
 export default function NovoCultivoPage() {
   const [cultivoNome, setCultivoNome] = useState('');
   const [startDate, setStartDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [plantas, setPlantas] = useState<NovaPlantaForm[]>([]);
-  const [novaPlanta, setNovaPlanta] = useState<NovaPlantaForm>({ name: '', strain: '', birthDate: '' });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
-
-  function adicionarPlanta() {
-    if (novaPlanta.name && novaPlanta.strain && novaPlanta.birthDate) {
-      setPlantas([...plantas, novaPlanta]);
-      setNovaPlanta({ name: '', strain: '', birthDate: '' }); // Reset form
-    }
-  }
 
   async function handleSalvarCultivo(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
       const { addCultivo } = await import('../services/cultivoService');
-      // Importar enums dinamicamente para evitar problemas de importação circular
-      const { PlantStage, PlantHealthStatus, PlantOperationalStatus } = await import('../types');
       const cultivoData = {
         name: cultivoNome,
         startDate,
         notes,
-        plants: plantas.map(p => ({
-          ...p,
-          currentStage: PlantStage.SEEDLING,
-          healthStatus: PlantHealthStatus.HEALTHY,
-          operationalStatus: PlantOperationalStatus.ACTIVE,
-        })),
       };
       await addCultivo(cultivoData);
       setSaving(false);
-      setToast({ message: 'Cultivo e plantas criados com sucesso!', type: 'success' });
+      setToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1800);
     } catch (err: any) {
       setSaving(false);
@@ -102,50 +79,9 @@ export default function NovoCultivoPage() {
             </div>
           </fieldset>
 
-          {/* Adicionar Plantas */}
-          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
-            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Adicionar Plantas</legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
-              <div>
-                <label htmlFor="plantaNome" className={labelStyle}>Nome da Planta</label>
-                <input id="plantaNome" type="text" className={inputStyle} placeholder="Ex: Blueberry OG #1" value={novaPlanta.name} onChange={e => setNovaPlanta({ ...novaPlanta, name: e.target.value })} />
-              </div>
-              <div>
-                <label htmlFor="plantaStrain" className={labelStyle}>Strain</label>
-                <input id="plantaStrain" type="text" className={inputStyle} placeholder="Ex: Blueberry OG" value={novaPlanta.strain} onChange={e => setNovaPlanta({ ...novaPlanta, strain: e.target.value })} />
-              </div>
-              <div>
-                <label htmlFor="plantaNascimento" className={labelStyle}>Nascimento</label>
-                <input id="plantaNascimento" type="date" className={inputStyle} value={novaPlanta.birthDate} onChange={e => setNovaPlanta({ ...novaPlanta, birthDate: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex justify-end mt-2">
-              <Button type="button" variant="secondary" onClick={adicionarPlanta} disabled={!novaPlanta.name || !novaPlanta.strain || !novaPlanta.birthDate}>
-                Adicionar Planta à Lista
-              </Button>
-            </div>
-          </fieldset>
-
-          {/* Lista de Plantas Adicionadas */}
-          {plantas.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Plantas a Serem Criadas:</h2>
-              <ul className="space-y-2">
-                {plantas.map((p, idx) => (
-                  <li key={idx} className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md shadow-sm flex justify-between items-center">
-                    <div>
-                      <span className="font-medium text-gray-800 dark:text-gray-100">{p.name}</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-300"> ({p.strain}) - Nasc: {new Date(p.birthDate + 'T00:00:00').toLocaleDateString()}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           <div className="mt-8 flex justify-center">
-            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={plantas.length === 0 || !cultivoNome || !startDate}>
-              Salvar Cultivo e Plantas
+            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!cultivoNome || !startDate}>
+              Salvar Cultivo
             </Button>
           </div>
         </form>

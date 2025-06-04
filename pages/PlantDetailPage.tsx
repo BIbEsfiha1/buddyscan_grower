@@ -35,6 +35,7 @@ const PlantDetailPage: React.FC = () => {
   const [newDiaryNote, setNewDiaryNote] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+  const diaryFeatureEnabled = false;
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -256,6 +257,11 @@ const PlantDetailPage: React.FC = () => {
   };
 
   const handleSaveNewDiaryEntry = async () => {
+    if (!diaryFeatureEnabled) {
+      setToast({ message: 'Funcionalidade de diário em breve.', type: 'info' });
+      return;
+    }
+
     if (!plantId || !plant || !newDiaryNote.trim()) {
       setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
       return;
@@ -640,42 +646,45 @@ const PlantDetailPage: React.FC = () => {
               {activeTab === 'diary' && (
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Diário da Planta</h2>
-
-                  <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Nova Entrada no Diário</h3>
-                    <textarea
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="Escreva suas observações, ações tomadas, etc..."
-                      value={newDiaryNote}
-                      onChange={(e) => setNewDiaryNote(e.target.value)}
-                    ></textarea>
-                    <div className="mt-3 flex justify-end items-center">
-                      <button
-                        type="button" // Important: type="button" to prevent form submission if inside a form
-                        onClick={handleToggleRecording}
-                        className={`px-4 py-2 font-semibold rounded-lg hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors mr-2
-                          ${isRecording ? 'bg-red-500 text-white focus:ring-red-500' : 'bg-blue-500 text-white focus:ring-blue-500'}`}
-                      >
-                        {isRecording ? 'Parar Gravação' : 'Ditar Nota (PT-BR)'}
-                      </button>
-                      <button
-                        onClick={handleSaveNewDiaryEntry}
-                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                        disabled={!newDiaryNote.trim()}
-                      >
-                        Salvar Entrada
-                      </button>
-                    </div>
-                  </div>
-
-                  {diaryEntries.length > 0 ? (
-                    <div className="space-y-4">
-                      {diaryEntries.map(entry => (
-                        <DiaryEntryItem key={entry.id} entry={entry} />
-                      ))}
-                    </div>
+                  {!diaryFeatureEnabled ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Funcionalidade de diário em breve.</p>
                   ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma entrada no diário ainda.</p>
+                    <>
+                      <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Nova Entrada no Diário</h3>
+                        <textarea
+                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Escreva suas observações, ações tomadas, etc.."
+                          value={newDiaryNote}
+                          onChange={(e) => setNewDiaryNote(e.target.value)}
+                        ></textarea>
+                        <div className="mt-3 flex justify-end items-center">
+                          <button
+                            type="button"
+                            onClick={handleToggleRecording}
+                            className={`px-4 py-2 font-semibold rounded-lg hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors mr-2 ${isRecording ? 'bg-red-500 text-white focus:ring-red-500' : 'bg-blue-500 text-white focus:ring-blue-500'}`}
+                          >
+                            {isRecording ? 'Parar Gravação' : 'Ditar Nota (PT-BR)'}
+                          </button>
+                          <button
+                            onClick={handleSaveNewDiaryEntry}
+                            className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                            disabled={!newDiaryNote.trim()}
+                          >
+                            Salvar Entrada
+                          </button>
+                        </div>
+                      </div>
+                      {diaryEntries.length > 0 ? (
+                        <div className="space-y-4">
+                          {diaryEntries.map(entry => (
+                            <DiaryEntryItem key={entry.id} entry={entry} />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma entrada no diário ainda.</p>
+                      )}
+                    </>
                   )}
                 </div>
               )}

@@ -25,7 +25,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <HamburgerMenu isOpen={isMenuOpen} onClose={toggleMenu} />
 
       <main className="flex-grow px-4 sm:px-6 lg:px-8 py-6 sm:py-8 bg-slate-950">
-        {children}
+        <div className="max-w-7xl w-full mx-auto">
+          {children}
+        </div>
       </main>
 
       <footer className="bg-slate-800 text-slate-400 text-center py-6 text-sm border-t border-slate-700 transition-colors duration-300">

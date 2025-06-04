@@ -2,6 +2,8 @@
 
 This contains everything you need to run your app locally.
 
+This project uses [Material UI](https://mui.com/) for its base styling along with Tailwind utility classes.
+
 ## Run Locally
 
 **Prerequisites:**  Node.js

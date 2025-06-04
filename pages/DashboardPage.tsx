@@ -197,49 +197,49 @@ const DashboardPage: React.FC = () => {
               {tempAlert}
             </div>
           )}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatsCard 
-              title="Total de Plantas" 
-              value={stats.totalPlants} 
-              change="+2 esta semana" 
-              trend="up"
-              icon={<LeafIcon className="w-5 h-5" />} 
-              color="green"
-            />
-            <StatsCard 
-              title="Zonas Ativas" 
-              value={stats.activeZones} 
-              color="blue"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                </svg>
-              }
-            />
-            <StatsCard 
-              title="Temperatura Média" 
-              value={`${Math.round(stats.avgTemperature)}°C`}
-              change="Dentro do ideal"
-              trend="neutral"
-              color="yellow"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                </svg>
-              }
-            />
+          <section className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatsCard
+                title="Total de Plantas"
+                value={stats.totalPlants}
+                change="+2 esta semana"
+                trend="up"
+                icon={<LeafIcon className="w-5 h-5" />}
+                color="green"
+              />
+              <StatsCard
+                title="Zonas Ativas"
+                value={stats.activeZones}
+                color="blue"
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                  </svg>
+                }
+              />
+              <StatsCard
+                title="Temperatura Média"
+                value={`${Math.round(stats.avgTemperature)}°C`}
+                change="Dentro do ideal"
+                trend="neutral"
+                color="yellow"
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                  </svg>
+                }
+              />
+            </div>
 
-          </div>
-
-          {/* Quick Actions */}
-          <section className="bg-gray-800/50 p-4 rounded-xl">
-            <h2 className="text-xl font-bold mb-4 text-white">Ações Rápidas</h2>
-            <QuickActions 
-              onAddPlant={() => setIsAddModalOpen(true)}
-              onScanQR={() => setIsScannerModalOpen(true)}
-              onOpenCultivos={() => navigate('/cultivos')}
-              onOpenStats={() => navigate('/garden-statistics')}
-            />
+            <div className="bg-gray-800/50 p-4 rounded-xl">
+              <h2 className="text-xl font-bold mb-4 text-white">Ações Rápidas</h2>
+              <QuickActions
+                onAddPlant={() => setIsAddModalOpen(true)}
+                onScanQR={() => setIsScannerModalOpen(true)}
+                onOpenCultivos={() => navigate('/cultivos')}
+                onOpenStats={() => navigate('/garden-statistics')}
+              />
+            </div>
           </section>
           
           {/* Plants List */}
@@ -264,14 +264,16 @@ const DashboardPage: React.FC = () => {
                 <p>Você ainda não tem plantas cadastradas. Clique no botão + para adicionar sua primeira planta.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {plants.slice(0, 6).map(plant => (
-                  <PlantCard 
-                    key={plant.id} 
-                    plant={plant} 
-                    onClick={() => navigate(`/plant/${plant.id}`)} 
-                  />
-                ))}
+              <div className="overflow-x-auto pb-2 -mx-4 sm:mx-0">
+                <div className="flex space-x-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 md:grid-cols-3 sm:space-x-0 sm:gap-4">
+                  {plants.slice(0, 6).map(plant => (
+                    <div key={plant.id} className="min-w-[16rem] flex-shrink-0 snap-start sm:min-w-0">
+                      <PlantCard
+                        plant={plant}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </section>

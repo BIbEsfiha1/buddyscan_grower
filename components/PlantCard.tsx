@@ -4,12 +4,15 @@ import { Plant } from '../types';
 interface PlantCardProps {
   plant: Plant;
   onClick?: () => void;
+  selectable?: boolean;
+  isSelected?: boolean;
+  onSelectChange?: (checked: boolean) => void;
 }
 
 // import { usePlantContext } from '../contexts/PlantContext'; // Removed as updatePlantDetails is no longer used
 // import { PlantOperationalStatus } from '../types'; // Removed as it's no longer used
 
-const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
+const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable = false, isSelected = false, onSelectChange }) => {
 
   // const { updatePlantDetails } = usePlantContext(); // Removed
   // const [isMarkingLost, setIsMarkingLost] = React.useState(false); // Removed
@@ -35,6 +38,15 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
 
   return (
     <div className="relative group">
+      {selectable && (
+        <input
+          type="checkbox"
+          className="absolute top-2 left-2 z-20 w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500"
+          checked={isSelected}
+          onChange={e => onSelectChange?.(e.target.checked)}
+          onClick={e => e.stopPropagation()}
+        />
+      )}
       <div
         onClick={onClick ? onClick : () => window.location.href = `/plant/${plant.id}`}
         className="cursor-pointer block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700"

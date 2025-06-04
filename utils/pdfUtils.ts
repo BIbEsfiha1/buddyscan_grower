@@ -11,7 +11,8 @@ async function getQRCodeDataURL(qrValue: string, size: number): Promise<string> 
     canvas.style.display = 'none';
     document.body.appendChild(canvas);
 
-    QRCode.toCanvas(canvas, qrValue, { width: size, margin: 1, errorCorrectionLevel: 'H' }, (error) => {
+    // Use a larger margin to avoid cutting off the QR code edges when scaled
+    QRCode.toCanvas(canvas, qrValue, { width: size, margin: 4, errorCorrectionLevel: 'H' }, (error) => {
       document.body.removeChild(canvas); // Clean up: remove canvas from document
       if (error) {
         console.error('QRCode generation error:', error);
@@ -38,7 +39,8 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
   // Label dimensions (approximated from cm to mm)
   const labelWidth = 35; // mm (3.5cm)
   const labelHeight = 50; // mm (5.0cm)
-  const qrCodeSizeMm = 25; // mm (2.5cm) - visual size on paper
+  // Slightly larger QR code with margin to ensure full readability
+  const qrCodeSizeMm = 30; // mm (3.0cm) - visual size on paper
   const textLineHeightMm = 4; // mm for text lines
   const textOffsetY = qrCodeSizeMm + 5; // Start text below QR code + small padding
 

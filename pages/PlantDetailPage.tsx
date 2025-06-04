@@ -21,6 +21,14 @@ const PlantDetailPage: React.FC = () => {
     getDiaryEntries,
   } = usePlantContext();
 
+  const STATIC_CHECKLIST_FIELDS = [
+    'dailyWatered',
+    'dailyNutrients',
+    'dailyLightAdjustment',
+    'dailyPestCheck',
+    'dailyRotation',
+  ] as const;
+
   const [plant, setPlant] = useState<Plant | null | undefined>(null);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [showRemoveByDiseaseModal, setShowRemoveByDiseaseModal] = useState(false);
@@ -29,12 +37,12 @@ const PlantDetailPage: React.FC = () => {
   const [cultivos, setCultivos] = useState<{ id: string; name: string }[]>([]);
   const [selectedCultivo, setSelectedCultivo] = useState<string | undefined>(undefined);
   const [movingCultivo, setMovingCultivo] = useState(false);
-  const [activeTab, setActiveTab] = useState<'actions' | 'diary' | 'checklist'>('actions');
-  const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [newDiaryNote, setNewDiaryNote] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+  const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -61,39 +69,31 @@ const PlantDetailPage: React.FC = () => {
           localStorage.setItem('lastPlantName', plant.name);
         }
       } catch {
-        // ignore write errors (e.g. private mode)
+        // ignore write errors
       }
     }
   }, [plantId, plant]);
 
   useEffect(() => {
-    // Prefixed for Safari, Chrome/Edge support window.SpeechRecognition
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
       console.warn('Web Speech API is not supported in this browser.');
-      // Optionally set a state here to disable the button if API is not found
       return;
     }
-
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true; // Keep listening
-    recognition.interimResults = true; // Get results as they come
-    recognition.lang = 'pt-BR'; // Set to Brazilian Portuguese
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'pt-BR';
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interimTranscript = '';
       let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
           finalTranscript += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
         }
       }
-      // Append final transcript to the existing note.
-      // User can speak multiple times.
       if (finalTranscript) {
-        setNewDiaryNote(prevNote => prevNote + finalTranscript + ' ');
+        setNewDiaryNote(prev => prev + finalTranscript + ' ');
       }
     };
 
@@ -112,24 +112,16 @@ const PlantDetailPage: React.FC = () => {
     };
 
     recognition.onend = () => {
-      // Only set isRecording to false if it wasn't intentionally stopped
-      // This might need more robust state handling if user stops it manually vs. it auto-ends
-      // For now, let's assume it means it stopped processing the last utterance or was manually stopped.
-       if (isRecording) { // Check if it was actually recording - THIS STATE MIGHT BE STALE
-          setIsRecording(false); // This might cause issues if isRecording was changed by user stop
-       }
+      if (isRecording) {
+        setIsRecording(false);
+      }
     };
 
     setSpeechRecognition(recognition);
-
     return () => {
-      if (recognition) {
-        recognition.abort(); // Stop recognition if component unmounts
-      }
+      recognition.abort();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount to setup.
-
+  }, []);
 
   useEffect(() => {
     import('../services/cultivoService').then(({ getCultivos }) => {
@@ -147,9 +139,7 @@ const PlantDetailPage: React.FC = () => {
     try {
       const res = await fetch(`/.netlify/functions/deletePlant?id=${plantId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
       if (res.status === 204) {
@@ -163,9 +153,7 @@ const PlantDetailPage: React.FC = () => {
               localStorage.removeItem('lastPlantName');
             }
           }
-        } catch {
-          // ignore
-        }
+        } catch {}
         window.location.href = '/';
         return;
       } else {
@@ -177,153 +165,36 @@ const PlantDetailPage: React.FC = () => {
     }
   };
 
-  const [checklistState, setChecklistState] = useState<Partial<Plant>>({});
-
   useEffect(() => {
-    if (plant) {
-      const today = new Date().toISOString().split('T')[0];
-      const isToday = plant.lastDailyCheckDate === today;
-      setChecklistState({
-        lastDailyCheckDate: plant.lastDailyCheckDate,
-        dailyWatered: isToday ? plant.dailyWatered : false,
-        dailyNutrients: isToday ? plant.dailyNutrients : false,
-        dailyLightAdjustment: isToday ? plant.dailyLightAdjustment : false,
-        dailyPestCheck: isToday ? plant.dailyPestCheck : false,
-        dailyRotation: isToday ? plant.dailyRotation : false,
+    if (!plant || !plantId) return;
+    const today = new Date().toISOString().split('T')[0];
+    let stored: Record<string, boolean> = {};
+    try {
+      const str = localStorage.getItem(`checklist_${plantId}_${today}`);
+      if (str) stored = JSON.parse(str);
+    } catch {}
+    if (plant.lastDailyCheckDate === today) {
+      STATIC_CHECKLIST_FIELDS.forEach(field => {
+        stored[field] = !!(plant as any)[field];
       });
     }
-  }, [plant]);
+    setChecklistState(stored);
+  }, [plant, plantId]);
 
-  useEffect(() => {
-    return () => {
-      if (plantId && plant) {
-        const currentChecklistSnapshot = checklistState;
-
-        const payload: Partial<Plant> = {
-          lastDailyCheckDate: currentChecklistSnapshot.lastDailyCheckDate,
-          dailyWatered: currentChecklistSnapshot.dailyWatered,
-          dailyNutrients: currentChecklistSnapshot.dailyNutrients,
-          dailyLightAdjustment: currentChecklistSnapshot.dailyLightAdjustment,
-          dailyPestCheck: currentChecklistSnapshot.dailyPestCheck,
-          dailyRotation: currentChecklistSnapshot.dailyRotation,
-        };
-
-        // IMPORTANT: Strip undefined keys from THIS payload first
-        Object.keys(payload).forEach(keyStr => {
-          const key = keyStr as keyof typeof payload;
-          if (payload[key] === undefined) {
-            delete payload[key];
-          }
-        });
-
-        // THEN check if there's anything left to send
-        if (Object.keys(payload).length > 0) {
-          // updatePlantDetails(plantId, payload); // <-- THIS LINE IS REMOVED/COMMENTED OUT
-          console.log('[PlantDetailPage] useEffect cleanup: Would have updated with payload:', payload, 'Snapshot was:', currentChecklistSnapshot);
-        } else {
-          // This log should now correctly trigger if the snapshot leads to an empty payload
-          console.log('[PlantDetailPage] useEffect cleanup: Payload effectively empty after stripping undefineds. Snapshot was:', currentChecklistSnapshot);
-        }
-      } else {
-        // Log if plantId or plant is missing
-        console.log('[PlantDetailPage] useEffect cleanup: plantId or plant missing. plantId:', plantId, 'plant:', plant);
-      }
-    };
-  }, [plantId, plant, checklistState, updatePlantDetails]); // Added updatePlantDetails to dependencies
-
-  const handleToggleRecording = () => {
-    if (!speechRecognition) {
-      setToast({ message: 'Reconhecimento de voz não é suportado neste navegador.', type: 'error' });
-      return;
-    }
-
-    if (isRecording) {
-      speechRecognition.stop();
-      setIsRecording(false);
-    } else {
-      // Request microphone permission if not already granted.
-      // This happens implicitly when .start() is called if not granted.
-      try {
-        speechRecognition.start();
-        setIsRecording(true);
-        setToast({ message: 'Ouvindo... Fale agora.', type: 'info' });
-      } catch (e) {
-        console.error("Error starting speech recognition:", e);
-        setToast({ message: 'Não foi possível iniciar o reconhecimento de voz.', type: 'error' });
-        setIsRecording(false);
-      }
-    }
-  };
-
-  const handleSaveNewDiaryEntry = async () => {
-    if (!plantId || !plant || !newDiaryNote.trim()) {
-      setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
-      return;
-    }
-
-    const entryData: NewDiaryEntryData = {
-      notes: newDiaryNote.trim(),
-      stage: plant.currentStage, // Use current plant's stage
-      photos: [], // No photo upload in this step
-      // Other optional fields like ph, ec, temp can be added later
-    };
-
-    try {
-      const newEntry = await addNewDiaryEntry(plantId, entryData);
-      if (newEntry) {
-        setNewDiaryNote(''); // Clear textarea
-        setToast({ message: 'Entrada do diário salva!', type: 'success' });
-        // The diaryEntries list should update automatically if PlantContext handles state correctly
-        // Or explicitly call loadPlantData() if diaryEntries are not updating automatically from context.
-        // For now, assume context updates will trigger re-render of diaryEntries.
-        // To be safe and ensure list updates:
-        const entries = await getDiaryEntries(plantId);
-        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-
-      } else {
-        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
-      }
-    } catch (error: any) {
-      setToast({ message: `Erro: ${error.message || 'Falha ao salvar entrada.'}`, type: 'error' });
-    }
-  };
-
-  const handleTaskToggle = async (taskId: keyof Plant, checked: boolean) => {
-    if (!plant) return;
+  const handleTaskToggle = async (taskId: string, checked: boolean) => {
+    if (!plantId) return;
     const today = new Date().toISOString().split('T')[0];
-    let updated = { ...checklistState };
-    if (plant.lastDailyCheckDate !== today) {
-      updated = {
-        lastDailyCheckDate: today,
-        dailyWatered: false,
-        dailyNutrients: false,
-        dailyLightAdjustment: false,
-        dailyPestCheck: false,
-        dailyRotation: false,
-        [taskId]: checked,
-      };
-    } else {
-      updated = { ...updated, [taskId]: checked, lastDailyCheckDate: today };
-    }
+    const updated = { ...checklistState, [taskId]: checked };
     setChecklistState(updated);
+    try {
+      localStorage.setItem(`checklist_${plantId}_${today}`, JSON.stringify(updated));
+    } catch {}
 
-    // Só persiste se houver mudanças reais e não for payload vazio
-    const payload: Partial<Plant> = {
-      lastDailyCheckDate: updated.lastDailyCheckDate,
-      dailyWatered: updated.dailyWatered,
-      dailyNutrients: updated.dailyNutrients,
-      dailyLightAdjustment: updated.dailyLightAdjustment,
-      dailyPestCheck: updated.dailyPestCheck,
-      dailyRotation: updated.dailyRotation,
-    };
-    // Remove campos undefined
-    Object.keys(payload).forEach(key => {
-      if (payload[key as keyof typeof payload] === undefined) {
-        delete payload[key as keyof typeof payload];
-      }
-    });
-    // Só chama update se houver pelo menos 1 campo além do id
-    if (Object.keys(payload).length > 0 && plantId) {
+    if (STATIC_CHECKLIST_FIELDS.includes(taskId as any)) {
+      const payload: Partial<Plant> = { lastDailyCheckDate: today };
+      STATIC_CHECKLIST_FIELDS.forEach(field => {
+        payload[field] = updated[field] || false;
+      });
       try {
         await updatePlantDetails(plantId, payload);
       } catch (err: any) {
@@ -363,15 +234,12 @@ const PlantDetailPage: React.FC = () => {
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, padding, padding, qrCodeSize, qrCodeSize);
-
       ctx.fillStyle = 'black';
       let currentY = qrCodeSize + padding + textMarginTop;
-
       ctx.font = `bold ${titleFontSize}px Inter`;
       ctx.textAlign = 'center';
       ctx.fillText(plant.name, canvas.width / 2, currentY);
       currentY += textLineHeight * 1.5;
-
       ctx.font = `${detailFontSize}px Inter`;
       ctx.textAlign = 'center';
       lines.forEach(line => {
@@ -379,7 +247,6 @@ const PlantDetailPage: React.FC = () => {
         ctx.fillText(line, canvas.width / 2, currentY);
         currentY += textLineHeight;
       });
-
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `${plant.name.replace(/\s+/g, '_')}_QRCode.png`;
@@ -395,6 +262,51 @@ const PlantDetailPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  const handleToggleRecording = () => {
+    if (!speechRecognition) {
+      setToast({ message: 'Reconhecimento de voz não é suportado neste navegador.', type: 'error' });
+      return;
+    }
+    if (isRecording) {
+      speechRecognition.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        speechRecognition.start();
+        setIsRecording(true);
+        setToast({ message: 'Ouvindo... Fale agora.', type: 'info' });
+      } catch {
+        setToast({ message: 'Não foi possível iniciar o reconhecimento de voz.', type: 'error' });
+        setIsRecording(false);
+      }
+    }
+  };
+
+  const handleSaveNewDiaryEntry = async () => {
+    if (!plantId || !plant || !newDiaryNote.trim()) {
+      setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
+      return;
+    }
+    const entryData: NewDiaryEntryData = {
+      notes: newDiaryNote.trim(),
+      stage: plant.currentStage,
+      photos: [],
+    };
+    try {
+      const newEntry = await addNewDiaryEntry(plantId, entryData);
+      if (newEntry) {
+        setNewDiaryNote('');
+        setToast({ message: 'Entrada do diário salva!', type: 'success' });
+        const entries = await getDiaryEntries(plantId);
+        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+      } else {
+        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
+      }
+    } catch (error: any) {
+      setToast({ message: `Erro: ${error.message || 'Falha ao salvar entrada.'}`, type: 'error' });
+    }
+  };
 
   if (!plant) {
     return (
@@ -439,166 +351,83 @@ const PlantDetailPage: React.FC = () => {
   return (
     <>
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-h-screen">
-        {/* Header global do app */}
-        <Header
-          title="Detalhes da Planta"
-          onOpenSidebar={() => setSidebarOpen(true)}
-          onOpenAddModal={() => {}}
-          onOpenScannerModal={() => {}}
-        />
-        {/* Toast notification */}
-        {toast && <Toast message={toast.message} type={toast.type} />}
-        <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6">
-          <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
-            {/* Hidden QR Code for download generation */}
-            {plant && plant.qrCodeValue && (
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Header
+            title="Detalhes da Planta"
+            onOpenSidebar={() => setSidebarOpen(true)}
+            onOpenAddModal={() => {}}
+            onOpenScannerModal={() => {}}
+          />
+          {toast && <Toast message={toast.message} type={toast.type} />}
+          <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6">
+            {plant.qrCodeValue && (
               <div style={{ display: 'none' }}>
                 <QRCodeSVG id="qr-code-svg-for-download" value={plant.qrCodeValue} size={256} includeMargin={true} />
               </div>
             )}
-            {/* Header com imagem e infos principais */}
-            <div className="border-b border-gray-200 dark:border-gray-700">
-              {/* 1. Layout Principal: flex-col md:flex-row e space-y-4 md:space-y-0 */}
-              <div className="flex flex-col md:flex-row p-6 space-y-4 md:space-y-0 md:space-x-6">
-                {/* 2. Bloco da Imagem: w-full sm:w-1/2 md:w-1/4 mx-auto */}
-                <div className="w-full sm:w-1/2 md:w-1/4 mb-6 md:mb-0 flex flex-col items-center mx-auto">
-                  {plant && plant.imageUrl ? (
-                    <img
-                      src={plant.imageUrl}
-                      alt={plant.name}
-                      // Ajuste da imagem: w-full h-auto dentro de um contêiner com max-w
-                      className="w-full max-w-xs h-auto object-cover rounded-lg shadow-md sm:max-w-none sm:w-48 sm:h-48"
-                    />
-                  ) : (
-                    <div className="w-full max-w-xs h-48 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center sm:w-48 sm:h-48">
-                      <LeafIcon className="w-16 h-16 text-gray-400 dark:text-gray-500" />
-                    </div>
-                  )}
-                </div>
-                {/* 3. Bloco de Informações: w-full md:w-2/4 */}
-                <div className="w-full md:w-2/4 md:px-0"> {/* Removido md:px-6 pois o parent já tem padding e space-x */}
-                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 text-center md:text-left">{plant.name}</h1>
-                  <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${healthColor}-100 text-${healthColor}-800 dark:bg-${healthColor}-900 dark:text-${healthColor}-200`}>
-                      {plant ? plant.healthStatus || 'Status desconhecido' : 'Status desconhecido'}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">ID: {plant ? plant.id : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <div className="flex flex-col">
-                      <span className="text-gray-500 dark:text-gray-400">Strain</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{plant.strain || 'N/A'}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500 dark:text-gray-400">Estágio</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{plant.currentStage || 'N/A'}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500 dark:text-gray-400">Nascimento</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{formatDate(plant.birthDate)}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500 dark:text-gray-400">Colheita Estimada</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{formatDate(plant.estimatedHarvestDate)}</span>
-                    </div>
-                    {plant.substrate && (
-                      <div className="flex flex-col">
-                        <span className="text-gray-500 dark:text-gray-400">Substrato</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{plant.substrate}</span>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <section className="lg:col-span-1 flex flex-col gap-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <div className="flex flex-col items-center text-center gap-4">
+                    {plant.imageUrl ? (
+                      <img src={plant.imageUrl} alt={plant.name} className="w-full max-w-xs rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-full max-w-xs h-48 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <LeafIcon className="w-16 h-16 text-gray-400 dark:text-gray-500" />
                       </div>
                     )}
-                    {plant.cultivationType && (
-                      <div className="flex flex-col">
-                        <span className="text-gray-500 dark:text-gray-400">Tipo de Cultivo</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{plant.cultivationType}</span>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{plant.name}</h1>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full font-medium bg-${healthColor}-100 text-${healthColor}-800 dark:bg-${healthColor}-900 dark:text-${healthColor}-200`}>{plant.healthStatus || 'Status desconhecido'}</span>
+                      <span className="text-gray-500 dark:text-gray-400">ID: {plant.id}</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 text-sm w-full">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400">Strain</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{plant.strain || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400">Estágio</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{plant.currentStage || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400">Nascimento</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatDate(plant.birthDate)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 dark:text-gray-400">Colheita Estimada</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatDate(plant.estimatedHarvestDate)}</span>
+                      </div>
+                    </div>
+                    {plant.notes && (
+                      <div className="w-full bg-gray-100 dark:bg-gray-700 p-3 rounded-md mt-4 max-h-40 overflow-y-auto text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                        {plant.notes}
                       </div>
                     )}
                   </div>
                 </div>
-                {/* 4. Bloco do QR Code: w-full sm:w-1/2 md:w-1/4 mx-auto */}
-                <div className="w-full sm:w-1/2 md:w-1/4 flex flex-col items-center justify-center border-t pt-4 md:pt-0 md:border-t-0 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-6 mx-auto">
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow flex flex-col gap-4">
                   {plant.qrCodeValue && (
-                    <div className="flex flex-col items-center w-full">
-                      {/* QR Code responsivo */}
-                      <QRCodeSVG value={plant.qrCodeValue} size={128} includeMargin={true} className="mb-2 w-full max-w-[128px] h-auto" />
-                      <button
-                        onClick={handleDownloadQrCode}
-                        // Botão responsivo
-                        className="mt-2 w-full max-w-xs sm:max-w-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {plant.notes && (
-                <div className="px-6 pb-6">
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Notas</h3>
-                  {/* 6. Seção de Notas da Planta: max-h-XX overflow-y-auto */}
-                  <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md max-h-40 overflow-y-auto">
-                    <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{plant.notes}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-            {/* Tabs e conteúdo */}
-            <div className="px-6 pt-4 border-b border-gray-200 dark:border-gray-700">
-              {/* 5. Abas de Navegação: overflow-x-auto */}
-              <nav className="flex -mb-px space-x-8 overflow-x-auto" aria-label="Tabs">
-                <button
-                  onClick={() => setActiveTab('actions')}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'actions' ? 'text-green-600 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'}`}
-                >
-                  Ações
-                </button>
-                <button
-                  onClick={() => setActiveTab('checklist')}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'checklist' ? 'text-green-600 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'}`}
-                >
-                  Checklist Diário
-                </button>
-                <button
-                  onClick={() => setActiveTab('diary')}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'diary' ? 'text-green-600 border-green-500' : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'}`}
-                >
-                  Diário da Planta
-                </button>
-              </nav>
-            </div>
-            <div className="p-6">
-              {activeTab === 'actions' && (
-                <>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {plant.qrCodeValue && (
-                      <button
-                        onClick={() => setShowQrModal(true)}
-                        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-2"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" /></svg>
-                        Ver QR Code
-                      </button>
-                    )}
                     <button
-                      onClick={() => setShowRemoveByDiseaseModal(true)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-2"
+                      onClick={() => setShowQrModal(true)}
+                      className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.56 0c1.153 0 2.243.096 3.222.261m3.222.261L8.84 3.727M11.09 15.85l-.002-.003-.002-.002A.754.754 0 0011.082 15H11a.752.752 0 00-.698.443L9.5 18.75h5l-.802-3.307A.752.752 0 0013 15h-.082a.754.754 0 00-.006.002l-.002.003-.002.002a23.038 23.038 0 00-1.908.845z" /></svg>
-                      Remover por Doença
+                      Ver QR Code
                     </button>
-                  </div>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Cultivo</h2>
-                    <div className="flex items-center gap-3">
+                  )}
+                  <button
+                    onClick={() => setShowRemoveByDiseaseModal(true)}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Remover por Doença
+                  </button>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Cultivo</h2>
+                    <div className="flex items-center gap-2">
                       <select
-                        className="border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                        className="flex-1 border rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         value={selectedCultivo ?? plant.cultivoId ?? ''}
                         onChange={e => setSelectedCultivo(e.target.value)}
                         disabled={movingCultivo}
@@ -617,7 +446,7 @@ const PlantDetailPage: React.FC = () => {
                           try {
                             await updatePlantDetails(plantId, { cultivoId: selectedCultivo });
                             await loadPlantData();
-                            setToast({ message: 'Planta movida para o cultivo selecionado!', type: 'success' });
+                            setToast({ message: 'Planta movida!', type: 'success' });
                             setSelectedCultivo(undefined);
                           } catch (err: any) {
                             setToast({ message: 'Erro ao mover planta: ' + (err.message || err), type: 'error' });
@@ -625,49 +454,48 @@ const PlantDetailPage: React.FC = () => {
                           setMovingCultivo(false);
                         }}
                       >
-                        Mover para este cultivo
+                        Mover
                       </button>
                     </div>
                   </div>
-                </>
-              )}
-              {activeTab === 'checklist' && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Checklist Diário</h2>
-                  <DailyChecklist plant={plant} onTaskToggle={handleTaskToggle} />
                 </div>
-              )}
-              {activeTab === 'diary' && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Diário da Planta</h2>
+              </section>
 
-                  <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Nova Entrada no Diário</h3>
+              <section className="lg:col-span-2 flex flex-col gap-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Checklist Diário</h2>
+                  <DailyChecklist
+                    stage={plant.currentStage}
+                    checklistState={checklistState}
+                    onTaskToggle={handleTaskToggle}
+                  />
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Diário da Planta</h2>
+                  <div className="mb-6">
                     <textarea
                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="Escreva suas observações, ações tomadas, etc..."
+                      placeholder="Escreva suas observações..."
                       value={newDiaryNote}
-                      onChange={(e) => setNewDiaryNote(e.target.value)}
+                      onChange={e => setNewDiaryNote(e.target.value)}
                     ></textarea>
-                    <div className="mt-3 flex justify-end items-center">
+                    <div className="mt-3 flex justify-end items-center gap-2">
                       <button
-                        type="button" // Important: type="button" to prevent form submission if inside a form
+                        type="button"
                         onClick={handleToggleRecording}
-                        className={`px-4 py-2 font-semibold rounded-lg hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors mr-2
-                          ${isRecording ? 'bg-red-500 text-white focus:ring-red-500' : 'bg-blue-500 text-white focus:ring-blue-500'}`}
+                        className={`px-4 py-2 font-semibold rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}
                       >
-                        {isRecording ? 'Parar Gravação' : 'Ditar Nota (PT-BR)'}
+                        {isRecording ? 'Parar Gravação' : 'Ditar Nota'}
                       </button>
                       <button
                         onClick={handleSaveNewDiaryEntry}
-                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
                         disabled={!newDiaryNote.trim()}
                       >
                         Salvar Entrada
                       </button>
                     </div>
                   </div>
-
                   {diaryEntries.length > 0 ? (
                     <div className="space-y-4">
                       {diaryEntries.map(entry => (
@@ -678,68 +506,57 @@ const PlantDetailPage: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma entrada no diário ainda.</p>
                   )}
                 </div>
-              )}
+              </section>
             </div>
-          </div>
-        </main>
-        {/* Modals */}
-        <Modal
-          isOpen={showRemoveByDiseaseModal}
-          onClose={() => setShowRemoveByDiseaseModal(false)}
-          title="Remover Planta por Doença"
-        >
-          <div className="p-1">
-            <p className="mb-3 text-gray-700 dark:text-gray-300">Tem certeza que deseja remover esta planta por doença?</p>
-            <textarea
-              placeholder="Motivo ou observação (opcional)"
-              value={removeByDiseaseNote}
-              onChange={e => setRemoveByDiseaseNote(e.target.value)}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[60px] mb-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-            />
-            <div className="flex justify-between gap-3">
-              <button
-                onClick={() => { setShowRemoveByDiseaseModal(false); }}
-                className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-              >
-                ← Voltar
-              </button>
-              <div className="flex gap-3">
+          </main>
+          <Modal
+            isOpen={showRemoveByDiseaseModal}
+            onClose={() => setShowRemoveByDiseaseModal(false)}
+            title="Remover Planta por Doença"
+          >
+            <div className="p-1">
+              <p className="mb-3 text-gray-700 dark:text-gray-300">Tem certeza que deseja remover esta planta por doença?</p>
+              <textarea
+                placeholder="Motivo ou observação (opcional)"
+                value={removeByDiseaseNote}
+                onChange={e => setRemoveByDiseaseNote(e.target.value)}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[60px] mb-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              />
+              <div className="flex justify-between gap-3">
                 <button
                   onClick={() => setShowRemoveByDiseaseModal(false)}
-                  className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                  className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleRemoveByDisease}
-                  className="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
                   Confirmar Remoção
                 </button>
               </div>
             </div>
-          </div>
-        </Modal>
-        {plant.qrCodeValue && (
-          <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code da Planta">
-            <div className="flex flex-col items-center justify-center p-4">
-              <QRCodeSVG value={plant.qrCodeValue} size={256} includeMargin={true} />
-              <p className="mt-4 text-lg font-semibold text-gray-800 dark:text-white">{plant.name}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">ID: {plant.id}</p>
-              <button
-                onClick={handleDownloadQrCode}
-                className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                Download QR Code
-              </button>
-            </div>
           </Modal>
-        )}
-      </div> {/* Fecha div className="flex-1 flex flex-col min-h-screen" */}
-    </div> {/* Fecha div className="flex min-h-screen bg-gray-50 dark:bg-gray-900" */}
-  </>
-  ); // Fecha o return statement
-}; // Fecha a arrow function PlantDetailPage
+          {plant.qrCodeValue && (
+            <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code da Planta">
+              <div className="flex flex-col items-center justify-center p-4">
+                <QRCodeSVG value={plant.qrCodeValue} size={256} includeMargin={true} />
+                <p className="mt-4 text-lg font-semibold text-gray-800 dark:text-white">{plant.name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {plant.id}</p>
+                <button
+                  onClick={handleDownloadQrCode}
+                  className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                >
+                  Download QR Code
+                </button>
+              </div>
+            </Modal>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default PlantDetailPage;

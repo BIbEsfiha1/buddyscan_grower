@@ -1,10 +1,26 @@
 import React from 'react';
-import { Plant, PlantStage } from '../types'; 
-import { CheckCircleIcon, SunIcon, WaterDropIcon, BugAntIcon, AdjustmentsHorizontalIcon, RefreshIcon, ThermometerIcon, WindIcon, BeakerIcon, EyeIcon, ScissorsIcon, ClockIcon, DropletsIcon, JarIcon } from './icons/ChecklistIcons';
+import { PlantStage } from '../types';
+import {
+  CheckCircleIcon,
+  SunIcon,
+  WaterDropIcon,
+  BugAntIcon,
+  AdjustmentsHorizontalIcon,
+  RefreshIcon,
+  ThermometerIcon,
+  WindIcon,
+  BeakerIcon,
+  EyeIcon,
+  ScissorsIcon,
+  ClockIcon,
+  DropletsIcon,
+  JarIcon,
+} from './icons/ChecklistIcons';
 
 interface DailyChecklistProps {
-  plant: Plant | Partial<Plant>; 
-  onTaskToggle: (taskName: keyof Plant, isChecked: boolean) => void;
+  stage?: PlantStage;
+  checklistState: Record<string, boolean>;
+  onTaskToggle: (taskId: string, isChecked: boolean) => void;
   title?: string;
   className?: string;
 }
@@ -105,25 +121,16 @@ const getChecklistItemsForStage = (stage: PlantStage | undefined) => {
   }
 };
 
-const DailyChecklist: React.FC<DailyChecklistProps> = ({ 
-  plant, 
-  onTaskToggle, 
-  title = "Checklist Diário",
-  className = ""
+const DailyChecklist: React.FC<DailyChecklistProps> = ({
+  stage,
+  checklistState,
+  onTaskToggle,
+  title = 'Checklist Diário',
+  className = '',
 }) => {
-  const getCurrentDateString = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const day = today.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const isChecklistForToday = plant.lastDailyCheckDate === getCurrentDateString();
-  const stage = plant.currentStage as PlantStage | undefined;
   const checklistItems = getChecklistItemsForStage(stage);
   const total = checklistItems.length;
-  const checkedCount = checklistItems.filter(item => isChecklistForToday && !!plant[item.id as keyof Plant]).length;
+  const checkedCount = checklistItems.filter(item => !!checklistState[item.id]).length;
 
   return (
     <div className={`p-6 border rounded-2xl shadow-lg bg-white dark:bg-slate-800 dark:border-slate-700 ${className}`}>
@@ -133,20 +140,14 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
           {checkedCount} de {total} tarefas
         </span>
       </div>
-      {!isChecklistForToday && (
-        <p className="text-sm text-amber-600 dark:text-amber-400 mb-3">
-          Checklist do dia anterior. Marcar qualquer item iniciará o checklist de hoje.
-        </p>
-      )}
       <ul className="space-y-3 mt-2">
         {checklistItems.map((item) => {
-          const isChecked = isChecklistForToday ? !!plant[item.id as keyof Plant] : false;
+          const isChecked = !!checklistState[item.id];
           return (
             <li
               key={item.id}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 shadow-sm relative overflow-hidden
                 ${isChecked ? 'bg-green-50 border-green-400 dark:bg-green-900/30' : 'bg-slate-50 border-slate-200 dark:bg-slate-700/40 dark:border-slate-600'}
-                ${isChecked ? '' : ''}
               `}
               style={{ minHeight: 56 }}
             >
@@ -156,7 +157,7 @@ const DailyChecklist: React.FC<DailyChecklistProps> = ({
                 className={`rounded-full p-2 transition-all duration-300 ease-in-out flex items-center justify-center
                   ${isChecked ? 'bg-green-500 text-white scale-110 shadow-lg' : 'bg-slate-200 dark:bg-slate-600 text-slate-500'}
                 `}
-                onClick={() => onTaskToggle(item.id as keyof Plant, !isChecked)}
+                onClick={() => onTaskToggle(item.id, !isChecked)}
                 title={item.label}
               >
                 <span className="transition-transform duration-300">

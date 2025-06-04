@@ -4,7 +4,7 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
 
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 
-export const handler: Handler = async (event: HandlerEvent, _context: HandlerContext) => {
+export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   console.log('[addCultivo] Event received:', { method: event.httpMethod, body: event.body });
   if (event.httpMethod !== 'POST') {
     return {
@@ -14,9 +14,18 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
   }
 
   try {
-    const { name, startDate, notes, userId, plants } = JSON.parse(event.body || '{}');
-    if (!name || !startDate || !userId) {
-      console.log('[addCultivo] Missing required fields:', { name, startDate, userId });
+    const { name, startDate, notes, plants } = JSON.parse(event.body || '{}');
+    const { user } = context.clientContext || {};
+    if (!user || !user.sub) {
+      console.log('[addCultivo] Authentication failed:', { user });
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Usuário não autenticado.' })
+      };
+    }
+    const userId = user.sub;
+    if (!name || !startDate) {
+      console.log('[addCultivo] Missing required fields:', { name, startDate });
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Missing required fields.' })

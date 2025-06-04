@@ -1,8 +1,17 @@
--- SQL schema for diary_entries table
+-- SQL schema for Netlify Identity integration
+
+-- Table to store Netlify Identity users
+create table if not exists users_netlify (
+  id uuid primary key,
+  email text,
+  created_at timestamptz default now()
+);
+
+-- Diary entries table referencing users_netlify
 create table if not exists diary_entries (
   id uuid primary key default uuid_generate_v4(),
   plant_id uuid references plants(id) on delete cascade not null,
-  user_id uuid references auth.users(id) not null,
+  user_id uuid references users_netlify(id) not null,
   timestamp timestamptz not null default now(),
   author text not null,
   notes text,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plant } from '../types';
+import { Link } from 'react-router-dom';
 
 interface PlantCardProps {
   plant: Plant;
@@ -35,12 +36,10 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
 
   return (
     <div className="relative group">
-      <div
-        onClick={onClick ? onClick : () => window.location.href = `/plant/${plant.id}`}
-        className="cursor-pointer block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700"
-        style={{
-          minHeight: 320,
-        }}
+      <Link
+        to={`/plant/${plant.id}`}
+        onClick={onClick}
+        className="block relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 min-h-72"
       >
         {/* Elemento decorativo de folha */}
         <div className="absolute -top-5 -left-5 w-20 h-20 opacity-10 dark:opacity-5 pointer-events-none" style={{
@@ -63,7 +62,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick }) => {
         </div>
         {/* Sombra decorativa inferior */}
         <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-green-100/60 to-transparent dark:from-slate-800/60 pointer-events-none" />
-      </div>
+      </Link>
 
       {/* Botão de ação rápida para remover por doença - REMOVED */}
       {/* {plant.operationalStatus !== PlantOperationalStatus.LOST && (

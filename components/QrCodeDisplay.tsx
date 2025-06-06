@@ -13,9 +13,10 @@ interface QrCodeDisplayProps {
 const QrCodeDisplay: React.FC<QrCodeDisplayProps> = ({ plant }) => {
   const [copied, setCopied] = useState(false);
   const qrSize = 128; // Size for on-screen display
+  const qrValue = plant.qrCodeValue || plant.id;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(plant.qrCodeValue).then(() => {
+    navigator.clipboard.writeText(qrValue).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -37,7 +38,7 @@ const QrCodeDisplay: React.FC<QrCodeDisplayProps> = ({ plant }) => {
     const strainSVG = truncateText(plant.strain, 28); // Adjusted max length
 
     try {
-      const qrSvgStringGenerated = await QRCode.toString(plant.qrCodeValue, {
+      const qrSvgStringGenerated = await QRCode.toString(qrValue, {
         type: 'svg',
         errorCorrectionLevel: 'Q', // Good error correction
         margin: 1, // Minimal margin for the QR code itself
@@ -73,7 +74,7 @@ const QrCodeDisplay: React.FC<QrCodeDisplayProps> = ({ plant }) => {
             ${cleanQrSvgString} 
           </g>
           
-          <text x="${svgWidth / 2}" y="${85 + qrDisplaySize + 20}" text-anchor="middle" class="label-text qr-value">${plant.qrCodeValue}</text>
+          <text x="${svgWidth / 2}" y="${85 + qrDisplaySize + 20}" text-anchor="middle" class="label-text qr-value">${qrValue}</text>
           <text x="${svgWidth / 2}" y="${85 + qrDisplaySize + 35}" text-anchor="middle" class="label-text qr-value" style="font-size:8px;">BuddyScan</text>
         </svg>
       `;
@@ -104,7 +105,7 @@ const QrCodeDisplay: React.FC<QrCodeDisplayProps> = ({ plant }) => {
       
       <div className="w-full flex items-center justify-center p-1 bg-white rounded-sm" style={{ maxWidth: qrSize + 8, maxHeight: qrSize + 8 }}> {/* Ensure white background for QR code */}
         <QRCodeSVG
-          value={plant.qrCodeValue}
+          value={qrValue}
           size={qrSize}
           bgColor={"#ffffff"}
           fgColor={"#000000"}
@@ -120,7 +121,7 @@ const QrCodeDisplay: React.FC<QrCodeDisplayProps> = ({ plant }) => {
         <ClipboardIcon className="w-3.5 h-3.5" />
         {copied ? 'ID Copiado!' : 'Copiar ID'}
       </button>
-      <p className="text-[10px] text-gray-400 dark:text-slate-500 break-all leading-tight w-full px-1">{plant.qrCodeValue}</p>
+      <p className="text-[10px] text-gray-400 dark:text-slate-500 break-all leading-tight w-full px-1">{qrValue}</p>
 
       <button
         onClick={handleDownloadSVG}

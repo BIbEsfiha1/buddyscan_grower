@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Plant, PlantStage, DiaryEntry, PlantHealthStatus, NewDiaryEntryData } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 import DiaryEntryItem from '../components/DiaryEntryItem';
+import DiaryEntryForm from '../components/DiaryEntryForm';
 import DailyChecklist from '../components/DailyChecklist';
 import Modal from '../components/Modal';
 import { usePlantContext } from '../contexts/PlantContext';
@@ -39,9 +40,8 @@ const PlantDetailPage: React.FC = () => {
   const [movingCultivo, setMovingCultivo] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [newDiaryNote, setNewDiaryNote] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+  const [showDiaryEntryModal, setShowDiaryEntryModal] = useState(false);
+  const [isSavingDiaryEntry, setIsSavingDiaryEntry] = useState(false);
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
 
   const loadPlantData = useCallback(async () => {
@@ -74,54 +74,6 @@ const PlantDetailPage: React.FC = () => {
     }
   }, [plantId, plant]);
 
-  useEffect(() => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
-      console.warn('Web Speech API is not supported in this browser.');
-      return;
-    }
-    const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'pt-BR';
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        }
-      }
-      if (finalTranscript) {
-        setNewDiaryNote(prev => prev + finalTranscript + ' ');
-      }
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error', event.error);
-      let errorMessage = 'Erro na transcrição de áudio.';
-      if (event.error === 'no-speech') {
-        errorMessage = 'Nenhuma fala detectada. Tente novamente.';
-      } else if (event.error === 'audio-capture') {
-        errorMessage = 'Falha ao capturar áudio. Verifique seu microfone.';
-      } else if (event.error === 'not-allowed') {
-        errorMessage = 'Permissão para microfone negada.';
-      }
-      setToast({ message: errorMessage, type: 'error' });
-      setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      if (isRecording) {
-        setIsRecording(false);
-      }
-    };
-
-    setSpeechRecognition(recognition);
-    return () => {
-      recognition.abort();
-    };
-  }, []);
 
   useEffect(() => {
     import('../services/cultivoService').then(({ getCultivos }) => {
@@ -256,6 +208,26 @@ const PlantDetailPage: React.FC = () => {
     img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
   };
 
+  const handleDiaryEntrySubmit = async (data: NewDiaryEntryData) => {
+    if (!plantId) return;
+    setIsSavingDiaryEntry(true);
+    try {
+      const newEntry = await addNewDiaryEntry(plantId, data);
+      if (newEntry) {
+        const entries = await getDiaryEntries(plantId);
+        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+        setShowDiaryEntryModal(false);
+        setToast({ message: 'Entrada do diário salva!', type: 'success' });
+      } else {
+        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
+      }
+    } catch (err: any) {
+      setToast({ message: `Erro: ${err.message || 'Falha ao salvar entrada.'}`, type: 'error' });
+    } finally {
+      setIsSavingDiaryEntry(false);
+    }
+  };
+
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000);
@@ -263,50 +235,6 @@ const PlantDetailPage: React.FC = () => {
     }
   }, [toast]);
 
-  const handleToggleRecording = () => {
-    if (!speechRecognition) {
-      setToast({ message: 'Reconhecimento de voz não é suportado neste navegador.', type: 'error' });
-      return;
-    }
-    if (isRecording) {
-      speechRecognition.stop();
-      setIsRecording(false);
-    } else {
-      try {
-        speechRecognition.start();
-        setIsRecording(true);
-        setToast({ message: 'Ouvindo... Fale agora.', type: 'info' });
-      } catch {
-        setToast({ message: 'Não foi possível iniciar o reconhecimento de voz.', type: 'error' });
-        setIsRecording(false);
-      }
-    }
-  };
-
-  const handleSaveNewDiaryEntry = async () => {
-    if (!plantId || !plant || !newDiaryNote.trim()) {
-      setToast({ message: 'Por favor, escreva uma nota para salvar.', type: 'error' });
-      return;
-    }
-    const entryData: NewDiaryEntryData = {
-      notes: newDiaryNote.trim(),
-      stage: plant.currentStage,
-      photos: [],
-    };
-    try {
-      const newEntry = await addNewDiaryEntry(plantId, entryData);
-      if (newEntry) {
-        setNewDiaryNote('');
-        setToast({ message: 'Entrada do diário salva!', type: 'success' });
-        const entries = await getDiaryEntries(plantId);
-        setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-      } else {
-        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
-      }
-    } catch (error: any) {
-      setToast({ message: `Erro: ${error.message || 'Falha ao salvar entrada.'}`, type: 'error' });
-    }
-  };
 
   if (!plant) {
     return (
@@ -471,30 +399,14 @@ const PlantDetailPage: React.FC = () => {
                   />
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Diário da Planta</h2>
-                  <div className="mb-6">
-                    <textarea
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[80px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="Escreva suas observações..."
-                      value={newDiaryNote}
-                      onChange={e => setNewDiaryNote(e.target.value)}
-                    ></textarea>
-                    <div className="mt-3 flex justify-end items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleToggleRecording}
-                        className={`px-4 py-2 font-semibold rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}
-                      >
-                        {isRecording ? 'Parar Gravação' : 'Ditar Nota'}
-                      </button>
-                      <button
-                        onClick={handleSaveNewDiaryEntry}
-                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-                        disabled={!newDiaryNote.trim()}
-                      >
-                        Salvar Entrada
-                      </button>
-                    </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">Diário da Planta</h2>
+                    <button
+                      onClick={() => setShowDiaryEntryModal(true)}
+                      className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Nova Entrada
+                    </button>
                   </div>
                   {diaryEntries.length > 0 ? (
                     <div className="space-y-4">
@@ -509,6 +421,21 @@ const PlantDetailPage: React.FC = () => {
               </section>
             </div>
           </main>
+          <Modal
+            isOpen={showDiaryEntryModal}
+            onClose={() => setShowDiaryEntryModal(false)}
+            title="Nova Entrada no Diário"
+            maxWidth="md"
+          >
+            {plant && (
+              <DiaryEntryForm
+                plantCurrentStage={plant.currentStage}
+                onSubmit={handleDiaryEntrySubmit}
+                isLoading={isSavingDiaryEntry}
+              />
+            )}
+          </Modal>
+
           <Modal
             isOpen={showRemoveByDiseaseModal}
             onClose={() => setShowRemoveByDiseaseModal(false)}

@@ -146,15 +146,17 @@ export const getPlantsByCultivo = async (cultivoId: string): Promise<Plant[]> =>
       console.warn('getPlantsByCultivo called with empty cultivoId');
       return [];
     }
-    
+
     console.log(`[getPlantsByCultivo] Fetching plants for cultivo ${cultivoId}`);
-    const result = await fetchWithAuth(`getPlants?cultivoId=${encodeURIComponent(cultivoId)}`);
-    
-    // Ensure all dates are properly parsed and handle potential null/undefined
+    const result = await fetchWithAuth(
+      `getPlants?cultivoId=${encodeURIComponent(cultivoId)}`
+    );
+
     const plants = Array.isArray(result) ? result : [];
+    // Map snake_case to camelCase and ensure qrCodeValue is preserved
     return plants.map((plant: any) => ({
       ...plant,
-      // Map snake_case to camelCase and handle potential null/undefined
+      qrCodeValue: plant.qr_code_value || plant.qrCodeValue,
       birthDate: plant.birth_date || plant.birthDate,
       lastDailyCheckDate: plant.last_daily_check_date || plant.lastDailyCheckDate,
       estimatedHarvestDate: plant.estimated_harvest_date || plant.estimatedHarvestDate,

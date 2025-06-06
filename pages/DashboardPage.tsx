@@ -6,7 +6,8 @@ import {
   PLANT_STAGES_OPTIONS, 
   PLANT_HEALTH_STATUS_OPTIONS, 
   PLANT_OPERATIONAL_STATUS_OPTIONS,
-  CULTIVATION_TYPE_OPTIONS
+  CULTIVATION_TYPE_OPTIONS,
+  SUBSTRATE_OPTIONS
 } from '../constants';
 import PlantCard from '../components/PlantCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -22,6 +23,8 @@ import QrCodeScanner from '../components/QrCodeScanner';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import StatsCard from '../components/StatsCard';
+import StatsCardSkeleton from '../components/StatsCardSkeleton';
+import PlantCardSkeleton from '../components/PlantCardSkeleton';
 import QuickActions from '../components/QuickActions';
 import LeafIcon from '../components/icons/LeafIcon';
 
@@ -40,6 +43,7 @@ const DashboardPage: React.FC = () => {
   });
   const [lastTempUpdate, setLastTempUpdate] = useState<number>(0);
   const [tempAlert, setTempAlert] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const initialFormState: NewPlantData = {
     name: '',
@@ -174,6 +178,11 @@ const DashboardPage: React.FC = () => {
     };
   }, [plants, user, isLoggedIn]);
 
+  const filteredPlants = plants.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.strain && p.strain.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const inputStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-400";
   const selectStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors";
 
@@ -200,37 +209,47 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatsCard
-              title={t('dashboard.total_plants')}
-              value={stats.totalPlants}
-              change="+2" // placeholder
-              trend="up"
-              icon={<LeafIcon className="w-5 h-5" />}
-              color="green"
-            />
-            <StatsCard
-              title={t('dashboard.active_zones')}
-              value={stats.activeZones}
-              color="blue"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                </svg>
-              }
-            />
-            <StatsCard
-              title={t('dashboard.avg_temperature')}
-              value={`${Math.round(stats.avgTemperature)}°C`}
-              change=""
-              trend="neutral"
-              color="yellow"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                </svg>
-              }
-            />
-
+            {isLoading ? (
+              <>
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </>
+            ) : (
+              <>
+                <StatsCard
+                  title={t('dashboard.total_plants')}
+                  value={stats.totalPlants}
+                  change="+2" // placeholder
+                  trend="up"
+                  icon={<LeafIcon className="w-5 h-5" />}
+                  color="green"
+                />
+                <StatsCard
+                  title={t('dashboard.active_zones')}
+                  value={stats.activeZones}
+                  color="blue"
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                    </svg>
+                  }
+                />
+                <StatsCard
+                  title={t('dashboard.avg_temperature')}
+                  value={`${Math.round(stats.avgTemperature)}°C`}
+                  change=""
+                  trend="neutral"
+                  color="yellow"
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                    </svg>
+                  }
+                />
+              </>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -252,10 +271,20 @@ const DashboardPage: React.FC = () => {
                 {t('dashboard.view_all')}
               </Link>
             </div>
-            
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder={t('dashboard.search_placeholder')}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className={inputStyle}
+              />
+            </div>
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <LoadingSpinner size="lg" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 3 }).map((_, idx) => (
+                  <PlantCardSkeleton key={idx} />
+                ))}
               </div>
             ) : error ? (
               <div className="bg-red-900/30 text-red-300 p-4 rounded-lg">
@@ -265,13 +294,17 @@ const DashboardPage: React.FC = () => {
               <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg">
                 <p>{t('dashboard.no_plants')}</p>
               </div>
+            ) : filteredPlants.length === 0 ? (
+              <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg">
+                <p>{t('dashboard.no_results')}</p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {plants.slice(0, 6).map(plant => (
-                  <PlantCard 
-                    key={plant.id} 
-                    plant={plant} 
-                    onClick={() => navigate(`/plant/${plant.id}`)} 
+                {filteredPlants.slice(0, 6).map(plant => (
+                  <PlantCard
+                    key={plant.id}
+                    plant={plant}
+                    onClick={() => navigate(`/plant/${plant.id}`)}
                   />
                 ))}
               </div>
@@ -384,7 +417,17 @@ const DashboardPage: React.FC = () => {
               </div>
               <div>
                 <label htmlFor="substrate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.substrate')}</label>
-                <input type="text" name="substrate" id="substrate" value={newPlantForm.substrate || ''} onChange={handleInputChange} className={inputStyle} placeholder="Ex: Coco, Perlita, Mix próprio"/>
+                <select
+                  name="substrate"
+                  id="substrate"
+                  value={newPlantForm.substrate}
+                  onChange={handleInputChange}
+                  className={selectStyle}
+                >
+                  {SUBSTRATE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.estimated_harvest')}</label>

@@ -34,7 +34,9 @@
     "error_loading_plants": "Erro ao carregar plantas",
     "add_modal_title": "Adicionar Nova Planta",
     "adding_plant": "Adicionando planta...",
-    "no_activity": "Adicione plantas para ver o histórico de atividades"
+    "no_activity": "Adicione plantas para ver o histórico de atividades",
+    "search_placeholder": "Buscar plantas...",
+    "no_results": "Nenhum resultado encontrado"
   },
   "form": {
     "name": "Nome da Planta",

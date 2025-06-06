@@ -34,7 +34,9 @@
     "error_loading_plants": "Error loading plants",
     "add_modal_title": "Add New Plant",
     "adding_plant": "Adding plant...",
-    "no_activity": "Add plants to see activity history"
+    "no_activity": "Add plants to see activity history",
+    "search_placeholder": "Search plants...",
+    "no_results": "No results found"
   },
   "form": {
     "name": "Plant Name",

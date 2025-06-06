@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plant } from '../types';
+import PlantInsight from './PlantInsight';
 
 interface PlantCardProps {
   plant: Plant;
@@ -73,6 +74,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
         <div className="p-4">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 truncate" title={plant.name}>{plant.name}</h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 truncate" title={plant.strain}>{plant.strain || 'N/A'}</p>
+          <PlantInsight plant={plant} />
         </div>
         {/* Sombra decorativa inferior */}
         <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-green-100/60 to-transparent dark:from-slate-800/60 pointer-events-none" />

@@ -361,7 +361,7 @@ const DashboardPage: React.FC = () => {
         </main>
       </div>
       
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('dashboard.add_modal_title')} size="xl">
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('dashboard.add_modal_title')} maxWidth="xl">
         <form onSubmit={handleAddPlant} className="space-y-4">
           {isAddingPlant ? (
             <div className="flex justify-center items-center py-2">
@@ -468,12 +468,12 @@ const DashboardPage: React.FC = () => {
       </Modal>
 
       {/* QR Code Scanner Modal */}
-      <Modal
-        isOpen={isScannerModalOpen}
-        onClose={() => setIsScannerModalOpen(false)}
-        title={t('header.scan_qr')}
-        size="sm"
-      >
+        <Modal
+          isOpen={isScannerModalOpen}
+          onClose={() => setIsScannerModalOpen(false)}
+          title={t('header.scan_qr')}
+          maxWidth="sm"
+        >
         {scannerError && (
           <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
             {scannerError}

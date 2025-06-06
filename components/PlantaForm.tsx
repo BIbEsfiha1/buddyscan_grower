@@ -2,19 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 import StrainAutocomplete from './StrainAutocomplete';
 
-const SUBSTRATE_OPTIONS = [
-  { value: '', label: 'Selecione um substrato...' },
-  { value: 'Terra Composta (Solo Orgânico)', label: 'Terra Composta (Solo Orgânico)' },
-  { value: 'Fibra de Coco', label: 'Fibra de Coco' },
-  { value: 'Perlita', label: 'Perlita' },
-  { value: 'Vermiculita', label: 'Vermiculita' },
-  { value: 'Turfa (Peat Moss)', label: 'Turfa (Peat Moss)' },
-  { value: 'Lã de Rocha (Rockwool)', label: 'Lã de Rocha (Rockwool)' },
-  { value: 'Argila Expandida', label: 'Argila Expandida' },
-  { value: 'Solo Inerte', label: 'Solo Inerte' },
-  { value: 'Carolina Soil', label: 'Carolina Soil' },
-  { value: 'Outro', label: 'Outro (Especificar)' }
-];
+import { SUBSTRATE_OPTIONS } from '../constants';
 
 interface PlantaFormProps {
   initialValues?: {

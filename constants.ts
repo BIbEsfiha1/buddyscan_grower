@@ -38,6 +38,20 @@ export const CULTIVATION_TYPE_OPTIONS = [
   { value: 'Soil', label: 'Solo' },
 ];
 
+export const SUBSTRATE_OPTIONS = [
+  { value: '', label: 'Selecione um substrato...' },
+  { value: 'Terra Composta (Solo Org\u00e2nico)', label: 'Terra Composta (Solo Org\u00e2nico)' },
+  { value: 'Fibra de Coco', label: 'Fibra de Coco' },
+  { value: 'Perlita', label: 'Perlita' },
+  { value: 'Vermiculita', label: 'Vermiculita' },
+  { value: 'Turfa (Peat Moss)', label: 'Turfa (Peat Moss)' },
+  { value: 'L\u00e3 de Rocha (Rockwool)', label: 'L\u00e3 de Rocha (Rockwool)' },
+  { value: 'Argila Expandida', label: 'Argila Expandida' },
+  { value: 'Solo Inerte', label: 'Solo Inerte' },
+  { value: 'Carolina Soil', label: 'Carolina Soil' },
+  { value: 'Outro', label: 'Outro (Especificar)' },
+];
+
 
 export const GENERIC_ERROR_MESSAGE = "Ocorreu um erro. Por favor, tente novamente.";
 export const MOCK_USER_ID = "user_default_01";

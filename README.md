@@ -19,3 +19,5 @@ This project uses [Material UI](https://mui.com/) for its base styling along wit
 
 Run the SQL script in `supabase/diary_entries.sql` on your Supabase project to
 create the `diary_entries` table used by the Netlify functions.
+
+Para uma descrição completa da interface em português, consulte [docs/INTERFACE_COMPLETA_PT_BR.md](docs/INTERFACE_COMPLETA_PT_BR.md).

@@ -16,7 +16,8 @@
     "search": "Buscar plantas...",
     "open_menu": "Abrir menu",
     "scan_qr": "Escanear QR",
-    "add_plant": "Adicionar Planta"
+    "add_plant": "Adicionar Planta",
+    "toggle_theme": "Alternar tema"
   },
   "dashboard": {
     "quick_actions": "Ações Rápidas",
@@ -63,6 +64,11 @@
   "language": {
     "english": "Inglês",
     "portuguese": "Português"
+  },
+  "plant_card": {
+    "days_to_harvest": "Falta {{count}} dia para a colheita",
+    "days_to_harvest_plural": "Faltam {{count}} dias para a colheita",
+    "ready_to_harvest": "Pronto para colher"
   },
   "loading": "Carregando..."
 }

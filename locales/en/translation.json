@@ -16,7 +16,8 @@
     "search": "Search plants...",
     "open_menu": "Open menu",
     "scan_qr": "Scan QR",
-    "add_plant": "Add Plant"
+    "add_plant": "Add Plant",
+    "toggle_theme": "Toggle theme"
   },
   "dashboard": {
     "quick_actions": "Quick Actions",
@@ -63,6 +64,11 @@
   "language": {
     "english": "English",
     "portuguese": "Portuguese"
+  },
+  "plant_card": {
+    "days_to_harvest": "{{count}} day to harvest",
+    "days_to_harvest_plural": "{{count}} days to harvest",
+    "ready_to_harvest": "Ready to harvest"
   },
   "loading": "Loading..."
 }

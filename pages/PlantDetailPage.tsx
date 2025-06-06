@@ -6,6 +6,7 @@ import DiaryEntryItem from '../components/DiaryEntryItem';
 import DiaryEntryForm from '../components/DiaryEntryForm';
 import DailyChecklist from '../components/DailyChecklist';
 import Modal from '../components/Modal';
+import QrCodeDisplay from '../components/QrCodeDisplay';
 import { usePlantContext } from '../contexts/PlantContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -467,15 +468,13 @@ const PlantDetailPage: React.FC = () => {
           </Modal>
           {plant.qrCodeValue && (
             <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code da Planta">
-              <div className="flex flex-col items-center justify-center p-4">
-                <QRCodeSVG value={plant.qrCodeValue} size={256} includeMargin={true} />
-                <p className="mt-4 text-lg font-semibold text-gray-800 dark:text-white">{plant.name}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {plant.id}</p>
+              <div className="flex flex-col items-center justify-center p-4 gap-4">
+                <QrCodeDisplay plant={plant} />
                 <button
                   onClick={handleDownloadQrCode}
-                  className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  className="w-full max-w-[180px] bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                 >
-                  Download QR Code
+                  Baixar QR Code
                 </button>
               </div>
             </Modal>

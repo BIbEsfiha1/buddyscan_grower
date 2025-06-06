@@ -1,9 +1,6 @@
 -- SQL schema for diary_entries table
 create extension if not exists "uuid-ossp";
 
--- Drop old table or constraint if it exists to avoid foreign key issues
-drop table if exists diary_entries cascade;
-
 create table if not exists diary_entries (
   id uuid primary key default uuid_generate_v4(),
   plant_id uuid references plants(id) on delete cascade not null,

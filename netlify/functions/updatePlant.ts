@@ -1,5 +1,6 @@
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { debugLog } from './utils';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -47,7 +48,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     }
 
     plantData = JSON.parse(event.body);
-    console.log('[updatePlant] Received request:', plantData);
+    debugLog('[updatePlant] Received request:', plantData);
     
     plantIdToUpdate = plantData.id;
 
@@ -101,9 +102,9 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       }
     });
 
-    console.log('[updatePlant] Mapped update data:', updateData);
+    debugLog('[updatePlant] Mapped update data:', updateData);
 
-    console.log('[updatePlant] Data to be sent to Supabase:', updateData);
+    debugLog('[updatePlant] Data to be sent to Supabase:', updateData);
 
     if (Object.keys(updateData).length === 0) {
       console.warn('[updatePlant] No valid fields to update');
@@ -120,7 +121,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     // Add updated_at timestamp
     updateData.updated_at = new Date().toISOString();
 
-    console.log(`[updatePlant] Updating plant ${plantIdToUpdate} for user ${userId}`);
+    debugLog(`[updatePlant] Updating plant ${plantIdToUpdate} for user ${userId}`);
     
     const { data: updatedPlant, error } = await supabase
       .from('plants')
@@ -130,7 +131,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       .select('*')
       .single();
       
-    console.log('[updatePlant] Update result:', { updatedPlant, error });
+    debugLog('[updatePlant] Update result:', { updatedPlant, error });
 
     if (error) {
       console.error('Erro ao atualizar planta no Supabase:', error);

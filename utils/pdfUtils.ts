@@ -11,7 +11,15 @@ async function getQRCodeDataURL(qrValue: string, size: number): Promise<string> 
     canvas.style.display = 'none';
     document.body.appendChild(canvas);
 
-    QRCode.toCanvas(canvas, qrValue, { width: size, margin: 1, errorCorrectionLevel: 'H' }, (error) => {
+    QRCode.toCanvas(canvas, qrValue, {
+      width: size,
+      margin: 4, // ensure proper quiet zone for reliable scanning
+      errorCorrectionLevel: 'H',
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    }, (error) => {
       document.body.removeChild(canvas); // Clean up: remove canvas from document
       if (error) {
         console.error('QRCode generation error:', error);
@@ -80,7 +88,8 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
       pdf.text('No QR Value', x + (labelWidth - qrCodeSizeMm) / 2, y + qrCodeSizeMm / 2 + 2, { align: 'center' });
     } else {
       try {
-        const qrDataURL = await getQRCodeDataURL(qrValue, 256); // Generate a 256x256px QR code image
+        // Use a larger canvas to keep sharpness when scaled down in the PDF
+        const qrDataURL = await getQRCodeDataURL(qrValue, 512);
         if (qrDataURL) {
           pdf.addImage(qrDataURL, 'PNG', x + (labelWidth - qrCodeSizeMm) / 2, y + 2, qrCodeSizeMm, qrCodeSizeMm);
         }
@@ -106,6 +115,14 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
     // Strain Name - potentially split if too long
     const strainLines = pdf.splitTextToSize(plant.strain || 'Strain N/A', textBlockWidth);
     pdf.text(strainLines, textX, currentTextY, { align: 'center', maxWidth: textBlockWidth });
+    currentTextY += strainLines.length * textLineHeightMm;
+
+    // Birth date for reference
+    if (plant.birthDate) {
+      const birth = new Date(plant.birthDate).toLocaleDateString('pt-BR');
+      pdf.text(`Plantio: ${birth}`, textX, currentTextY, { align: 'center', maxWidth: textBlockWidth });
+      currentTextY += textLineHeightMm;
+    }
 
     currentLabel++;
   }

@@ -19,7 +19,9 @@ This project uses [Material UI](https://mui.com/) for its base styling along wit
 
 Run the SQL script in `supabase/diary_entries.sql` on your Supabase project to
 create the `diary_entries` table used by the Netlify functions. This script also
-enables the `uuid-ossp` extension required for `uuid_generate_v4()`.
+enables the `uuid-ossp` extension required for `uuid_generate_v4()`. The table
+stores the Netlify Identity user ID directly, so no Supabase Auth setup is
+needed.
 
 Make sure your Netlify environment has the variables `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY` configured with your project's details so the

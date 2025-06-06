@@ -124,9 +124,9 @@ const CultivoDetailPage: React.FC = () => {
           activePlants.map(async (p) => {
             console.log(`[handleFinishCultivo] Atualizando planta ${p.id} para colhida`);
             try {
-              await updatePlant(p.id, { 
-                operationalStatus: PlantOperationalStatus.HARVESTED, 
-                currentStage: 'Secagem' 
+              await updatePlant(p.id, {
+                operationalStatus: PlantOperationalStatus.HARVESTED,
+                currentStage: PlantStage.DRYING
               });
               console.log(`[handleFinishCultivo] Planta ${p.id} atualizada com sucesso`);
             } catch (plantError) {
@@ -302,7 +302,7 @@ const CultivoDetailPage: React.FC = () => {
       </Button>
 
       {/* Modal de confirmação */}
-      <Modal isOpen={showFinishModal} onClose={() => setShowFinishModal(false)} title="Finalizar Cultivo" size="md">
+      <Modal isOpen={showFinishModal} onClose={() => setShowFinishModal(false)} title="Finalizar Cultivo" maxWidth="md">
         <div className="flex flex-col items-center gap-4 p-2">
           <CheckCircleIcon className="w-16 h-16 text-green-500 mb-2" />
           <span className="text-lg font-bold text-green-800 dark:text-green-300 text-center">Tem certeza que deseja finalizar este cultivo?</span>

@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+import { debugLog } from './utils';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-  console.log('[addCultivo] Event received:', { method: event.httpMethod, body: event.body });
+  debugLog('[addCultivo] Event received:', { method: event.httpMethod, body: event.body });
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -17,7 +18,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     const { name, startDate, notes, plants } = JSON.parse(event.body || '{}');
     const { user } = context.clientContext || {};
     if (!user || !user.sub) {
-      console.log('[addCultivo] Authentication failed:', { user });
+      debugLog('[addCultivo] Authentication failed:', { user });
       return {
         statusCode: 401,
         body: JSON.stringify({ error: 'Usuário não autenticado.' })
@@ -25,7 +26,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     }
     const userId = user.sub;
     if (!name || !startDate) {
-      console.log('[addCultivo] Missing required fields:', { name, startDate });
+      debugLog('[addCultivo] Missing required fields:', { name, startDate });
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Missing required fields.' })
@@ -38,7 +39,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       .insert([{ name, start_date: startDate, notes, user_id: userId }])
       .select()
       .single();
-    console.log('[addCultivo] Cultivo insert result:', { cultivo, cultivoError });
+    debugLog('[addCultivo] Cultivo insert result:', { cultivo, cultivoError });
     if (cultivoError || !cultivo) {
       return {
         statusCode: 500,
@@ -64,12 +65,12 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
           user_id: userId,
         };
       });
-      console.log('[addCultivo] Plants to insert:', plantsToInsert);
+      debugLog('[addCultivo] Plants to insert:', plantsToInsert);
       const { data: plantsResult, error: plantsError } = await supabase
         .from('plants')
         .insert(plantsToInsert)
         .select();
-      console.log('[addCultivo] Plants insert result:', { plantsResult, plantsError });
+      debugLog('[addCultivo] Plants insert result:', { plantsResult, plantsError });
       if (plantsError) {
         return {
           statusCode: 500,
@@ -79,7 +80,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       createdPlants = plantsResult || [];
     }
 
-    console.log('[addCultivo] Success:', { cultivo, createdPlants });
+    debugLog('[addCultivo] Success:', { cultivo, createdPlants });
     return {
       statusCode: 200,
       body: JSON.stringify({ cultivo, plants: createdPlants })

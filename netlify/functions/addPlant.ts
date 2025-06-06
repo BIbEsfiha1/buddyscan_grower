@@ -1,6 +1,7 @@
 // Certifique-se de instalar @netlify/functions localmente para desenvolvimento TS
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { debugLog } from './utils';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -26,15 +27,15 @@ function camelToSnake(obj: any) {
 }
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-  console.log('[addPlant] Function invoked.');
-  console.log('[addPlant] SUPABASE_URL available:', !!process.env.SUPABASE_URL);
-  console.log('[addPlant] SUPABASE_SERVICE_ROLE_KEY available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  console.log('[addPlant] context.clientContext:', JSON.stringify(context.clientContext, null, 2));
+  debugLog('[addPlant] Function invoked.');
+  debugLog('[addPlant] SUPABASE_URL available:', !!process.env.SUPABASE_URL);
+  debugLog('[addPlant] SUPABASE_SERVICE_ROLE_KEY available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  debugLog('[addPlant] context.clientContext:', JSON.stringify(context.clientContext, null, 2));
 
   let supabase: SupabaseClient;
   try {
     supabase = getSupabaseClient();
-    console.log('[addPlant] Supabase client initialized successfully.');
+    debugLog('[addPlant] Supabase client initialized successfully.');
   } catch (error: any) {
     console.error('[addPlant] Error initializing Supabase client:', error);
     return {
@@ -55,7 +56,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       body: JSON.stringify({ error: 'Usuário não autenticado.' }),
     };
   }
-  console.log('[addPlant] User authenticated:', user.sub);
+  debugLog('[addPlant] User authenticated:', user.sub);
 
   const userId = user.sub;
 
@@ -76,20 +77,20 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
   try {
     const plantData = JSON.parse(event.body);
-    console.log('[addPlant] Received plantData:', plantData);
+    debugLog('[addPlant] Received plantData:', plantData);
 
     // Converte todas as chaves camelCase para snake_case
     const plantToInsert = {
       ...camelToSnake(plantData),
       user_id: userId,
     };
-    console.log('[addPlant] plantToInsert (snake_case):', plantToInsert);
+    debugLog('[addPlant] plantToInsert (snake_case):', plantToInsert);
 
     // Remove o campo 'id' se ele vier do cliente, pois o Supabase gera automaticamente
     delete plantToInsert.id;
 
     // 1. Inserir planta sem qr_code_value
-    console.log('[addPlant] Attempting to insert plant:', plantToInsert);
+    debugLog('[addPlant] Attempting to insert plant:', plantToInsert);
     const { data: insertedPlant, error: insertError } = await supabase
       .from('plants')
       .insert([plantToInsert])
@@ -112,8 +113,8 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       };
     }
 
-    console.log('[addPlant] Plant inserted successfully. ID:', insertedPlant.id);
-    console.log('[addPlant] Full insertedPlant object:', JSON.stringify(insertedPlant, null, 2));
+    debugLog('[addPlant] Plant inserted successfully. ID:', insertedPlant.id);
+    debugLog('[addPlant] Full insertedPlant object:', JSON.stringify(insertedPlant, null, 2));
 
     return {
       statusCode: 201, // 201 Created

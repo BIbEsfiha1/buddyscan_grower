@@ -4,7 +4,8 @@ create extension if not exists "uuid-ossp";
 create table if not exists diary_entries (
   id uuid primary key default uuid_generate_v4(),
   plant_id uuid references plants(id) on delete cascade not null,
-  user_id uuid references auth.users(id) not null,
+  -- Store Netlify Identity user IDs directly without foreign key to Supabase Auth
+  user_id uuid not null,
   timestamp timestamptz not null default now(),
   author text not null,
   notes text,

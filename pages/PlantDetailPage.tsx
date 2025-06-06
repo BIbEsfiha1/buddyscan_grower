@@ -6,6 +6,7 @@ import DiaryEntryItem from '../components/DiaryEntryItem';
 import DiaryEntryForm from '../components/DiaryEntryForm';
 import DailyChecklist from '../components/DailyChecklist';
 import Modal from '../components/Modal';
+import QrCodeDisplay from '../components/QrCodeDisplay';
 import { usePlantContext } from '../contexts/PlantContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -156,7 +157,7 @@ const PlantDetailPage: React.FC = () => {
   };
 
   const handleDownloadQrCode = () => {
-    if (!plant || !plant.qrCodeValue) return;
+    if (!plant) return;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -289,9 +290,9 @@ const PlantDetailPage: React.FC = () => {
           />
           {toast && <Toast message={toast.message} type={toast.type} />}
           <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6">
-            {plant.qrCodeValue && (
+            {plant && (
               <div style={{ display: 'none' }}>
-                <QRCodeSVG id="qr-code-svg-for-download" value={plant.qrCodeValue} size={256} includeMargin={true} />
+                <QRCodeSVG id="qr-code-svg-for-download" value={plant.qrCodeValue || plant.id} size={256} includeMargin={true} />
               </div>
             )}
             <div className="grid gap-6 lg:grid-cols-3">
@@ -337,7 +338,7 @@ const PlantDetailPage: React.FC = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow flex flex-col gap-4">
-                  {plant.qrCodeValue && (
+                  {plant && (
                     <button
                       onClick={() => setShowQrModal(true)}
                       className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
@@ -465,17 +466,15 @@ const PlantDetailPage: React.FC = () => {
               </div>
             </div>
           </Modal>
-          {plant.qrCodeValue && (
+          {plant && (
             <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code da Planta">
-              <div className="flex flex-col items-center justify-center p-4">
-                <QRCodeSVG value={plant.qrCodeValue} size={256} includeMargin={true} />
-                <p className="mt-4 text-lg font-semibold text-gray-800 dark:text-white">{plant.name}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {plant.id}</p>
+              <div className="flex flex-col items-center justify-center p-4 gap-4">
+                <QrCodeDisplay plant={plant} />
                 <button
                   onClick={handleDownloadQrCode}
-                  className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  className="w-full max-w-[180px] bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                 >
-                  Download QR Code
+                  Baixar QR Code
                 </button>
               </div>
             </Modal>

@@ -73,4 +73,8 @@
     "ready_to_harvest": "Ready to harvest"
   },
   "loading": "Loading..."
+  ,"settingsPage": {
+    "title": "Settings",
+    "theme": "Dark mode"
+  }
 }

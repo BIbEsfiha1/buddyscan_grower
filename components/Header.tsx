@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import PlusIcon from './icons/PlusIcon';
 import ProfileDropdown from './ProfileDropdown';
+import ThemeToggle from './ThemeToggle';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -71,6 +72,7 @@ const Header: React.FC<HeaderProps> = ({
             </svg>
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900"></span>
           </IconButton>
+          <ThemeToggle className="mx-2" />
           <div className="relative">
             <IconButton onClick={() => setIsProfileDropdownOpen(prev => !prev)} size="small" aria-controls="user-menu" aria-haspopup="true">
               <Avatar sx={{ bgcolor: 'success.main', width: 32, height: 32, fontSize: 14 }}>{initials}</Avatar>

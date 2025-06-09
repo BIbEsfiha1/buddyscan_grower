@@ -4,7 +4,6 @@ import XMarkIcon from './icons/XMarkIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { APP_NAME } from '../constants';
 import LeafIcon from './icons/LeafIcon'; // Para o logo
-import ThemeToggle from './ThemeToggle';
 import { useTranslation } from 'react-i18next';
 
 interface HamburgerMenuProps {
@@ -108,10 +107,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose }) => {
             {/* Adicionar outros links conforme necessário */}
             {/* Exemplo: Adicionar Planta, Escanear QR Code - estes já estão no DashboardPage, mas podem ser adicionados aqui também se fizer sentido */}
           </nav>
-          <div className="p-5 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between">
-            <span>{t('settingsPage.theme')}</span>
-            <ThemeToggle />
-          </div>
 
           {/* Rodapé do Menu (Logout) */}
           <div className="p-5 mt-auto border-t border-gray-200 dark:border-slate-700">

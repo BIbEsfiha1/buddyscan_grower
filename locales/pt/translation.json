@@ -75,8 +75,7 @@
     "age_plural": "{{count}} dias de vida",
     "problem": "Problema: {{status}}"
   },
-  "loading": "Carregando...",
-  "settingsPage": {
+
     "title": "Configurações",
     "theme": "Modo escuro"
   }

@@ -61,7 +61,6 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
 
   return (
     <MaterialUISwitch
-      className={className}
       checked={theme === 'dark'}
       onChange={handleToggle}
       inputProps={{ 'aria-label': t('header.toggle_theme') }}

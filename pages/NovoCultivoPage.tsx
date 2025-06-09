@@ -1,26 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import { SUBSTRATE_OPTIONS } from '../constants';
+import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
 export default function NovoCultivoPage() {
   const [cultivoNome, setCultivoNome] = useState('');
   const [startDate, setStartDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [substrate, setSubstrate] = useState('');
+  const [grows, setGrows] = useState<Grow[]>([]);
+  const [growId, setGrowId] = useState('');
+  const [plants, setPlants] = useState<{ name: string; strain: string }[]>([{ name: '', strain: '' }]);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchGrows() {
+      try {
+        const { getGrows } = await import('../services/growService');
+        const data = await getGrows();
+        setGrows(data);
+      } catch (e) {
+        console.error('Erro ao carregar grows', e);
+      }
+    }
+    fetchGrows();
+  }, []);
+
+  const updatePlant = (index: number, field: 'name' | 'strain', value: string) => {
+    setPlants(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
+  };
+
+  const addPlantField = () => setPlants(prev => [...prev, { name: '', strain: '' }]);
+
+  const removePlantField = (index: number) => {
+    setPlants(prev => prev.filter((_, i) => i !== index));
+  };
 
   async function handleSalvarCultivo(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
       const { addCultivo } = await import('../services/cultivoService');
+      const plantsToSend = plants
+        .filter(p => p.name && p.strain)
+        .map(p => ({
+          ...p,
+          birthDate: startDate,
+          currentStage: PlantStage.SEEDLING,
+          healthStatus: PlantHealthStatus.HEALTHY,
+          operationalStatus: PlantOperationalStatus.ACTIVE,
+          substrate,
+        }));
       const cultivoData = {
         name: cultivoNome,
         startDate,
         notes,
+        substrate,
+        growId: growId || undefined,
+        plants: plantsToSend,
       };
       await addCultivo(cultivoData);
       setSaving(false);
@@ -74,9 +116,50 @@ export default function NovoCultivoPage() {
               <input id="startDate" type="date" className={inputStyle} value={startDate} onChange={e => setStartDate(e.target.value)} required />
             </div>
             <div>
+              <label htmlFor="grow" className={labelStyle}>Grow / Estufa</label>
+              <select id="grow" className={inputStyle} value={growId} onChange={e => setGrowId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {grows.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="substrate" className={labelStyle}>Substrato</label>
+              <select id="substrate" className={inputStyle} value={substrate} onChange={e => setSubstrate(e.target.value)}>
+                {SUBSTRATE_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label htmlFor="notes" className={labelStyle}>Notas (opcional)</label>
               <textarea id="notes" className={inputStyle} value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
             </div>
+          </fieldset>
+
+          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Plantas</legend>
+            {plants.map((p, idx) => (
+              <div key={idx} className="grid grid-cols-2 gap-2 items-center">
+                <input
+                  type="text"
+                  className={inputStyle}
+                  placeholder="Nome"
+                  value={p.name}
+                  onChange={e => updatePlant(idx, 'name', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className={inputStyle}
+                  placeholder="Strain"
+                  value={p.strain}
+                  onChange={e => updatePlant(idx, 'strain', e.target.value)}
+                />
+                {plants.length > 1 && (
+                  <button type="button" onClick={() => removePlantField(idx)} className="text-red-500 text-sm">Remover</button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={addPlantField} className="text-green-700 text-sm">+ Adicionar Planta</button>
           </fieldset>
 
           <div className="mt-8 flex justify-center">

@@ -20,6 +20,11 @@ This project uses [Material UI](https://mui.com/) for its base styling along wit
 Run the SQL script in `supabase/diary_entries.sql` on your Supabase project to
 create the `diary_entries` table used by the Netlify functions. This script also
 
+Run the SQL script in `supabase/grows.sql` to create the `grows` table and add
+`substrate` and `grow_id` columns to `cultivos`.
+
+Use the `/grows` page to manage your grow rooms and add new ones as needed.
+
 Make sure your Netlify environment has the variables `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY` configured with your project's details so the
 functions can connect to Supabase.

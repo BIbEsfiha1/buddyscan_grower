@@ -15,7 +15,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
   }
 
   try {
-    const { name, startDate, notes, plants } = JSON.parse(event.body || '{}');
+    const { name, startDate, notes, substrate, growId, plants } = JSON.parse(event.body || '{}');
     const { user } = context.clientContext || {};
     if (!user || !user.sub) {
       debugLog('[addCultivo] Authentication failed:', { user });
@@ -36,7 +36,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     // 1. Criar o cultivo
     const { data: cultivo, error: cultivoError } = await supabase
       .from('cultivos')
-      .insert([{ name, start_date: startDate, notes, user_id: userId }])
+      .insert([{ name, start_date: startDate, notes, substrate, grow_id: growId, user_id: userId }])
       .select()
       .single();
     debugLog('[addCultivo] Cultivo insert result:', { cultivo, cultivoError });

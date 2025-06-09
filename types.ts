@@ -24,10 +24,20 @@ export enum PlantOperationalStatus {
   ARCHIVED = 'Arquivada', // For completed/lost plants that are no longer active but kept for records
 }
 
+export interface Grow {
+  id: string;
+  name: string;
+  location?: string;
+  userId: string;
+  createdAt: string;
+}
+
 
 export interface Cultivo {
   // ...outras propriedades
   plants?: any[]; // Array de plantas associado ao cultivo
+  substrate?: string;
+  growId?: string;
   id: string;
   name: string;
   startDate: string; // ISO

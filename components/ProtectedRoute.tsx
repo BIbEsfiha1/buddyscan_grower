@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from "./Loader";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (user === undefined) { // Checa se o estado inicial do usuário ainda não foi definido
     return (
       <div className="flex justify-center items-center h-screen">
-        <p className="text-lg text-gray-600 dark:text-gray-300">Carregando...</p>
+        <Loader size="md" />
       </div>
     );
   }

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { usePlantContext } from '../contexts/PlantContext';
 import PlantCard from '../components/PlantCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Loader from '../components/Loader';
 import Header from '../components/Header'; // Re-use header for consistent look
 import Sidebar from '../components/Sidebar'; // Re-use sidebar
 import Button from '../components/Button';
@@ -87,7 +87,7 @@ const AllPlantsPage: React.FC = () => {
           )}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <LoadingSpinner size="lg" />
+              <Loader size="lg" />
             </div>
           ) : error ? (
             <div className="bg-red-900/30 text-red-300 p-4 rounded-lg">

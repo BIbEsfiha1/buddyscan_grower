@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Loader from "./Loader";
 
 interface Strain {
   id: string;
@@ -113,7 +114,7 @@ const StrainAutocomplete: React.FC<StrainAutocompleteProps> = ({ value, onChange
       {showOptions && (inputValue.length >= 2) && (
         <div className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow max-h-56 overflow-auto">
           {loading && (
-            <div className="p-2 text-gray-500 dark:text-gray-300">Carregando...</div>
+            <div className="p-2 text-center"><Loader size="sm" /></div>
           )}
           {!loading && options.map(option => (
             <div

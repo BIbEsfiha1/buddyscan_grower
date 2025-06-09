@@ -72,8 +72,8 @@
     "days_to_harvest_plural": "Faltam {{count}} dias para a colheita",
     "ready_to_harvest": "Pronto para colher"
   },
-  "loading": "Carregando..."
-  ,"settingsPage": {
+  "loading": "Carregando...",
+  "settingsPage": {
     "title": "Configurações",
     "theme": "Modo escuro"
   }

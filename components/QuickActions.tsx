@@ -11,20 +11,20 @@ interface QuickActionProps {
 
 const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }) => {
   const colorMap = {
-    green: 'bg-emerald-600 hover:bg-emerald-700',
-    blue: 'bg-blue-600 hover:bg-blue-700',
-    yellow: 'bg-yellow-600 hover:bg-yellow-700',
-    red: 'bg-red-600 hover:bg-red-700',
-    purple: 'bg-purple-600 hover:bg-purple-700'
+    green: 'from-emerald-500 to-green-600',
+    blue: 'from-blue-500 to-blue-700',
+    yellow: 'from-yellow-400 to-amber-500',
+    red: 'from-red-500 to-rose-600',
+    purple: 'from-purple-500 to-violet-600'
   };
 
   return (
     <button
       onClick={onClick}
-      className={`${colorMap[color]} text-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center gap-2 transition-transform hover:scale-105 w-full h-full`}
+      className={`bg-gradient-to-br ${colorMap[color]} text-white w-16 h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-transform hover:scale-110`}
     >
-      <div className="text-3xl">{icon}</div>
-      <span className="text-sm font-medium">{title}</span>
+      <div className="text-xl md:text-2xl mb-1">{icon}</div>
+      <span className="text-[10px] md:text-xs font-medium leading-none">{title}</span>
     </button>
   );
 };
@@ -44,7 +44,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       <QuickAction
         title={t('header.add_plant')}
         icon={<MdAdd size={32} />}

@@ -73,4 +73,8 @@
     "ready_to_harvest": "Pronto para colher"
   },
   "loading": "Carregando..."
+  ,"settingsPage": {
+    "title": "Configurações",
+    "theme": "Modo escuro"
+  }
 }

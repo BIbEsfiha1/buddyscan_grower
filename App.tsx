@@ -12,6 +12,7 @@ import NovaPlantaPage from './pages/NovaPlantaPage';
 import CultivoEtiquetasPage from './pages/CultivoEtiquetasPage';
 import CultivoDetailPage from './pages/CultivoDetailPage';
 import GrowsPage from './pages/GrowsPage';
+import SettingsPage from './pages/SettingsPage';
 import { PlantProvider } from './contexts/PlantContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -105,6 +106,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <AllPlantsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

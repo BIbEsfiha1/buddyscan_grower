@@ -72,5 +72,9 @@
     "days_to_harvest_plural": "{{count}} days to harvest",
     "ready_to_harvest": "Ready to harvest"
   },
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "settingsPage": {
+    "title": "Settings",
+    "theme": "Dark mode"
+  }
 }

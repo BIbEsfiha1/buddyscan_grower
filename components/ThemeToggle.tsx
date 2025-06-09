@@ -47,7 +47,11 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
 

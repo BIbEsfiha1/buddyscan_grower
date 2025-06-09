@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
 import LeafIcon from '../components/icons/LeafIcon';
+import Loader from "../components/Loader";
 
 const CultivosPage: React.FC = () => {
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
@@ -40,8 +41,7 @@ const CultivosPage: React.FC = () => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6">
-      <span className="w-10 h-10 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-6" />
-      <span className="text-green-700 dark:text-green-300 font-semibold text-lg">Carregando cultivos...</span>
+      <Loader message="Carregando cultivos..." size="md" />
     </div>
   );
   if (error) return (

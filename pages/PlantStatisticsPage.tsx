@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Plant } from '../types';
 import { usePlantContext } from '../contexts/PlantContext';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Loader from '../components/Loader';
 import { 
   PLANT_STAGES_OPTIONS, 
   PLANT_HEALTH_STATUS_OPTIONS,
@@ -37,7 +37,7 @@ const PlantStatisticsPage: React.FC = () => {
   }, [loadPlantData]);
 
   if (isLoadingLocal || contextIsLoading) {
-    return <LoadingSpinner message="Carregando estatísticas da planta..." />;
+    return <Loader message="Carregando estatísticas da planta..." />;
   }
 
   if (contextError) {

@@ -3,7 +3,7 @@ import { DiaryEntry, PlantStage, Photo, NewPhoto, NewDiaryEntryData } from '../t
 import { PLANT_STAGES_OPTIONS, DEFAULT_AI_PROMPT } from '../constants';
 import ImageUpload from './ImageUpload';
 import { getImageDiagnosis } from '../services/geminiService';
-import LoadingSpinner from './LoadingSpinner';
+import Loader from './Loader';
 import Button from './Button';
 
 interface DiaryEntryFormProps {
@@ -187,7 +187,7 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
               </div>
             </div>
           )}
-          {isDiagnosing && <LoadingSpinner size="sm" message="Analisando imagem com IA..." />}
+          {isDiagnosing && <Loader size="sm" message="Analisando imagem com IA..." />}
           {diagnosisError && <p className="text-xs text-red-500 dark:text-red-400">{diagnosisError}</p>}
       </div>
       

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import Loader from "../components/Loader";
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
@@ -63,8 +64,7 @@ export default function GrowsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
-        <span className="w-10 h-10 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-6" />
-        <span className="text-green-700 dark:text-green-300 font-semibold text-lg">Carregando estufas...</span>
+        <Loader message="Carregando estufas..." size="md" />
       </div>
     );
   }

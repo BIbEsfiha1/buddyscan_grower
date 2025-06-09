@@ -10,7 +10,7 @@ import {
   SUBSTRATE_OPTIONS
 } from '../constants';
 import PlantCard from '../components/PlantCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Loader from '../components/Loader';
 import Modal from '../components/Modal';
 import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/Button';
@@ -365,7 +365,7 @@ const DashboardPage: React.FC = () => {
         <form onSubmit={handleAddPlant} className="space-y-4">
           {isAddingPlant ? (
             <div className="flex justify-center items-center py-2">
-              <LoadingSpinner size="md" />
+              <Loader size="md" />
               <span className="ml-2 text-gray-600 dark:text-slate-300 text-sm">{t('dashboard.adding_plant')}</span>
             </div>
           ) : (

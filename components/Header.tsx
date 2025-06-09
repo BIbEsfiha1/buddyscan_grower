@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { MdMenu, MdSearch, MdQrCodeScanner, MdNotifications, MdAdd } from 'react-icons/md';
+import ThemeToggle from './ThemeToggle';
 import PlusIcon from './icons/PlusIcon';
 import ProfileDropdown from './ProfileDropdown';
 import AppBar from '@mui/material/AppBar';
@@ -50,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
             <input
               type="text"
               placeholder={t('header.search')}
-              className="bg-gray-800 text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-48 focus:w-60 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-48 focus:w-60 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
             <MdSearch className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
           </div>
@@ -62,8 +63,9 @@ const Header: React.FC<HeaderProps> = ({
           </IconButton>
           <IconButton color="inherit" className="relative">
             <MdNotifications size={20} />
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900"></span>
+            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900 dark:ring-gray-200"></span>
           </IconButton>
+          <ThemeToggle className="ml-2" />
           <div className="relative">
             <IconButton onClick={() => setIsProfileDropdownOpen(prev => !prev)} size="small" aria-controls="user-menu" aria-haspopup="true">
               <Avatar sx={{ bgcolor: 'success.main', width: 32, height: 32, fontSize: 14 }}>{initials}</Avatar>
@@ -82,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
         <input
           type="text"
           placeholder={t('header.search')}
-          className="bg-gray-800 text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         <MdSearch className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
       </div>

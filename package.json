@@ -9,9 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@google/generative-ai": "^0.24.1",
+    "@mui/icons-material": "^5.15.19",
+    "@mui/material": "^5.15.19",
     "@supabase/supabase-js": "^2.49.8",
     "@yudiel/react-qr-scanner": "^2.3.1",
+    "framer-motion": "^12.16.0",
     "i18next": "^25.2.1",
     "jspdf": "^3.0.1",
     "netlify-identity-widget": "^1.9.2",
@@ -20,12 +25,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^15.5.2",
-    "react-router-dom": "^7.6.1",
-    "@mui/material": "^5.15.19",
-    "@mui/icons-material": "^5.15.19",
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5"
-    ,"framer-motion": "^12.16.0"
+    "react-icons": "^4.12.0",
+    "react-router-dom": "^7.6.1"
   },
   "devDependencies": {
     "@netlify/functions": "^3.1.10",

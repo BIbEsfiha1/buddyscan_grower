@@ -187,7 +187,7 @@ const DashboardPage: React.FC = () => {
   const selectStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors";
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+    <div className="flex h-screen bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white overflow-hidden">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
@@ -253,7 +253,7 @@ const DashboardPage: React.FC = () => {
           </div>
 
           {/* Quick Actions */}
-          <section className="bg-gray-800/50 p-4 rounded-xl">
+          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
             <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.quick_actions')}</h2>
             <QuickActions 
               onAddPlant={() => setIsAddModalOpen(true)}
@@ -264,7 +264,7 @@ const DashboardPage: React.FC = () => {
           </section>
           
           {/* Plants List */}
-          <section className="bg-gray-800/50 p-4 rounded-xl">
+          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">{t('dashboard.my_plants')}</h2>
               <Link to="/plants" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">
@@ -312,7 +312,7 @@ const DashboardPage: React.FC = () => {
           </section>
           
           {/* Recent Activity */}
-          <section className="bg-gray-800/50 p-4 rounded-xl">
+          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
             <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.recent_activity')}</h2>
             <div className="space-y-3">
               {plants.length > 0 ? (

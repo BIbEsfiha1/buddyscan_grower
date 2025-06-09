@@ -11,11 +11,11 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, change, trend, icon, color }) => {
   const colorMap = {
-    green: 'bg-emerald-900/30 text-emerald-400 border-emerald-500/50',
-    blue: 'bg-blue-900/30 text-blue-400 border-blue-500/50',
-    yellow: 'bg-yellow-900/30 text-yellow-400 border-yellow-500/50',
-    red: 'bg-red-900/30 text-red-400 border-red-500/50',
-    purple: 'bg-purple-900/30 text-purple-400 border-purple-500/50'
+    green: 'bg-gradient-to-br from-emerald-500 to-green-700 text-white',
+    blue: 'bg-gradient-to-br from-blue-500 to-blue-700 text-white',
+    yellow: 'bg-gradient-to-br from-yellow-400 to-amber-500 text-white',
+    red: 'bg-gradient-to-br from-red-500 to-rose-600 text-white',
+    purple: 'bg-gradient-to-br from-purple-500 to-violet-700 text-white'
   };
 
   const trendMap = {
@@ -25,19 +25,40 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, change, trend, icon
   };
 
   const iconBgColorMap = {
-    green: 'bg-emerald-500/20 text-emerald-500',
-    blue: 'bg-blue-500/20 text-blue-500',
-    yellow: 'bg-yellow-500/20 text-yellow-500',
-    red: 'bg-red-500/20 text-red-500',
-    purple: 'bg-purple-500/20 text-purple-500'
+    green: 'bg-emerald-600/90 text-white',
+    blue: 'bg-blue-600/90 text-white',
+    yellow: 'bg-yellow-500/90 text-white',
+    red: 'bg-red-600/90 text-white',
+    purple: 'bg-purple-600/90 text-white'
   };
 
+  const [displayValue, setDisplayValue] = React.useState(
+    typeof value === 'number' ? 0 : value
+  );
+
+  React.useEffect(() => {
+    if (typeof value === 'number') {
+      const start = performance.now();
+      const duration = 600;
+      const animate = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        setDisplayValue(Math.round(progress * value));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    } else {
+      setDisplayValue(value);
+    }
+  }, [value]);
+
   return (
-    <div className={`p-4 rounded-xl border ${colorMap[color]} bg-gray-800 shadow-lg transition-all hover:translate-y-[-2px]`}>
+    <div
+      className={`p-5 rounded-3xl ${colorMap[color]} shadow-md hover:shadow-xl transition-all hover:-translate-y-1`}
+    >
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-gray-400 text-sm font-medium mb-1">{title}</h3>
-          <p className="text-2xl font-bold text-white">{value}</p>
+          <h3 className="text-gray-100 text-sm font-medium mb-1">{title}</h3>
+          <p className="text-3xl font-semibold text-white leading-tight">{displayValue}</p>
           {change && (
             <div className={`text-xs mt-1 ${trend ? trendMap[trend] : ''}`}>
               {trend === 'up' && '▲ '}
@@ -46,7 +67,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, change, trend, icon
             </div>
           )}
         </div>
-        <div className={`p-2 rounded-lg ${iconBgColorMap[color]}`}>
+        <div className={`p-2 rounded-full ${iconBgColorMap[color]}`}>
           {icon}
         </div>
       </div>

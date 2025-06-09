@@ -78,7 +78,7 @@ export default function NovoCultivoPage() {
   const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
   return (
-    <div className="max-w-lg mx-auto w-full min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {/* Toast global */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 
@@ -102,10 +102,9 @@ export default function NovoCultivoPage() {
 
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">Novo Cultivo</h1>
-
-        <form onSubmit={handleSalvarCultivo} className="space-y-6">
+        <form onSubmit={handleSalvarCultivo} className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Detalhes do Cultivo */}
-          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
             <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Informações do Cultivo</legend>
             <div>
               <label htmlFor="cultivoNome" className={labelStyle}>Nome do Cultivo</label>
@@ -136,7 +135,7 @@ export default function NovoCultivoPage() {
             </div>
           </fieldset>
 
-          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
             <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Plantas</legend>
             {plants.map((p, idx) => (
               <div key={idx} className="grid grid-cols-2 gap-2 items-center">
@@ -162,7 +161,7 @@ export default function NovoCultivoPage() {
             <button type="button" onClick={addPlantField} className="text-green-700 text-sm">+ Adicionar Planta</button>
           </fieldset>
 
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex justify-center lg:col-span-2">
             <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!cultivoNome || !startDate}>
               Salvar Cultivo
             </Button>

@@ -81,7 +81,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   }
 };
 
-export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; plants?: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
+export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; substrate?: string; growId?: string; plants?: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
   try {
     const user = netlifyIdentity.currentUser();
     if (!user) {

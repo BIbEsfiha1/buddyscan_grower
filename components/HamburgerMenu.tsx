@@ -79,6 +79,13 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose }) => {
             >
               Cultivos
             </Link>
+            <Link
+              to="/grows"
+              className="block px-4 py-3 text-base font-medium text-green-700 rounded-lg hover:bg-green-100 dark:text-green-300 dark:hover:bg-slate-700 transition-colors"
+              onClick={onClose}
+            >
+              Grows
+            </Link>
             {/* Estatísticas do Jardim */}
             <Link
               to="/estatisticas-jardim"

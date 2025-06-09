@@ -48,6 +48,15 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     delete updateData.id; // Remove id from update data
     delete updateData.plants; // Remove plants array as it's not a column in the cultivos table
 
+    if (updateData.startDate) {
+      updateData.start_date = updateData.startDate;
+      delete updateData.startDate;
+    }
+    if (updateData.growId) {
+      updateData.grow_id = updateData.growId;
+      delete updateData.growId;
+    }
+
     if (!cultivoId) {
       return {
         statusCode: 400,

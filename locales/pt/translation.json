@@ -70,7 +70,15 @@
   "plant_card": {
     "days_to_harvest": "Falta {{count}} dia para a colheita",
     "days_to_harvest_plural": "Faltam {{count}} dias para a colheita",
-    "ready_to_harvest": "Pronto para colher"
+    "ready_to_harvest": "Pronto para colher",
+    "age": "{{count}} dia de vida",
+    "age_plural": "{{count}} dias de vida",
+    "problem": "Problema: {{status}}"
   },
-  "loading": "Carregando..."
+  "loading": "Carregando...",
+  "settingsPage": {
+    "title": "Configurações",
+    "theme": "Modo escuro"
+  }
 }
+

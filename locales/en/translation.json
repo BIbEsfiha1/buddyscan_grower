@@ -70,7 +70,15 @@
   "plant_card": {
     "days_to_harvest": "{{count}} day to harvest",
     "days_to_harvest_plural": "{{count}} days to harvest",
-    "ready_to_harvest": "Ready to harvest"
+    "ready_to_harvest": "Ready to harvest",
+    "age": "{{count}} day old",
+    "age_plural": "{{count}} days old",
+    "problem": "Problem: {{status}}"
   },
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "settingsPage": {
+    "title": "Settings",
+    "theme": "Dark mode"
+  }
 }
+

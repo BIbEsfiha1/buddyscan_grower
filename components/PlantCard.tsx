@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plant } from '../types';
+import { Plant, PlantHealthStatus } from '../types';
+import { useTranslation } from 'react-i18next';
 import PlantInsight from './PlantInsight';
 import TiltedCard from './TiltedCard';
 
@@ -38,6 +39,8 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
   //   }
   // };
 
+  const { t } = useTranslation();
+
   const handleClick = () => {
     if (selectable) {
       onSelectToggle && onSelectToggle();
@@ -47,6 +50,12 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
       window.location.href = `/plant/${plant.id}`;
     }
   };
+
+  const ageDays = React.useMemo(() => {
+    const birth = new Date(plant.birthDate).getTime();
+    if (!birth) return null;
+    return Math.floor((Date.now() - birth) / (1000 * 60 * 60 * 24));
+  }, [plant.birthDate]);
 
   return (
     <TiltedCard
@@ -78,8 +87,18 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
 
           {/* Conteúdo de texto do card */}
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur rounded-b-3xl">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 truncate" title={plant.name}>{plant.name}</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 truncate" title={plant.name}>{plant.name}</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 truncate" title={plant.strain}>{plant.strain || 'N/A'}</p>
+            {ageDays !== null && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t(ageDays === 1 ? 'plant_card.age' : 'plant_card.age_plural', { count: ageDays })}
+              </p>
+            )}
+            {plant.healthStatus && plant.healthStatus !== PlantHealthStatus.HEALTHY && (
+              <p className="text-xs text-red-500">
+                {t('plant_card.problem', { status: plant.healthStatus })}
+              </p>
+            )}
             <PlantInsight plant={plant} />
           </div>
 

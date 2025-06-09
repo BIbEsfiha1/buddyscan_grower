@@ -18,6 +18,16 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
+  // Sync with system preference when user hasn't chosen a theme yet
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme') as Theme | null;
+    if (storedTheme) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => setTheme(media.matches ? 'dark' : 'light');
+    media.addEventListener('change', handler);
+    return () => media.removeEventListener('change', handler);
+  }, []);
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === 'dark') {

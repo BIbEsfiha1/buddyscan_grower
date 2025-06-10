@@ -44,13 +44,14 @@ const BottomNavigation: React.FC = () => {
           <span className="mt-1">{label}</span>
         </NavLink>
       ))}
+
       {scannerItem && (() => {
-        const ScannerIcon = scannerItem.icon;
+        const { path, label, icon: ScannerIcon } = scannerItem;
         return (
           <Link
-            to={scannerItem.path}
+            to={path}
             className="absolute left-1/2 -top-6 -translate-x-1/2 bg-emerald-500 text-white rounded-full p-3 shadow-lg"
-            aria-label={scannerItem.label}
+            aria-label={label}
           >
             <ScannerIcon className="w-7 h-7" />
           </Link>

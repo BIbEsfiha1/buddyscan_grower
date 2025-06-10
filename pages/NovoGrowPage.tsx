@@ -24,9 +24,9 @@ export default function NovoGrowPage() {
     setSaving(true);
     try {
       const { addGrow } = await import('../services/growService');
-      await addGrow({ name, location: location || undefined });
-      setToast({ message: 'Grow criado com sucesso!', type: 'success' });
-      setTimeout(() => navigate('/grows'), 1500);
+      const newGrow = await addGrow({ name, location: location || undefined });
+      setToast({ message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.', type: 'success' });
+      setTimeout(() => navigate(`/novo-cultivo?growId=${newGrow.id}`), 1500);
     } catch (err: any) {
       setToast({ message: 'Erro ao criar grow: ' + (err.message || err), type: 'error' });
     } finally {

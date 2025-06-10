@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { MdMenu, MdSearch, MdQrCodeScanner, MdNotifications, MdAdd } from 'react-icons/md';
+import { MdMenu, MdSearch, MdQrCodeScanner, MdNotifications, MdAdd, MdArrowBack } from 'react-icons/md';
 import ThemeToggle from './ThemeToggle';
 import PlusIcon from './icons/PlusIcon';
 import ProfileDropdown from './ProfileDropdown';
@@ -16,13 +16,17 @@ interface HeaderProps {
   onOpenSidebar: () => void;
   onOpenAddModal: () => void;
   onOpenScannerModal: () => void;
+  showBack?: boolean;
+  onBack?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   title,
   onOpenSidebar,
   onOpenAddModal,
-  onOpenScannerModal
+  onOpenScannerModal,
+  showBack = false,
+  onBack,
 }) => {
   const { user, logout } = useAuth(); // Ensure logout is extracted
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -40,9 +44,15 @@ const Header: React.FC<HeaderProps> = ({
     <>
       <AppBar position="static" color="transparent" elevation={0} sx={{ px: 2, py: 1 }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <IconButton edge="start" onClick={onOpenSidebar} aria-label={t('header.open_menu')} sx={{ display: { md: 'none' } }}>
-            <MdMenu size={24} />
-          </IconButton>
+          {showBack ? (
+            <IconButton edge="start" onClick={onBack} aria-label={t('header.go_back')}>
+              <MdArrowBack size={24} />
+            </IconButton>
+          ) : (
+            <IconButton edge="start" onClick={onOpenSidebar} aria-label={t('header.open_menu')} sx={{ display: { md: 'none' } }}>
+              <MdMenu size={24} />
+            </IconButton>
+          )}
           <Typography variant="h6" sx={{ flexGrow: 1 }} color="inherit">
             {title}
           </Typography>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdQrCodeScanner, MdLocalFlorist, MdBarChart, MdEdit } from 'react-icons/md';
+import { Box, Button, Typography } from '@mui/material';
 
 interface QuickActionProps {
   title: string;
@@ -9,25 +10,34 @@ interface QuickActionProps {
   onClick: () => void;
 }
 
-const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }) => {
-  const colorMap = {
-    green: 'from-emerald-500 to-green-600',
-    blue: 'from-blue-500 to-blue-700',
-    yellow: 'from-yellow-400 to-amber-500',
-    red: 'from-red-500 to-rose-600',
-    purple: 'from-purple-500 to-violet-600'
-  };
+const colorMap = {
+  green: 'success',
+  blue: 'primary',
+  yellow: 'warning',
+  red: 'error',
+  purple: 'secondary'
+} as const;
 
-  return (
-    <button
-      onClick={onClick}
-      className={`bg-gradient-to-br ${colorMap[color]} text-white w-16 h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-transform hover:scale-110`}
-    >
-      <div className="text-xl md:text-2xl mb-1">{icon}</div>
-      <span className="text-[10px] md:text-xs font-medium leading-none">{title}</span>
-    </button>
-  );
-};
+const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }) => (
+  <Button
+    variant="contained"
+    color={colorMap[color] as any}
+    onClick={onClick}
+    sx={{
+      width: 72,
+      height: 72,
+      borderRadius: '50%',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}
+  >
+    {icon}
+    <Typography variant="caption" sx={{ mt: 0.5 }}>
+      {title}
+    </Typography>
+  </Button>
+);
 
 interface QuickActionsProps {
   onAddPlant: () => void;
@@ -46,7 +56,19 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-5 gap-6 justify-items-center max-w-md mx-auto">
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: 'repeat(3, 1fr)',
+          sm: 'repeat(5, 1fr)'
+        },
+        gap: 2,
+        justifyItems: 'center',
+        maxWidth: 360,
+        mx: 'auto'
+      }}
+    >
       <QuickAction
         title={t('header.add_plant')}
         icon={<MdAdd size={32} />}
@@ -77,8 +99,9 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         color="red"
         onClick={onRegisterDiary}
       />
-    </div>
+    </Box>
   );
 };
 
 export default QuickActions;
+

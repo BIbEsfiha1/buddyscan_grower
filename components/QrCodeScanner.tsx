@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { getPlants } from '../services/plantService';
 import { Plant } from '../types';
+import { Box, Button, TextField, Typography } from '@mui/material';
 
 
 interface QrCodeScannerProps {
@@ -72,65 +73,59 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
   };
 
   return (
-    <div className="flex flex-col space-y-4">
+    <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
       {!showManualInput ? (
-        <div className="flex flex-col items-center">
-          <div className="relative w-full max-w-xs aspect-square mb-4 border-2 border-[#7AC943] rounded-lg overflow-hidden bg-black">
-            <Scanner
-              onScan={handleQrScan}
-              onError={handleQrError}
-              constraints={{ facingMode: 'environment' }}
-
-            />
-            <div className="absolute top-0 left-0 w-full h-1 bg-[#7AC943] animate-scanline"></div>
-            <div className="scanner-frame"></div>
-          </div>
-          {scanError && <div className="text-red-600 text-center mb-2">{scanError}</div>}
-          <button
-            onClick={() => {
-              setShowManualInput(true);
-              setScanError(null);
-            }}
-            className="text-[#7AC943] hover:text-green-600 font-medium py-2 transition-colors"
+        <Box display="flex" flexDirection="column" alignItems="center" width="100%" maxWidth={300}>
+          <Box
+            position="relative"
+            width="100%"
+            sx={{ aspectRatio: '1 / 1' }}
+            mb={2}
+            border={2}
+            borderColor="success.main"
+            borderRadius={2}
+            overflow="hidden"
+            bgcolor="black"
           >
+            <Scanner onScan={handleQrScan} onError={handleQrError} constraints={{ facingMode: 'environment' }} />
+            <Box className="animate-scanline" sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4 }} />
+            <Box className="scanner-frame" />
+          </Box>
+          {scanError && (
+            <Typography color="error" align="center" sx={{ mb: 1 }}>
+              {scanError}
+            </Typography>
+          )}
+          <Button variant="text" onClick={() => { setShowManualInput(true); setScanError(null); }}>
             Digitar código manualmente
-          </button>
-        </div>
+          </Button>
+        </Box>
       ) : (
-        <div className="flex flex-col space-y-4">
-          <div className="text-center mb-2">
-            <p className="text-gray-600 dark:text-slate-300">
-              Digite o valor do QR code da planta:
-            </p>
-          </div>
-          <input
-            type="text"
+        <Box display="flex" flexDirection="column" gap={2} width="100%" maxWidth={300}>
+          <Typography align="center" color="text.secondary">
+            Digite o valor do QR code da planta:
+          </Typography>
+          <TextField
             value={qrValue}
             onChange={(e) => setQrValue(e.target.value)}
             placeholder="Ex: PLANT-ABC123XYZ"
-            className="border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#7AC943]"
+            size="small"
+            fullWidth
           />
-          {scanError && <div className="text-red-600 text-center mb-2">{scanError}</div>}
-          <div className="flex flex-col space-y-3">
-            <button
-              onClick={handleManualScan}
-              disabled={isScanning}
-              className={`bg-[#7AC943] hover:bg-green-500 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors ${isScanning ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
+          {scanError && (
+            <Typography color="error" align="center">
+              {scanError}
+            </Typography>
+          )}
+          <Box display="flex" flexDirection="column" gap={1}>
+            <Button variant="contained" color="success" onClick={handleManualScan} disabled={isScanning}>
               {isScanning ? 'Processando...' : 'Buscar Planta'}
-            </button>
-            <button
-              onClick={() => {
-                setShowManualInput(false);
-                setQrValue('');
-                setScanError(null);
-              }}
-              className="text-[#7AC943] hover:text-green-600 font-medium py-2 transition-colors"
-            >
+            </Button>
+            <Button variant="text" onClick={() => { setShowManualInput(false); setQrValue(''); setScanError(null); }}>
               Voltar para câmera
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Box>
+        </Box>
       )}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scanline {
@@ -159,7 +154,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
           z-index: 9;
         }
       `}} />
-    </div>
+    </Box>
   );
 };
 

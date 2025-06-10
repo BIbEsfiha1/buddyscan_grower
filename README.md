@@ -31,3 +31,4 @@ Make sure your Netlify environment has the variables `SUPABASE_URL` and
 functions can connect to Supabase.
 
 Para uma descrição completa da interface em português, consulte [docs/INTERFACE_COMPLETA_PT_BR.md](docs/INTERFACE_COMPLETA_PT_BR.md).
+Para detalhes sobre a gestão aprimorada de espaços e plantios, veja [docs/GESTAO_ESPACOS_PLANTIOS_PT_BR.md](docs/GESTAO_ESPACOS_PLANTIOS_PT_BR.md).

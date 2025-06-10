@@ -179,19 +179,19 @@ const CultivoDetailPage: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-full p-6">
       <Loader message="Carregando cultivo..." size="md" />
     </div>
   );
   if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
       <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
       <Button variant="secondary" onClick={() => window.location.reload()}>Tentar novamente</Button>
     </div>
   );
   if (!cultivo) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-gray-400 mb-3" />
       <span className="text-gray-500 dark:text-gray-400 font-semibold text-lg">Cultivo não encontrado.</span>
       <Button variant="secondary" onClick={() => navigate('/cultivos')}>Voltar para cultivos</Button>
@@ -201,7 +201,7 @@ const CultivoDetailPage: React.FC = () => {
   const hasActivePlants = plants.some(p => p.operationalStatus === PlantOperationalStatus.ACTIVE);
 
   return (
-    <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900">
+    <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900">
       {/* Toast global */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 

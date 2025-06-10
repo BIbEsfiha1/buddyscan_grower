@@ -78,7 +78,7 @@ export default function NovoCultivoPage() {
   const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
   return (
-    <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {/* Toast global */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 

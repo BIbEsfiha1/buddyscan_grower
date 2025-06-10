@@ -239,7 +239,7 @@ const PlantDetailPage: React.FC = () => {
 
   if (!plant) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-full bg-gray-50 dark:bg-gray-900">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-12 w-12 bg-green-200 dark:bg-green-700 rounded-full mb-4"></div>
           <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
@@ -279,9 +279,9 @@ const PlantDetailPage: React.FC = () => {
 
   return (
     <>
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-full bg-gray-50 dark:bg-gray-900">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col min-h-full">
           <Header
             title="Detalhes da Planta"
             onOpenSidebar={() => setSidebarOpen(true)}

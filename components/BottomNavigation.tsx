@@ -28,7 +28,7 @@ const BottomNavigation: React.FC = () => {
   return (
     <nav
       role="navigation"
-      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around md:hidden z-[999] relative pt-2 pointer-events-auto"
+      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around md:hidden z-[1100] relative pt-2 pointer-events-auto"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
     >
       {otherItems.map(({ label, path, icon: Icon }) => (

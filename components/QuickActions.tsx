@@ -46,7 +46,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-6 justify-items-center max-w-md mx-auto">
       <QuickAction
         title={t('header.add_plant')}
         icon={<MdAdd size={32} />}

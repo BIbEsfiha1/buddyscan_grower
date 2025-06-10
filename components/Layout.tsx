@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Componente do Menu Hamburger */}
       <HamburgerMenu isOpen={isMenuOpen} onClose={toggleMenu} />
 
-      <main className="flex-grow px-4 sm:px-6 lg:px-8 py-6 sm:py-8 bg-slate-950">
+      <main className="flex-grow px-0 py-6 sm:py-8 bg-slate-950">
         {children}
       </main>
 

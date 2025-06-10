@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const GardenStatisticsPage: React.FC = () => {
   return (
-    <div className="container mx-auto p-4 bg-slate-900 min-h-screen text-slate-100 space-y-8">
+    <div className="p-4 bg-slate-900 min-h-screen text-slate-100 space-y-8 w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-green-400">Estatísticas do Jardim</h1>
         <Link 

@@ -28,7 +28,6 @@ const Header: React.FC<HeaderProps> = ({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { t } = useTranslation();
 
-  console.log('[Header.tsx] Rendering. User:', user, 'isProfileDropdownOpen:', isProfileDropdownOpen);
 
   let initials = 'U';
   if (user?.user_metadata?.full_name) {

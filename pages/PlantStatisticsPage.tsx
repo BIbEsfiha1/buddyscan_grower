@@ -52,7 +52,7 @@ const PlantStatisticsPage: React.FC = () => {
   const operationalStatusLabel = PLANT_OPERATIONAL_STATUS_OPTIONS.find(s => s.value === plant.operationalStatus)?.label || plant.operationalStatus;
 
   return (
-    <div className="container mx-auto p-4 bg-slate-900 min-h-screen text-slate-100 space-y-8">
+    <div className="p-4 bg-slate-900 min-h-screen text-slate-100 space-y-8 w-full">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-green-400">Estatísticas de {plant.name}</h1>
         <Link 

@@ -84,5 +84,17 @@
   "settingsPage": {
     "title": "Settings",
     "theme": "Dark mode"
+  },
+  "cultivosPage": {
+    "title": "My Cultivos",
+    "title_with_count": "My Cultivos ({{count}})",
+    "loading": "Loading cultivos...",
+    "error_loading": "Failed to fetch cultivos.",
+    "try_again": "Try again",
+    "finalizado": "Finished",
+    "inicio": "Start",
+    "no_cultivos": "No cultivos registered yet.",
+    "create_first": "Create your first cultivo",
+    "new_cultivo": "New Cultivo"
   }
 }

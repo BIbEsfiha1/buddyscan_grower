@@ -84,5 +84,17 @@
   "settingsPage": {
     "title": "Configurações",
     "theme": "Modo escuro"
+  },
+  "cultivosPage": {
+    "title": "Meus Cultivos",
+    "title_with_count": "Meus Cultivos ({{count}})",
+    "loading": "Carregando cultivos...",
+    "error_loading": "Erro ao buscar cultivos.",
+    "try_again": "Tentar novamente",
+    "finalizado": "Finalizado",
+    "inicio": "Início",
+    "no_cultivos": "Nenhum cultivo cadastrado ainda.",
+    "create_first": "Crie seu primeiro cultivo",
+    "new_cultivo": "Novo Cultivo"
   }
 }

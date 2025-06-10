@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cultivo } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
@@ -8,6 +9,7 @@ import LeafIcon from '../components/icons/LeafIcon';
 import Loader from "../components/Loader";
 
 const CultivosPage: React.FC = () => {
+  const { t } = useTranslation();
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +24,8 @@ const CultivosPage: React.FC = () => {
         const data = await getCultivos();
         if (mounted) setCultivos(data);
       } catch {
-// Erro tratado, variável não utilizada.
-        setError('Erro ao buscar cultivos.');
+        // Error handled, variable not used
+        setError(t('cultivosPage.error_loading'));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -41,14 +43,14 @@ const CultivosPage: React.FC = () => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-full p-6">
-      <Loader message="Carregando cultivos..." size="md" />
+      <Loader message={t('cultivosPage.loading')} size="md" />
     </div>
   );
   if (error) return (
     <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
       <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
-      <Button variant="secondary" onClick={() => window.location.reload()}>Tentar novamente</Button>
+      <Button variant="secondary" onClick={() => window.location.reload()}>{t('cultivosPage.try_again')}</Button>
     </div>
   );
 
@@ -71,18 +73,18 @@ const CultivosPage: React.FC = () => {
         <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
           <Link to="/" className="hover:underline">Dashboard</Link>
           <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Cultivos</span>
+          <span className="font-bold text-green-700 dark:text-green-300">{t('sidebar.cultivos')}</span>
         </nav>
         <div className="flex-1" />
         <Link to="/novo-cultivo">
-          <Button variant="primary" size="icon" className="shadow" title="Novo Cultivo">
+          <Button variant="primary" size="icon" className="shadow" title={t('cultivosPage.new_cultivo')}>
             <span className="text-xl font-bold">+</span>
           </Button>
         </Link>
       </div>
 
       <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">
-        {hasCultivos ? `Meus Cultivos (${cultivos.length})` : 'Meus Cultivos'}
+        {hasCultivos ? t('cultivosPage.title_with_count', { count: cultivos.length }) : t('cultivosPage.title')}
       </h1>
 
       {/* Lista de cultivos */}
@@ -95,18 +97,18 @@ const CultivosPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate">{cultivo.name}</span>
                     {cultivo.finalizadoEm ? (
-                      <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-bold">Finalizado</span>
+                      <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-bold">{t('cultivosPage.finalizado')}</span>
                     ) : null}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Início: {new Date(cultivo.startDate).toLocaleDateString()}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{t('cultivosPage.inicio')}: {new Date(cultivo.startDate).toLocaleDateString()}</div>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
           <div className="text-gray-400 dark:text-gray-500 text-center py-8">
-            Nenhum cultivo cadastrado ainda.<br />
-            <Link to="/novo-cultivo" className="underline text-green-700 dark:text-green-300">Crie seu primeiro cultivo</Link>
+            {t('cultivosPage.no_cultivos')}<br />
+            <Link to="/novo-cultivo" className="underline text-green-700 dark:text-green-300">{t('cultivosPage.create_first')}</Link>
           </div>
         )}
       </div>

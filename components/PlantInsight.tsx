@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plant } from '../types';
 import { useTranslation } from 'react-i18next';
+import { Box, LinearProgress, Typography } from '@mui/material';
 
 interface PlantInsightProps {
   plant: Plant;
@@ -16,19 +17,14 @@ const PlantInsight: React.FC<PlantInsightProps> = ({ plant }) => {
   const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
   const { t } = useTranslation();
   return (
-    <div className="mt-2">
-      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-        <div
-          className="bg-emerald-500 h-full transition-all"
-          style={{ width: `${progress * 100}%` }}
-        />
-      </div>
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+    <Box mt={2}>
+      <LinearProgress variant="determinate" value={progress * 100} sx={{ height: 8, borderRadius: 1 }} />
+      <Typography variant="caption" color="text.secondary" display="block" mt={1}>
         {daysLeft > 0
           ? t('plant_card.days_to_harvest', { count: daysLeft })
           : t('plant_card.ready_to_harvest')}
-      </p>
-    </div>
+      </Typography>
+    </Box>
   );
 };
 

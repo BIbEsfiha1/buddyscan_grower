@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import QrCodeScanner from '../components/QrCodeScanner';
 import { Plant } from '../types';
+import { Box, Container, Typography } from '@mui/material';
 
 const ScannerPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,25 +22,27 @@ const ScannerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-full bg-gray-900 text-white overflow-y-auto">
+    <Box sx={{ display: 'flex', backgroundColor: 'background.default', color: 'text.primary', minHeight: '100vh' }}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <Box component="main" sx={{ flexGrow: 1 }}>
         <Header
           title={t('header.scan_qr')}
           onOpenSidebar={() => setIsSidebarOpen(true)}
           onOpenAddModal={() => navigate('/nova-planta')}
           onOpenScannerModal={() => {}}
+          showBack
+          onBack={() => navigate(-1)}
         />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col items-center">
+        <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {scanError && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
+            <Typography color="error" sx={{ mb: 2 }}>
               {scanError}
-            </div>
+            </Typography>
           )}
           <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
-        </main>
-      </div>
-    </div>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

@@ -2,6 +2,16 @@ import React from 'react';
 import { Plant, PlantHealthStatus } from '../types';
 import { useTranslation } from 'react-i18next';
 import PlantInsight from './PlantInsight';
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  IconButton,
+} from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 interface PlantCardProps {
   plant: Plant;
@@ -11,33 +21,13 @@ interface PlantCardProps {
   onSelectToggle?: () => void;
 }
 
-// import { usePlantContext } from '../contexts/PlantContext'; // Removed as updatePlantDetails is no longer used
-// import { PlantOperationalStatus } from '../types'; // Removed as it's no longer used
-
-const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selected, onSelectToggle }) => {
-
-  // const { updatePlantDetails } = usePlantContext(); // Removed
-  // const [isMarkingLost, setIsMarkingLost] = React.useState(false); // Removed
-  // const [markLostSuccess, setMarkLostSuccess] = React.useState(false); // Removed
-  // const [markLostError, setMarkLostError] = React.useState<string | null>(null); // Removed
-
-  // const handleMarkAsLost = async (e: React.MouseEvent) => { // Removed
-  //   e.preventDefault();
-  //   setIsMarkingLost(true);
-  //   setMarkLostSuccess(false);
-  //   setMarkLostError(null);
-  //   try {
-  //     await updatePlantDetails(plant.id, { operationalStatus: PlantOperationalStatus.LOST });
-  //     setMarkLostSuccess(true);
-  //     setTimeout(() => setMarkLostSuccess(false), 2000);
-  //   } catch (error: any) {
-  //     setMarkLostError('Erro ao marcar como removida.');
-  //     setTimeout(() => setMarkLostError(null), 2500);
-  //   } finally {
-  //     setIsMarkingLost(false);
-  //   }
-  // };
-
+const PlantCard: React.FC<PlantCardProps> = ({
+  plant,
+  onClick,
+  selectable,
+  selected,
+  onSelectToggle,
+}) => {
   const { t } = useTranslation();
 
   const handleClick = () => {
@@ -45,7 +35,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
       onSelectToggle && onSelectToggle();
     } else if (onClick) {
       onClick();
-    } else {
+    } else if (typeof window !== 'undefined') {
       window.location.href = `/plant/${plant.id}`;
     }
   };
@@ -57,66 +47,47 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onClick, selectable, selec
   }, [plant.birthDate]);
 
   return (
-    <div
+    <Card
       onClick={handleClick}
-      className={`cursor-pointer relative rounded-3xl shadow-xl hover:shadow-green-300/40 dark:hover:shadow-green-500/30 transition-all duration-300 overflow-hidden group hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 w-full ${selectable && selected ? 'ring-4 ring-emerald-500/70' : ''}`}
-      style={{ minHeight: 320 }}
+      sx={{ position: 'relative', minHeight: 320, cursor: 'pointer' }}
+      elevation={3}
     >
-      <img
-        src={plant.imageUrl || `https://picsum.photos/seed/${plant.id}/300/200`}
-        alt={plant.name}
-        className="absolute inset-0 w-full h-full object-cover rounded-3xl"
-      />
-
-      {/* Elemento decorativo de folha */}
-      <div
-        className="absolute -top-5 -left-5 w-20 h-20 opacity-10 dark:opacity-5 pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle at top left, #7AC943 0%, transparent 70%)',
-          borderRadius: '50% 0 50% 50%',
-          transform: 'rotate(-30deg)'
-        }}
-      />
-
-      {/* Conteúdo de texto do card */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur rounded-b-3xl">
-        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 truncate" title={plant.name}>{plant.name}</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 truncate" title={plant.strain}>{plant.strain || 'N/A'}</p>
-        {ageDays !== null && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t(ageDays === 1 ? 'plant_card.age' : 'plant_card.age_plural', { count: ageDays })}
-          </p>
-        )}
-        {plant.healthStatus && plant.healthStatus !== PlantHealthStatus.HEALTHY && (
-          <p className="text-xs text-red-500">
-            {t('plant_card.problem', { status: plant.healthStatus })}
-          </p>
-        )}
-        <PlantInsight plant={plant} />
-      </div>
-
-      {/* Sombra decorativa inferior */}
-      <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-green-100/60 to-transparent dark:from-slate-800/60 pointer-events-none" />
-
+      <CardActionArea sx={{ height: '100%' }}>
+        <CardMedia
+          component="img"
+          height="200"
+          image={plant.imageUrl || `https://picsum.photos/seed/${plant.id}/300/200`}
+          alt={plant.name}
+        />
+        <CardContent sx={{ position: 'relative', bgcolor: 'background.paper' }}>
+          <Typography variant="h6" noWrap title={plant.name}>
+            {plant.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap title={plant.strain}>
+            {plant.strain || 'N/A'}
+          </Typography>
+          {ageDays !== null && (
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t(ageDays === 1 ? 'plant_card.age' : 'plant_card.age_plural', { count: ageDays })}
+            </Typography>
+          )}
+          {plant.healthStatus && plant.healthStatus !== PlantHealthStatus.HEALTHY && (
+            <Typography variant="caption" color="error" display="block">
+              {t('plant_card.problem', { status: plant.healthStatus })}
+            </Typography>
+          )}
+          <PlantInsight plant={plant} />
+        </CardContent>
+      </CardActionArea>
       {selectable && (
-        <div className="absolute top-2 right-2">
-          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selected ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white/70 border-gray-300 text-transparent'}`}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.53 16.28a.75.75 0 0 1-1.06 0l-3.25-3.25a.75.75 0 1 1 1.06-1.06l2.72 2.72 6.72-6.72a.75.75 0 0 1 1.06 1.06l-7.25 7.25z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        </div>
+        <IconButton
+          sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'background.paper' }}
+          onClick={onSelectToggle}
+        >
+          <CheckCircleIcon color={selected ? 'success' : 'disabled'} />
+        </IconButton>
       )}
-    </div>
+    </Card>
   );
 };
 

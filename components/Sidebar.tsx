@@ -14,6 +14,7 @@ import {
   Divider,
   Typography,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import YardOutlinedIcon from '@mui/icons-material/YardOutlined';
@@ -33,8 +34,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
+  const mdUp = useMediaQuery(theme.breakpoints.up('md'));
 
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Usuário';
+  // Monta as iniciais do usuário
+  const displayName =
+    user?.user_metadata?.full_name || user?.email || 'Usuário';
   let initials = 'U';
   if (user?.user_metadata?.full_name) {
     initials = user.user_metadata.full_name
@@ -58,15 +62,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   return (
     <Drawer
-      open={isOpen}
+      open={mdUp ? true : isOpen}
       onClose={onClose}
-      variant="temporary"
+      variant={mdUp ? 'permanent' : 'temporary'}
       ModalProps={{ keepMounted: true }}
       sx={{
         '& .MuiDrawer-paper': {
           width: 240,
           boxSizing: 'border-box',
-          bgcolor: theme.palette.background.paper,
+          bgcolor:
+            theme.palette.mode === 'dark'
+              ? theme.palette.grey[900]
+              : theme.palette.grey[50],
+          color: theme.palette.text.primary,
         },
       }}
     >
@@ -76,7 +84,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           BuddyScan
         </Typography>
       </Box>
+
       <Divider />
+
       <List>
         {navItems.map(item => {
           const isActive = location.pathname === item.path;
@@ -86,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 component={Link}
                 to={item.path}
                 selected={isActive}
-                onClick={onClose}
+                onClick={mdUp ? undefined : onClose}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.name} />
@@ -95,9 +105,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           );
         })}
       </List>
+
       <Box sx={{ mt: 'auto', p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ bgcolor: 'success.main', width: 40, height: 40, fontSize: 16 }}>
+          <Avatar
+            sx={{ bgcolor: 'success.main', width: 40, height: 40, fontSize: 16 }}
+          >
             {initials}
           </Avatar>
           <Typography variant="body2">{displayName}</Typography>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Plant, PlantStage, DiaryEntry, PlantHealthStatus, NewDiaryEntryData } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 import DiaryEntryItem from '../components/DiaryEntryItem';
@@ -15,6 +15,7 @@ import Toast from '../components/Toast';
 
 const PlantDetailPage: React.FC = () => {
   const { plantId } = useParams<{ plantId: string }>();
+  const navigate = useNavigate();
   const {
     getPlantById,
     fetchPlantById,
@@ -282,12 +283,14 @@ const PlantDetailPage: React.FC = () => {
       <div className="flex min-h-full bg-gray-50 dark:bg-gray-900">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex-1 flex flex-col min-h-full">
-          <Header
-            title="Detalhes da Planta"
-            onOpenSidebar={() => setSidebarOpen(true)}
-            onOpenAddModal={() => {}}
-            onOpenScannerModal={() => {}}
-          />
+        <Header
+          title="Detalhes da Planta"
+          onOpenSidebar={() => setSidebarOpen(true)}
+          onOpenAddModal={() => {}}
+          onOpenScannerModal={() => {}}
+          showBack
+          onBack={() => navigate(-1)}
+        />
           {toast && <Toast message={toast.message} type={toast.type} />}
           <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6">
             {plant && (

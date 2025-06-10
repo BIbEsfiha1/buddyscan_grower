@@ -3,11 +3,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import { usePlantContext } from '../contexts/PlantContext';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
-import Header from '../components/Header'; // Re-use header for consistent look
-import Sidebar from '../components/Sidebar'; // Re-use sidebar
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { Cultivo } from '../types';
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 // ArrowLeftIcon is not used in the provided JSX, so commenting out for now.
 // import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 
@@ -62,89 +73,106 @@ const AllPlantsPage: React.FC = () => {
 
   return (
     <>
-    <div className="flex min-h-full bg-gray-900 text-white overflow-y-auto">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header
-          title="Todas as Plantas"
-          onOpenSidebar={() => setIsSidebarOpen(true)}
-          onOpenAddModal={() => navigate('/nova-planta')} // Example action
-          onOpenScannerModal={() => navigate('/scanner')} // Example action
-        />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-          <nav className="flex items-center text-sm text-gray-400 mb-4">
-            <Link to="/" className="hover:underline">Dashboard</Link>
-            <span className="mx-2">&gt;</span>
-            <span className="font-semibold text-gray-200">Todas as Plantas</span>
-          </nav>
-          {!selectionMode && plants.length > 0 && (
-            <div className="flex justify-end">
-              <Button variant="secondary" onClick={() => setSelectionMode(true)}>Mover Plantas</Button>
-            </div>
-          )}
-          {selectionMode && (
-            <div className="text-sm text-gray-300">{selectedIds.size} selecionada(s). Toque nas plantas para selecionar.</div>
-          )}
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader size="lg" />
-            </div>
-          ) : error ? (
-            <div className="bg-red-900/30 text-red-300 p-4 rounded-lg">
-              <p>Erro ao carregar plantas: {error}</p>
-            </div>
-          ) : plants.length === 0 ? (
-            <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg text-center">
-              <p>Nenhuma planta cadastrada ainda.</p>
-              <button
-                onClick={() => navigate('/nova-planta')}
-                className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                Adicionar Nova Planta
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {plants.map(plant => (
-                <PlantCard
-                  key={plant.id}
-                  plant={plant}
-                  onClick={selectionMode ? undefined : () => navigate(`/plant/${plant.id}`)}
-                  selectable={selectionMode}
-                  selected={selectedIds.has(plant.id)}
-                  onSelectToggle={() => toggleSelect(plant.id)}
-                />
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Box component="main" sx={{ flexGrow: 1 }}>
+          <Header
+            title="Todas as Plantas"
+            onOpenSidebar={() => setIsSidebarOpen(true)}
+            onOpenAddModal={() => navigate('/nova-planta')}
+            onOpenScannerModal={() => navigate('/scanner')}
+            showBack
+            onBack={() => navigate(-1)}
+          />
+          <Container sx={{ py: 4 }}>
+            <Box display="flex" alignItems="center" mb={2}>
+              <Link to="/" style={{ textDecoration: 'none' }}>
+                <Typography variant="body2" color="text.secondary">Dashboard</Typography>
+              </Link>
+              <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>
+                &gt;
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                Todas as Plantas
+              </Typography>
+              <Box sx={{ flexGrow: 1 }} />
+              {!selectionMode && plants.length > 0 && (
+                <Button variant="secondary" onClick={() => setSelectionMode(true)}>
+                  Mover Plantas
+                </Button>
+              )}
+            </Box>
+            {selectionMode && (
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                {selectedIds.size} selecionada(s). Toque nas plantas para selecionar.
+              </Typography>
+            )}
+            {isLoading ? (
+              <Box display="flex" justifyContent="center" py={8}>
+                <Loader size="lg" />
+              </Box>
+            ) : error ? (
+              <Paper sx={{ p: 3, bgcolor: 'error.main', color: 'error.contrastText' }}>
+                <Typography>Erro ao carregar plantas: {error}</Typography>
+              </Paper>
+            ) : plants.length === 0 ? (
+              <Paper sx={{ p: 3, textAlign: 'center' }}>
+                <Typography>Nenhuma planta cadastrada ainda.</Typography>
+                <Button
+                  variant="primary"
+                  sx={{ mt: 2 }}
+                  onClick={() => navigate('/nova-planta')}
+                >
+                  Adicionar Nova Planta
+                </Button>
+              </Paper>
+            ) : (
+              <Grid container spacing={2}>
+                {plants.map(plant => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={plant.id}>
+                    <PlantCard
+                      plant={plant}
+                      onClick={selectionMode ? undefined : () => navigate(`/plant/${plant.id}`)}
+                      selectable={selectionMode}
+                      selected={selectedIds.has(plant.id)}
+                      onSelectToggle={() => toggleSelect(plant.id)}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Container>
+        </Box>
+      </Box>
+      {selectionMode && (
+        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, display: 'flex', gap: 2 }} elevation={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="cultivo-select-label">Escolha o cultivo</InputLabel>
+            <Select
+              labelId="cultivo-select-label"
+              value={selectedCultivo}
+              label="Escolha o cultivo"
+              onChange={e => setSelectedCultivo(e.target.value)}
+            >
+              <MenuItem value="">Escolha o cultivo</MenuItem>
+              {cultivos.map(c => (
+                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
               ))}
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
-    {selectionMode && (
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-800/90 backdrop-blur p-3 flex items-center gap-2">
-        <select
-          className="flex-1 bg-gray-700 text-white rounded px-2 py-1"
-          value={selectedCultivo}
-          onChange={e => setSelectedCultivo(e.target.value)}
-        >
-          <option value="">Escolha o cultivo</option>
-          {cultivos.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={handleMove}
-          disabled={moving || selectedIds.size === 0 || !selectedCultivo}
-          loading={moving}
-        >
-          Mover
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>Cancelar</Button>
-      </div>
-    )}
-    {toast && <Toast message={toast.message} type={toast.type} />}
+            </Select>
+          </FormControl>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleMove}
+            disabled={moving || selectedIds.size === 0 || !selectedCultivo}
+            loading={moving}
+          >
+            Mover
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>Cancelar</Button>
+        </Paper>
+      )}
+      {toast && <Toast message={toast.message} type={toast.type} />}
     </>
   );
 };

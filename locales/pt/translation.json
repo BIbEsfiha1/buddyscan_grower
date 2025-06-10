@@ -15,6 +15,7 @@
   "header": {
     "search": "Buscar plantas...",
     "open_menu": "Abrir menu",
+    "go_back": "Voltar",
     "scan_qr": "Escanear QR",
     "add_plant": "Adicionar Planta",
     "toggle_theme": "Alternar tema"

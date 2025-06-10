@@ -36,7 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const theme = useTheme();
   const mdUp = useMediaQuery(theme.breakpoints.up('md'));
 
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Usuário';
+  // Monta as iniciais do usuário
+  const displayName =
+    user?.user_metadata?.full_name || user?.email || 'Usuário';
   let initials = 'U';
   if (user?.user_metadata?.full_name) {
     initials = user.user_metadata.full_name
@@ -82,7 +84,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           BuddyScan
         </Typography>
       </Box>
+
       <Divider />
+
       <List>
         {navItems.map(item => {
           const isActive = location.pathname === item.path;
@@ -101,9 +105,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           );
         })}
       </List>
+
       <Box sx={{ mt: 'auto', p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ bgcolor: 'success.main', width: 40, height: 40, fontSize: 16 }}>
+          <Avatar
+            sx={{ bgcolor: 'success.main', width: 40, height: 40, fontSize: 16 }}
+          >
             {initials}
           </Avatar>
           <Typography variant="body2">{displayName}</Typography>

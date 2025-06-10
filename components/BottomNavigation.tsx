@@ -27,7 +27,10 @@ const BottomNavigation: React.FC = () => {
   const otherItems = navItems.filter(item => item.path !== '/scanner');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around py-2 md:hidden z-50 relative">
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around md:hidden z-50 relative pt-2"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
+    >
       {otherItems.map(({ label, path, icon: Icon }) => {
         const isActive = location.pathname === path;
         return (

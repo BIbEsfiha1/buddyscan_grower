@@ -23,9 +23,12 @@ const BottomNavigation: React.FC = () => {
     { label: t('sidebar.settings'), path: '/settings', icon: Cog6ToothIcon },
   ];
 
+  const scannerItem = navItems.find(item => item.path === '/scanner');
+  const otherItems = navItems.filter(item => item.path !== '/scanner');
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around py-2 md:hidden z-50">
-      {navItems.map(({ label, path, icon: Icon }) => {
+    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around py-2 md:hidden z-50 relative">
+      {otherItems.map(({ label, path, icon: Icon }) => {
         const isActive = location.pathname === path;
         return (
           <Link
@@ -38,6 +41,17 @@ const BottomNavigation: React.FC = () => {
           </Link>
         );
       })}
+      {scannerItem && (() => {
+        const ScannerIcon = scannerItem.icon;
+        return (
+          <Link
+            to={scannerItem.path}
+            className="absolute left-1/2 -top-6 -translate-x-1/2 bg-emerald-500 text-white rounded-full p-3 shadow-lg"
+          >
+            <ScannerIcon className="w-7 h-7" />
+          </Link>
+        );
+      })()}
     </nav>
   );
 };

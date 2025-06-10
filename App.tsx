@@ -14,6 +14,7 @@ import CultivoDetailPage from './pages/CultivoDetailPage';
 import GrowsPage from './pages/GrowsPage';
 import NovoGrowPage from './pages/NovoGrowPage';
 import SettingsPage from './pages/SettingsPage';
+import ScannerPage from './pages/ScannerPage';
 import { PlantProvider } from './contexts/PlantContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -115,6 +116,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <AllPlantsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scanner"
+            element={
+              <ProtectedRoute>
+                <ScannerPage />
               </ProtectedRoute>
             }
           />

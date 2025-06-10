@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
@@ -11,7 +11,6 @@ import LeafIcon from './icons/LeafIcon';
 import QrCodeIcon from './icons/QrCodeIcon';
 
 const BottomNavigation: React.FC = () => {
-  const location = useLocation();
   const { t } = useTranslation();
 
   const navItems = [
@@ -31,19 +30,18 @@ const BottomNavigation: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around md:hidden z-50 relative pt-2"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
     >
-      {otherItems.map(({ label, path, icon: Icon }) => {
-        const isActive = location.pathname === path;
-        return (
-          <Link
-            key={path}
-            to={path}
-            className={`flex flex-col items-center text-xs flex-1 py-2 ${isActive ? 'text-green-400' : 'text-slate-300'}`}
-          >
-            <Icon className="w-6 h-6" />
-            <span className="mt-1">{label}</span>
-          </Link>
-        );
-      })}
+      {otherItems.map(({ label, path, icon: Icon }) => (
+        <NavLink
+          key={path}
+          to={path}
+          className={({ isActive }) =>
+            `flex flex-col items-center text-xs flex-1 py-2 ${isActive ? 'text-green-400' : 'text-slate-300'}`
+          }
+        >
+          <Icon className="w-6 h-6" />
+          <span className="mt-1">{label}</span>
+        </NavLink>
+      ))}
       {scannerItem && (() => {
         const ScannerIcon = scannerItem.icon;
         return (

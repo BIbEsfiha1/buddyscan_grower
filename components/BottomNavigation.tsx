@@ -27,6 +27,7 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <nav
+      role="navigation"
       className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 text-slate-200 flex justify-around md:hidden z-50 relative pt-2"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
     >
@@ -37,6 +38,7 @@ const BottomNavigation: React.FC = () => {
           className={({ isActive }) =>
             `flex flex-col items-center text-xs flex-1 py-2 ${isActive ? 'text-green-400' : 'text-slate-300'}`
           }
+          aria-label={label}
         >
           <Icon className="w-6 h-6" />
           <span className="mt-1">{label}</span>
@@ -48,6 +50,7 @@ const BottomNavigation: React.FC = () => {
           <Link
             to={scannerItem.path}
             className="absolute left-1/2 -top-6 -translate-x-1/2 bg-emerald-500 text-white rounded-full p-3 shadow-lg"
+            aria-label={scannerItem.label}
           >
             <ScannerIcon className="w-7 h-7" />
           </Link>

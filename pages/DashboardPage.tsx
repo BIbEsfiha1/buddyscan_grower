@@ -1,56 +1,50 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData, DiaryEntry } from '../types';
-import { 
-  PLANT_STAGES_OPTIONS, 
-  PLANT_HEALTH_STATUS_OPTIONS, 
-  PLANT_OPERATIONAL_STATUS_OPTIONS,
-  CULTIVATION_TYPE_OPTIONS,
-  SUBSTRATE_OPTIONS
-} from '../constants';
-import PlantCard from '../components/PlantCard';
-import Loader from '../components/Loader';
-import Modal from '../components/Modal';
-import PlusIcon from '../components/icons/PlusIcon';
-import Button from '../components/Button';
-import ImageUpload from '../components/ImageUpload';
-import { usePlantContext } from '../contexts/PlantContext';
-import { useAuth } from '../contexts/AuthContext';
-import { getUserLocation } from '../getUserLocation';
-import { fetchCurrentTemperature, getTemperatureAlert } from '../weather';
-import QrCodeScanner from '../components/QrCodeScanner';
+import {
+  Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+} from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import StatsCard from '../components/StatsCard';
-import StatsCardSkeleton from '../components/StatsCardSkeleton';
-import PlantCardSkeleton from '../components/PlantCardSkeleton';
 import QuickActions from '../components/QuickActions';
-import LeafIcon from '../components/icons/LeafIcon';
+import PlantCard from '../components/PlantCard';
+import PlantCardSkeleton from '../components/PlantCardSkeleton';
+import Modal from '../components/Modal';
+import Button from '../components/Button';
+import ImageUpload from '../components/ImageUpload';
+import QrCodeScanner from '../components/QrCodeScanner';
+import { usePlantContext } from '../contexts/PlantContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData, DiaryEntry } from '../types';
+import {
+  PLANT_STAGES_OPTIONS,
+  PLANT_HEALTH_STATUS_OPTIONS,
+  PLANT_OPERATIONAL_STATUS_OPTIONS,
+  CULTIVATION_TYPE_OPTIONS,
+  SUBSTRATE_OPTIONS,
+} from '../constants';
+import { fetchCurrentTemperature } from '../weather';
+import { getUserLocation } from '../getUserLocation';
 
 const DashboardPage: React.FC = () => {
   const { plants, isLoading, error, addPlant } = usePlantContext();
+  const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [stats, setStats] = useState({
-    totalPlants: 0,
-    activeZones: 0,
-    avgTemperature: 0
-  });
-  const [activeCultivos, setActiveCultivos] = useState(0);
-  const [upcomingHarvests, setUpcomingHarvests] = useState(0);
-  const [latestDiagnoses, setLatestDiagnoses] = useState<string[]>([]);
-  const [criticalAlerts, setCriticalAlerts] = useState<string[]>([]);
-  const [plantChange, setPlantChange] = useState(0);
-  const prevPlantCount = React.useRef<number>(0);
-  const [lastTempUpdate, setLastTempUpdate] = useState<number>(0);
-  const [tempAlert, setTempAlert] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [stats, setStats] = useState({ totalPlants: 0, activeZones: 0, avgTemperature: 0 });
   const [recentEntries, setRecentEntries] = useState<DiaryEntry[]>([]);
+  const [lastTempUpdate, setLastTempUpdate] = useState(0);
 
   const initialFormState: NewPlantData = {
     name: '',
@@ -63,14 +57,47 @@ const DashboardPage: React.FC = () => {
     substrate: '',
     estimatedHarvestDate: '',
     notes: '',
-    imageUrl: undefined, // Explicitly undefined as per NewPlantData
+    imageUrl: undefined,
   };
   const [newPlantForm, setNewPlantForm] = useState<NewPlantData>(initialFormState);
-
   const [, setNewPlantImageFile] = useState<File | null>(null);
   const [newPlantImageBase64, setNewPlantImageBase64] = useState<string | null>(null);
   const [isAddingPlant, setIsAddingPlant] = useState(false);
   const [addPlantError, setAddPlantError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      const totalPlants = plants.length;
+      const activeZones = new Set(plants.map(p => p.cultivoId).filter(Boolean)).size;
+      let avgTemperature = stats.avgTemperature;
+      if (isLoggedIn && Date.now() - lastTempUpdate > 60 * 60 * 1000) {
+        try {
+          const loc = await getUserLocation(user);
+          const temp = await fetchCurrentTemperature(loc || { city: undefined });
+          avgTemperature = temp ?? 0;
+          setLastTempUpdate(Date.now());
+        } catch {
+          avgTemperature = 0;
+        }
+      }
+      setStats({ totalPlants, activeZones, avgTemperature });
+
+      try {
+        const { fetchDiaryEntries } = await import('../services/diaryEntryService');
+        const allEntries = (await Promise.all(plants.map(p => fetchDiaryEntries(p.id)))).flat();
+        setRecentEntries(allEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5));
+      } catch {
+        setRecentEntries([]);
+      }
+    }
+
+    fetchStats();
+  }, [plants, isLoggedIn, user]);
+
+  const filteredPlants = plants.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.strain && p.strain.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -81,7 +108,7 @@ const DashboardPage: React.FC = () => {
     setNewPlantImageFile(file);
     setNewPlantImageBase64(base64);
   };
-  
+
   const handleImageRemoved = () => {
     setNewPlantImageFile(null);
     setNewPlantImageBase64(null);
@@ -90,7 +117,7 @@ const DashboardPage: React.FC = () => {
   const handleAddPlant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAddPlantError(null);
-    if (!newPlantForm.name || !newPlantForm.strain || !newPlantForm.birthDate || !newPlantForm.currentStage || !newPlantForm.healthStatus || !newPlantForm.operationalStatus) {
+    if (!newPlantForm.name || !newPlantForm.strain || !newPlantForm.birthDate) {
       setAddPlantError("Campos marcados com * são obrigatórios.");
       return;
     }
@@ -98,449 +125,251 @@ const DashboardPage: React.FC = () => {
     const plantDataToSave: NewPlantData = {
       ...newPlantForm,
       imageUrl: newPlantImageBase64 || undefined,
-      // Ensure optional fields are correctly passed or remain undefined if empty
       substrate: newPlantForm.substrate || undefined,
       estimatedHarvestDate: newPlantForm.estimatedHarvestDate || undefined,
       notes: newPlantForm.notes || undefined,
       cultivationType: newPlantForm.cultivationType || undefined,
     };
-
     try {
-      const addedPlant = await addPlant(plantDataToSave);
-      if (addedPlant) {
+      const added = await addPlant(plantDataToSave);
+      if (added) {
         setIsAddModalOpen(false);
         setNewPlantForm(initialFormState);
         setNewPlantImageFile(null);
         setNewPlantImageBase64(null);
-        setAddPlantError(null);
-        // Wait a tick to ensure context/state update
-        setTimeout(() => navigate(`/plant/${addedPlant.id}`), 100);
+        setTimeout(() => navigate(`/plant/${added.id}`), 100);
       } else {
-        setAddPlantError("Erro ao adicionar planta. Nenhum detalhe retornado.");
+        setAddPlantError('Erro ao adicionar planta.');
       }
     } catch (err: any) {
-      // Mostra todos os detalhes possíveis do erro
-      let msg = "Erro inesperado ao adicionar planta.";
-      if (err?.message) msg = err.message;
-      if (err?.error) msg = err.error;
-      if (err?.details) msg += " Detalhes: " + err.details;
-      setAddPlantError(msg);
-      console.error("Erro ao adicionar planta:", err);
+      setAddPlantError(err?.message || 'Erro inesperado');
     }
     setIsAddingPlant(false);
   };
 
-  const handleScanSuccess = (plant: Plant): void => {
+  const handleScanSuccess = (plant: Plant) => {
     navigate(`/plant/${plant.id}`);
   };
 
-  const handleScanError = (errorMessage: string): void => {
-    setScannerError(errorMessage);
+  const handleScanError = (msg: string) => {
+    setScannerError(msg);
   };
 
-  // Calculate stats based on plants
-  const { user, isLoggedIn } = useAuth();
-
-  // Atualiza a cada 1h enquanto logado
-  useEffect(() => {
-    let tempInterval: NodeJS.Timeout | null = null;
-    async function fetchStatsAndTemp() {
-      if (plants.length > 0 && isLoggedIn) {
-        // Count total plants
-        const totalPlants = plants.length;
-        const change = totalPlants - prevPlantCount.current;
-        prevPlantCount.current = totalPlants;
-        setPlantChange(change);
-        // Count unique zones (cultivos)
-        const activeZones = new Set(plants.map(p => p.cultivoId).filter(id => id)).size;
-        // Buscar localização e temperatura
-        let avgTemperature = 0;
-        try {
-          let location = await getUserLocation(user);
-          let temp = null;
-          if (location) {
-            temp = await fetchCurrentTemperature(location);
-          } else if (user?.user_metadata?.city) {
-            temp = await fetchCurrentTemperature({ city: user.user_metadata.city });
-          } else {
-            temp = await fetchCurrentTemperature({ city: undefined }); // cai no DEFAULT_CITY
-          }
-          avgTemperature = temp ?? 0;
-          setTempAlert(getTemperatureAlert(avgTemperature));
-          setLastTempUpdate(Date.now());
-        } catch (e) {
-          avgTemperature = 0;
-          setTempAlert(null);
-        }
-        setStats({
-          totalPlants,
-          activeZones,
-          avgTemperature
-        });
-
-        try {
-          const { getCultivos } = await import('../services/cultivoService');
-          const cultivos = await getCultivos();
-          setActiveCultivos(cultivos.filter(c => !c.finalizadoEm).length);
-        } catch {
-          setActiveCultivos(0);
-        }
-
-        const now = new Date();
-        const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        setUpcomingHarvests(
-          plants.filter(p => {
-            if (!p.estimatedHarvestDate) return false;
-            const d = new Date(p.estimatedHarvestDate);
-            return d >= now && d <= in30;
-          }).length
-        );
-
-        const allEntries = (await Promise.all(plants.map(p => fetchDiaryEntries(p.id)))).flat();
-        const diagnoses = allEntries
-          .filter(e => e.aiOverallDiagnosis)
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .slice(0,4)
-          .map(e => e.aiOverallDiagnosis as string);
-        setLatestDiagnoses(diagnoses);
-        setRecentEntries(
-          allEntries
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .slice(0,5)
-        );
-        setCriticalAlerts([]);
-      }
-    }
-    if (isLoggedIn) {
-      fetchStatsAndTemp();
-      tempInterval = setInterval(fetchStatsAndTemp, 60 * 60 * 1000); // 1 hora
-    }
-    return () => {
-      if (tempInterval) clearInterval(tempInterval);
-    };
-  }, [plants, user, isLoggedIn]);
-
-  const filteredPlants = plants.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.strain && p.strain.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const inputStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-400";
-  const selectStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors";
-
   return (
-    <div className="flex min-h-full bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white overflow-y-auto">
-      {/* Sidebar */}
+    <Box sx={{ display: 'flex', backgroundColor: 'background.default', color: 'text.primary', minHeight: '100vh' }}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header 
-          title="Dashboard" 
+      <Box component="main" sx={{ flexGrow: 1 }}>
+        <Header
+          title="Dashboard"
           onOpenSidebar={() => setIsSidebarOpen(true)}
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenScannerModal={() => setIsScannerModalOpen(true)}
         />
-        
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-           {/* Stats Cards */}
-          {tempAlert && (
-            <div className="mb-3 p-3 rounded-lg bg-yellow-200 text-yellow-900 font-semibold border border-yellow-400 flex items-center gap-2">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              {tempAlert}
-            </div>
-          )}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {isLoading ? (
-              <>
-                <StatsCardSkeleton />
-                <StatsCardSkeleton />
-                <StatsCardSkeleton />
-                <StatsCardSkeleton />
-              </>
-            ) : (
-              <>
-                <StatsCard
-                  title={t('dashboard.total_plants')}
-                  value={stats.totalPlants}
-                  change={plantChange === 0 ? '' : (plantChange > 0 ? `+${plantChange}` : `${plantChange}`)}
-                  trend={plantChange > 0 ? 'up' : plantChange < 0 ? 'down' : 'neutral'}
-                  icon={<LeafIcon className="w-5 h-5" />}
-                  color="green"
-                />
-                <StatsCard
-                  title={t('dashboard.active_zones')}
-                  value={stats.activeZones}
-                  color="blue"
-                  icon={
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                    </svg>
-                  }
-                />
-                <StatsCard
-                  title={t('dashboard.avg_temperature')}
-                  value={`${Math.round(stats.avgTemperature)}°C`}
-                  change=""
-                  trend="neutral"
-                  color="yellow"
-                  icon={
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                    </svg>
-                  }
-                />
-              </>
-            )}
-          </div>
-
-          {/* Quick Actions */}
-          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
-            <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.quick_actions')}</h2>
-          <QuickActions
-            onAddPlant={() => setIsAddModalOpen(true)}
-            onScanQR={() => setIsScannerModalOpen(true)}
-            onOpenCultivos={() => navigate('/cultivos')}
-            onOpenStats={() => navigate('/garden-statistics')}
-            onRegisterDiary={() => navigate('/plants')}
-          />
-          </section>
-
-          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.active_grows')}</h2>
-              <p className="text-3xl font-semibold text-green-400">{activeCultivos}</p>
-            </div>
-            <div>
-              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.upcoming_harvests')}</h2>
-              <p className="text-3xl font-semibold text-green-400">{upcomingHarvests}</p>
-            </div>
-            <div className="md:col-span-2">
-              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.critical_alerts')}</h2>
-              {criticalAlerts.length ? (
-                <ul className="list-disc ml-5 text-red-400 space-y-1">
-                  {criticalAlerts.map((a, idx) => <li key={idx}>{a}</li>)}
-                </ul>
-              ) : (
-                <p className="text-gray-400">-</p>
-              )}
-            </div>
-            <div className="md:col-span-2">
-              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.latest_ai_diagnoses')}</h2>
-              {latestDiagnoses.length ? (
-                <ul className="list-disc ml-5 text-sky-300 space-y-1">
-                  {latestDiagnoses.map((d, idx) => <li key={idx}>{d}</li>)}
-                </ul>
-              ) : (
-                <p className="text-gray-400">-</p>
-              )}
-            </div>
-          </section>
-          
-          {/* Plants List */}
-          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">{t('dashboard.my_plants')}</h2>
-              <Link to="/plants" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">
-                {t('dashboard.view_all')}
-              </Link>
-            </div>
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder={t('dashboard.search_placeholder')}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className={inputStyle}
+        <Container sx={{ py: 4 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <StatsCard
+                title={t('dashboard.total_plants')}
+                value={stats.totalPlants}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M12 2a4 4 0 00-4 4v5.528A6.002 6.002 0 006 18a6 6 0 0012 0 6.002 6.002 0 00-2-4.472V6a4 4 0 00-4-4z" clipRule="evenodd"/></svg>}
+                color="green"
               />
-            </div>
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 3 }).map((_, idx) => (
-                  <PlantCardSkeleton key={idx} />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="bg-red-900/30 text-red-300 p-4 rounded-lg">
-                <p>{t('dashboard.error_loading_plants')}: {error}</p>
-              </div>
-            ) : plants.length === 0 ? (
-              <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg">
-                <p>{t('dashboard.no_plants')}</p>
-              </div>
-            ) : filteredPlants.length === 0 ? (
-              <div className="bg-blue-900/30 text-blue-300 p-4 rounded-lg">
-                <p>{t('dashboard.no_results')}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPlants.slice(0, 6).map(plant => (
-                  <PlantCard
-                    key={plant.id}
-                    plant={plant}
-                    onClick={() => navigate(`/plant/${plant.id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-          
-          {/* Recent Activity */}
-          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
-            <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.recent_activity')}</h2>
-            <div className="space-y-3">
-              {recentEntries.length ? (
-                recentEntries.map(entry => {
-                  const plant = plants.find(p => p.id === entry.plantId);
-                  const time = new Date(entry.timestamp);
-                  return (
-                    <div key={entry.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-                      <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-white">{plant ? plant.name : entry.plantId}</h3>
-                        <p className="text-sm text-gray-400">{time.toLocaleDateString()} {time.toLocaleTimeString()}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="bg-gray-800 p-3 rounded-lg text-gray-400 text-center">
-                  {t('dashboard.no_activity')}
-                </div>
-              )}
-            </div>
-          </section>
-        </main>
-      </div>
-      
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <StatsCard
+                title={t('dashboard.active_zones')}
+                value={stats.activeZones}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>}
+                color="blue"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <StatsCard
+                title={t('dashboard.avg_temperature')}
+                value={`${Math.round(stats.avgTemperature)}°C`}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M6 2a2 2 0 012 2v7.268A4 4 0 118 20V4a2 2 0 012-2z" clipRule="evenodd"/></svg>}
+                color="yellow"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  {t('dashboard.quick_actions')}
+                </Typography>
+                <QuickActions
+                  onAddPlant={() => setIsAddModalOpen(true)}
+                  onScanQR={() => setIsScannerModalOpen(true)}
+                  onOpenCultivos={() => navigate('/cultivos')}
+                  onOpenStats={() => navigate('/garden-statistics')}
+                  onRegisterDiary={() => navigate('/plants')}
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="h6">
+                    {t('dashboard.my_plants')}
+                  </Typography>
+                  <Link to="/plants" className="text-emerald-400 text-sm">
+                    {t('dashboard.view_all')}
+                  </Link>
+                </Box>
+                <input
+                  type="text"
+                  placeholder={t('dashboard.search_placeholder')}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full px-3 py-2 mb-4 rounded-md border border-gray-300 dark:border-slate-700 bg-transparent"
+                />
+                {isLoading ? (
+                  <Grid container spacing={2}>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Grid item xs={12} sm={6} md={4} key={i}>
+                        <PlantCardSkeleton />
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : error ? (
+                  <Typography color="error">{t('dashboard.error_loading_plants')}: {error}</Typography>
+                ) : plants.length === 0 ? (
+                  <Typography color="text.secondary">{t('dashboard.no_plants')}</Typography>
+                ) : filteredPlants.length === 0 ? (
+                  <Typography color="text.secondary">{t('dashboard.no_results')}</Typography>
+                ) : (
+                  <Grid container spacing={2}>
+                    {filteredPlants.slice(0, 6).map(plant => (
+                      <Grid item xs={12} sm={6} md={4} key={plant.id}>
+                        <PlantCard plant={plant} onClick={() => navigate(`/plant/${plant.id}`)} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Paper>
+            </Grid>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  {t('dashboard.recent_activity')}
+                </Typography>
+                <Box>
+                  {recentEntries.length ? (
+                    recentEntries.map(entry => {
+                      const plant = plants.find(p => p.id === entry.plantId);
+                      const time = new Date(entry.timestamp);
+                      return (
+                        <Box key={entry.id} display="flex" alignItems="center" mb={1}>
+                          <Box mr={2} p={1} bgcolor="primary.main" borderRadius={1} color="primary.contrastText">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M4 4h16v16H4z"/></svg>
+                          </Box>
+                          <div>
+                            <Typography variant="subtitle2">{plant ? plant.name : entry.plantId}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {time.toLocaleDateString()} {time.toLocaleTimeString()}
+                            </Typography>
+                          </div>
+                        </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography color="text.secondary">{t('dashboard.no_activity')}</Typography>
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('dashboard.add_modal_title')} maxWidth="xl">
         <form onSubmit={handleAddPlant} className="space-y-4">
-          {isAddingPlant ? (
-            <div className="flex justify-center items-center py-2">
-              <Loader size="md" />
-              <span className="ml-2 text-gray-600 dark:text-slate-300 text-sm">{t('dashboard.adding_plant')}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-0.5">{t('form.name')} *</label>
+              <input type="text" id="name" name="name" value={newPlantForm.name} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
             </div>
-          ) : (
-            <>
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200">{t('form.name')} *</label>
-                <input type="text" name="name" id="name" value={newPlantForm.name} onChange={handleInputChange} required className={inputStyle} />
-              </div>
-              <div>
-                <label htmlFor="strain" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.strain')} *</label>
-                <input type="text" name="strain" id="strain" value={newPlantForm.strain} onChange={handleInputChange} required className={inputStyle} />
-              </div>
-              <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.birth_date')} *</label>
-                <input type="date" name="birthDate" id="birthDate" value={newPlantForm.birthDate} onChange={handleInputChange} required className={`${inputStyle} dark:[color-scheme:dark]`} />
-              </div>
-              <div>
-                <label htmlFor="currentStage" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.current_stage')} *</label>
-                <select name="currentStage" id="currentStage" value={newPlantForm.currentStage} onChange={handleInputChange} required className={selectStyle}>
-                  {PLANT_STAGES_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="healthStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.health_status')} *</label>
-                <select name="healthStatus" id="healthStatus" value={newPlantForm.healthStatus} onChange={handleInputChange} required className={selectStyle}>
-                  {PLANT_HEALTH_STATUS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="operationalStatus" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.operational_status')} *</label>
-                <select name="operationalStatus" id="operationalStatus" value={newPlantForm.operationalStatus} onChange={handleInputChange} required className={selectStyle}>
-                  {PLANT_OPERATIONAL_STATUS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="cultivationType" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.cultivation_type')}</label>
-                <select name="cultivationType" id="cultivationType" value={newPlantForm.cultivationType || ''} onChange={handleInputChange} className={selectStyle}>
-                  <option value="">{t('form.select_option')}</option>
-                  {CULTIVATION_TYPE_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="substrate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.substrate')}</label>
-                <select
-                  name="substrate"
-                  id="substrate"
-                  value={newPlantForm.substrate}
-                  onChange={handleInputChange}
-                  className={selectStyle}
-                >
-                  {SUBSTRATE_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.estimated_harvest')}</label>
-                <input type="date" name="estimatedHarvestDate" id="estimatedHarvestDate" value={newPlantForm.estimatedHarvestDate || ''} onChange={handleInputChange} className={`${inputStyle} dark:[color-scheme:dark]`} />
-              </div>
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-[#3E3E3E] dark:text-slate-200 mb-0.5">{t('form.notes')}</label>
-                <textarea name="notes" id="notes" value={newPlantForm.notes || ''} onChange={handleInputChange} rows={3} className={`${inputStyle} min-h-[60px]`} />
-              </div>
-              <ImageUpload onImageUploaded={handleImageUploaded} onImageRemoved={handleImageRemoved} label={t('form.main_photo')}/>
-            </>
-          )}
+            <div>
+              <label htmlFor="strain" className="block text-sm font-medium mb-0.5">{t('form.strain')} *</label>
+              <input type="text" id="strain" name="strain" value={newPlantForm.strain} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
+            </div>
+            <div>
+              <label htmlFor="birthDate" className="block text-sm font-medium mb-0.5">{t('form.birth_date')} *</label>
+              <input type="date" id="birthDate" name="birthDate" value={newPlantForm.birthDate} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
+            </div>
+            <div>
+              <label htmlFor="currentStage" className="block text-sm font-medium mb-0.5">{t('form.current_stage')} *</label>
+              <select id="currentStage" name="currentStage" value={newPlantForm.currentStage} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
+                {PLANT_STAGES_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="healthStatus" className="block text-sm font-medium mb-0.5">{t('form.health_status')} *</label>
+              <select id="healthStatus" name="healthStatus" value={newPlantForm.healthStatus} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
+                {PLANT_HEALTH_STATUS_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="operationalStatus" className="block text-sm font-medium mb-0.5">{t('form.operational_status')} *</label>
+              <select id="operationalStatus" name="operationalStatus" value={newPlantForm.operationalStatus} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
+                {PLANT_OPERATIONAL_STATUS_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="cultivationType" className="block text-sm font-medium mb-0.5">{t('form.cultivation_type')}</label>
+              <select id="cultivationType" name="cultivationType" value={newPlantForm.cultivationType || ''} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md">
+                <option value="">{t('form.select_option')}</option>
+                {CULTIVATION_TYPE_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="substrate" className="block text-sm font-medium mb-0.5">{t('form.substrate')}</label>
+              <select id="substrate" name="substrate" value={newPlantForm.substrate} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md">
+                {SUBSTRATE_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium mb-0.5">{t('form.estimated_harvest')}</label>
+              <input type="date" id="estimatedHarvestDate" name="estimatedHarvestDate" value={newPlantForm.estimatedHarvestDate || ''} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md" />
+            </div>
+            <div className="md:col-span-2">
+              <label htmlFor="notes" className="block text-sm font-medium mb-0.5">{t('form.notes')}</label>
+              <textarea id="notes" name="notes" value={newPlantForm.notes || ''} onChange={handleInputChange} rows={3} className="w-full px-3 py-2 border rounded-md" />
+            </div>
+            <div className="md:col-span-2">
+              <ImageUpload onImageUploaded={handleImageUploaded} onImageRemoved={handleImageRemoved} label={t('form.main_photo')} />
+            </div>
+          </div>
           {addPlantError && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
-              {addPlantError}
-            </div>
+            <Typography color="error">{addPlantError}</Typography>
           )}
-          <div className="flex justify-end space-x-3 pt-5 border-t border-gray-200 dark:border-slate-700">
-            <Button
-              type="button"
-              variant="secondary"
-              size="md"
-              onClick={() => setIsAddModalOpen(false)}
-            >
+          <div className="flex justify-end pt-4 space-x-3">
+            <Button type="button" variant="secondary" size="md" onClick={() => setIsAddModalOpen(false)}>
               {t('actions.cancel')}
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              loading={isAddingPlant}
-              className="ml-2"
-            >
+            <Button type="submit" variant="primary" size="md" loading={isAddingPlant}>
               {t('actions.save')}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* QR Code Scanner Modal */}
-        <Modal
-          isOpen={isScannerModalOpen}
-          onClose={() => setIsScannerModalOpen(false)}
-          title={t('header.scan_qr')}
-          maxWidth="sm"
-        >
+      <Modal isOpen={isScannerModalOpen} onClose={() => setIsScannerModalOpen(false)} title={t('header.scan_qr')} maxWidth="sm">
         {scannerError && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
-            {scannerError}
-          </div>
+          <Typography color="error" sx={{ mb: 2 }}>{scannerError}</Typography>
         )}
-        <QrCodeScanner 
-          onScanSuccess={handleScanSuccess} 
-          onScanError={handleScanError} 
-        />
+        <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
       </Modal>
-    </div>
+    </Box>
   );
 };
 

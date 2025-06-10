@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { MdMenu, MdSearch, MdQrCodeScanner, MdNotifications, MdAdd, MdArrowBack } from 'react-icons/md';
+import { MdMenu, MdQrCodeScanner, MdNotifications, MdAdd, MdArrowBack } from 'react-icons/md';
+import SearchIcon from '@mui/icons-material/Search';
 import ThemeToggle from './ThemeToggle';
-import PlusIcon from './icons/PlusIcon';
 import ProfileDropdown from './ProfileDropdown';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Box from '@mui/material/Box';
 
 interface HeaderProps {
   title: string;
@@ -56,14 +59,25 @@ const Header: React.FC<HeaderProps> = ({
           <Typography variant="h6" sx={{ flexGrow: 1 }} color="inherit">
             {title}
           </Typography>
-          <div className="hidden md:block relative mr-3">
-            <input
-              type="text"
-              placeholder={t('header.search')}
-              className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-48 focus:w-60 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <MdSearch className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          </div>
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder={t('header.search')}
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              mr: 3,
+              width: 200,
+              transition: 'width 0.3s',
+              '&.Mui-focused': { width: 250 }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
           <IconButton onClick={onOpenScannerModal} color="inherit" aria-label={t('header.scan_qr')}>
             <MdQrCodeScanner size={20} />
           </IconButton>
@@ -88,16 +102,21 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </Toolbar>
       </AppBar>
-      <div className="mt-3 md:hidden px-4">
-      <div className="relative">
-        <input
-          type="text"
+      <Box sx={{ mt: 3, px: 2, display: { xs: 'block', md: 'none' } }}>
+        <TextField
+          variant="outlined"
+          size="small"
           placeholder={t('header.search')}
-          className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
         />
-        <MdSearch className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-      </div>
-      </div>
+      </Box>
     </>
   );
 };

@@ -7,6 +7,7 @@ import {
   Grid,
   Paper,
   Typography,
+  TextField,
 } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -222,12 +223,13 @@ const DashboardPage: React.FC = () => {
                     {t('dashboard.view_all')}
                   </Link>
                 </Box>
-                <input
-                  type="text"
+                <TextField
+                  fullWidth
+                  size="small"
                   placeholder={t('dashboard.search_placeholder')}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 mb-4 rounded-md border border-gray-300 dark:border-slate-700 bg-transparent"
+                  sx={{ mb: 2 }}
                 />
                 {isLoading ? (
                   <Grid container spacing={2}>

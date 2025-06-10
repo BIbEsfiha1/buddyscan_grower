@@ -43,10 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   if (user?.user_metadata?.full_name) {
     initials = user.user_metadata.full_name
       .split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
+          bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[100] : theme.palette.grey[50],
   } else if (user?.email) {
     initials = user.email.substring(0, 2).toUpperCase();
   }

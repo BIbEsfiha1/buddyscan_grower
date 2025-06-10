@@ -46,12 +46,16 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
   // Label dimensions (approximated from cm to mm)
   const labelWidth = 35; // mm (3.5cm)
   const labelHeight = 50; // mm (5.0cm)
+  const labelGap = 4; // breathing space between labels
+  const innerPadding = 2; // internal margin inside the label
+  const contentWidth = labelWidth - innerPadding * 2;
+
   const qrCodeSizeMm = 25; // mm (2.5cm) - visual size on paper
   const textLineHeightMm = 4; // mm for text lines
   const textOffsetY = qrCodeSizeMm + 5; // Start text below QR code + small padding
 
-  const labelsPerRow = Math.floor(pageWidth / labelWidth);
-  const labelsPerCol = Math.floor(pageHeight / labelHeight);
+  const labelsPerRow = Math.floor((pageWidth + labelGap) / (labelWidth + labelGap));
+  const labelsPerCol = Math.floor((pageHeight + labelGap) / (labelHeight + labelGap));
   const maxLabelsPerPage = labelsPerRow * labelsPerCol;
 
   let currentLabel = 0;
@@ -75,8 +79,13 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
     const rowIndex = Math.floor(currentLabel / labelsPerRow);
     const colIndex = currentLabel % labelsPerRow;
 
-    const x = pageMargin + colIndex * labelWidth;
-    const y = pageMargin + rowIndex * labelHeight;
+    const x = pageMargin + colIndex * (labelWidth + labelGap) + innerPadding;
+    const y = pageMargin + rowIndex * (labelHeight + labelGap) + innerPadding;
+    const borderX = pageMargin + colIndex * (labelWidth + labelGap);
+    const borderY = pageMargin + rowIndex * (labelHeight + labelGap);
+
+    // Draw border for each label to keep layout clear
+    pdf.rect(borderX, borderY, labelWidth, labelHeight);
 
     // Draw border for the label (optional, for visualization)
     // pdf.rect(x, y, labelWidth, labelHeight);
@@ -85,23 +94,40 @@ export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) =
     if (!qrValue) {
       console.warn(`Plant ${plant.id} has no qrCodeValue or id for QR generation.`);
       // Optionally draw a placeholder if no QR value
-      pdf.text('No QR Value', x + (labelWidth - qrCodeSizeMm) / 2, y + qrCodeSizeMm / 2 + 2, { align: 'center' });
+      pdf.text(
+        'No QR Value',
+        x + (contentWidth - qrCodeSizeMm) / 2,
+        y + qrCodeSizeMm / 2,
+        { align: 'center' }
+      );
     } else {
       try {
         // Use a larger canvas to keep sharpness when scaled down in the PDF
         const qrDataURL = await getQRCodeDataURL(qrValue, 512);
         if (qrDataURL) {
-          pdf.addImage(qrDataURL, 'PNG', x + (labelWidth - qrCodeSizeMm) / 2, y + 2, qrCodeSizeMm, qrCodeSizeMm);
+          pdf.addImage(
+            qrDataURL,
+            'PNG',
+            x + (contentWidth - qrCodeSizeMm) / 2,
+            y,
+            qrCodeSizeMm,
+            qrCodeSizeMm
+          );
         }
       } catch (error) {
         console.error("Error generating QR code for plant:", plant.id, error);
-        pdf.text('QR Error', x + (labelWidth - qrCodeSizeMm) / 2, y + qrCodeSizeMm / 2 + 2, { align: 'center'});
+        pdf.text(
+          'QR Error',
+          x + (contentWidth - qrCodeSizeMm) / 2,
+          y + qrCodeSizeMm / 2,
+          { align: 'center' }
+        );
       }
     }
 
     // Add Text (centered under QR code)
-    const textBlockWidth = labelWidth - 2; // Small padding for text within label
-    const textX = x + labelWidth / 2; // Center align for text
+    const textBlockWidth = contentWidth;
+    const textX = x + contentWidth / 2;
 
     // Plant Name - potentially split if too long
     const plantNameLines = pdf.splitTextToSize(plant.name || 'Nome Desconhecido', textBlockWidth);

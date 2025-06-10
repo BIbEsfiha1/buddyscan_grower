@@ -1,9 +1,8 @@
-import React, { useState, ReactNode } from 'react';
-import HamburgerMenu from './HamburgerMenu';
-import BottomNavigation from './BottomNavigation';
+import React, { ReactNode } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { APP_NAME } from '../constants';
+import { Box, Typography } from '@mui/material';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,29 +12,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Mantém o hook para não quebrar contexto de tema, mas não desestrutura nada
   useTheme();
   useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  // Apenas mantém os hooks para garantir que os provedores estejam ativos
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 transition-colors duration-300">
-
-      {/* Componente do Menu Hamburger */}
-      <HamburgerMenu isOpen={isMenuOpen} onClose={toggleMenu} />
-
-      <main className="flex-grow px-0 py-6 sm:py-8 bg-slate-950 pb-24 md:pb-8">
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      <Box component="main" sx={{ flexGrow: 1 }}>
         {children}
-      </main>
-
-      {/* Navegação inferior para dispositivos móveis */}
-      <BottomNavigation />
-
-      <footer className="bg-slate-800 text-slate-400 text-center py-6 text-sm border-t border-slate-700 transition-colors duration-300">
-        <p>&copy; {new Date().getFullYear()} {APP_NAME}. Todos os direitos reservados.</p>
-      </footer>
-    </div>
+      </Box>
+      <Box component="footer" sx={{ bgcolor: 'background.paper', py: 2, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          &copy; {new Date().getFullYear()} {APP_NAME}. Todos os direitos reservados.
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 

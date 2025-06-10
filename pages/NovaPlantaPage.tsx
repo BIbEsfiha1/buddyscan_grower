@@ -63,7 +63,7 @@ export default function NovaPlantaPage() {
 
 
   return (
-    <div className="max-w-lg mx-auto w-full min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
         <button

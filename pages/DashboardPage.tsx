@@ -187,7 +187,7 @@ const DashboardPage: React.FC = () => {
   const selectStyle = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm transition-colors";
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white overflow-y-auto">
+    <div className="flex min-h-full bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white overflow-y-auto">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       

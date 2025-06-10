@@ -40,12 +40,12 @@ const CultivosPage: React.FC = () => {
   }, [toast]);
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-full p-6">
       <Loader message="Carregando cultivos..." size="md" />
     </div>
   );
   if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
       <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
       <Button variant="secondary" onClick={() => window.location.reload()}>Tentar novamente</Button>
@@ -55,7 +55,7 @@ const CultivosPage: React.FC = () => {
   const hasCultivos = cultivos.length > 0;
 
   return (
-    <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-screen flex flex-col gap-3 bg-white dark:bg-slate-900">
+    <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900">
       {/* Toast global */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 

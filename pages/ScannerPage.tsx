@@ -21,7 +21,7 @@ const ScannerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white overflow-y-auto">
+    <div className="flex min-h-full bg-gray-900 text-white overflow-y-auto">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header

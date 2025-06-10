@@ -32,7 +32,7 @@ import { fetchCurrentTemperature } from '../weather';
 import { getUserLocation } from '../getUserLocation';
 
 const DashboardPage: React.FC = () => {
-  const { plants, isLoading, error, addPlant } = usePlantContext();
+  const { plants, isLoading, error, addPlant, fetchDiaryEntries } = usePlantContext();
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -83,9 +83,16 @@ const DashboardPage: React.FC = () => {
       setStats({ totalPlants, activeZones, avgTemperature });
 
       try {
-        const { fetchDiaryEntries } = await import('../services/diaryEntryService');
-        const allEntries = (await Promise.all(plants.map(p => fetchDiaryEntries(p.id)))).flat();
-        setRecentEntries(allEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5));
+        const allEntries = (
+          await Promise.all(plants.map(p => fetchDiaryEntries(p.id)))
+        ).flat();
+        setRecentEntries(
+          allEntries
+            .sort(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            )
+            .slice(0, 5)
+        );
       } catch {
         setRecentEntries([]);
       }

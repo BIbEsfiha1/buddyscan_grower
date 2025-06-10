@@ -19,6 +19,7 @@ This project uses [Material UI](https://mui.com/) for its base styling along wit
 
 Run the SQL script in `supabase/diary_entries.sql` on your Supabase project to
 create the `diary_entries` table used by the Netlify functions. This script also
+enables the `uuid-ossp` extension required for `uuid_generate_v4()`.
 
 Run the SQL script in `supabase/grows.sql` to create the `grows` table and add
 `substrate` and `grow_id` columns to `cultivos`.

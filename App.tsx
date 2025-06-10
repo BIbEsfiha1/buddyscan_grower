@@ -12,6 +12,7 @@ import NovaPlantaPage from './pages/NovaPlantaPage';
 import CultivoEtiquetasPage from './pages/CultivoEtiquetasPage';
 import CultivoDetailPage from './pages/CultivoDetailPage';
 import GrowsPage from './pages/GrowsPage';
+import NovoGrowPage from './pages/NovoGrowPage';
 import SettingsPage from './pages/SettingsPage';
 import { PlantProvider } from './contexts/PlantContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -58,6 +59,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <GrowsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/novo-grow"
+            element={
+              <ProtectedRoute>
+                <NovoGrowPage />
               </ProtectedRoute>
             }
           />

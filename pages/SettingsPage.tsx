@@ -9,7 +9,7 @@ const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+    <div className="flex min-h-screen bg-gray-900 text-white overflow-y-auto">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header

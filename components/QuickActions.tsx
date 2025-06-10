@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdQrCodeScanner, MdLocalFlorist, MdBarChart } from 'react-icons/md';
+import { MdAdd, MdQrCodeScanner, MdLocalFlorist, MdBarChart, MdEdit } from 'react-icons/md';
 
 interface QuickActionProps {
   title: string;
@@ -34,17 +34,19 @@ interface QuickActionsProps {
   onScanQR: () => void;
   onOpenCultivos: () => void;
   onOpenStats: () => void;
+  onRegisterDiary: () => void;
 }
 
 const QuickActions: React.FC<QuickActionsProps> = ({
   onAddPlant,
   onScanQR,
   onOpenCultivos,
-  onOpenStats
+  onOpenStats,
+  onRegisterDiary
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
       <QuickAction
         title={t('header.add_plant')}
         icon={<MdAdd size={32} />}
@@ -68,6 +70,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         icon={<MdBarChart size={32} />}
         color="yellow"
         onClick={onOpenStats}
+      />
+      <QuickAction
+        title={t('dashboard.register_diary')}
+        icon={<MdEdit size={32} />}
+        color="red"
+        onClick={onRegisterDiary}
       />
     </div>
   );

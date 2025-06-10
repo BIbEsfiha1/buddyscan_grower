@@ -21,6 +21,7 @@
   },
   "dashboard": {
     "quick_actions": "Ações Rápidas",
+    "register_diary": "Registrar Diário",
     "my_plants": "Minhas Plantas",
     "view_all": "Ver Todas",
     "no_plants": "Você ainda não tem plantas cadastradas. Clique no botão + para adicionar sua primeira planta.",
@@ -28,6 +29,10 @@
     "activity_watered": "Planta regada",
     "activity_new_plant": "Nova planta adicionada",
     "activity_qr_scanned": "QR Code escaneado",
+    "active_grows": "Plantios Ativos",
+    "critical_alerts": "Alertas Críticos",
+    "latest_ai_diagnoses": "Últimos Diagnósticos IA",
+    "upcoming_harvests": "Próximas Colheitas",
     "total_plants": "Total de Plantas",
     "active_zones": "Zonas Ativas",
     "avg_temperature": "Temperatura Média",

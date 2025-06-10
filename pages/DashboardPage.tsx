@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData } from '../types';
+import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData, DiaryEntry } from '../types';
 import { 
   PLANT_STAGES_OPTIONS, 
   PLANT_HEALTH_STATUS_OPTIONS, 
@@ -41,9 +41,16 @@ const DashboardPage: React.FC = () => {
     activeZones: 0,
     avgTemperature: 0
   });
+  const [activeCultivos, setActiveCultivos] = useState(0);
+  const [upcomingHarvests, setUpcomingHarvests] = useState(0);
+  const [latestDiagnoses, setLatestDiagnoses] = useState<string[]>([]);
+  const [criticalAlerts, setCriticalAlerts] = useState<string[]>([]);
+  const [plantChange, setPlantChange] = useState(0);
+  const prevPlantCount = React.useRef<number>(0);
   const [lastTempUpdate, setLastTempUpdate] = useState<number>(0);
   const [tempAlert, setTempAlert] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [recentEntries, setRecentEntries] = useState<DiaryEntry[]>([]);
 
   const initialFormState: NewPlantData = {
     name: '',
@@ -141,6 +148,9 @@ const DashboardPage: React.FC = () => {
       if (plants.length > 0 && isLoggedIn) {
         // Count total plants
         const totalPlants = plants.length;
+        const change = totalPlants - prevPlantCount.current;
+        prevPlantCount.current = totalPlants;
+        setPlantChange(change);
         // Count unique zones (cultivos)
         const activeZones = new Set(plants.map(p => p.cultivoId).filter(id => id)).size;
         // Buscar localização e temperatura
@@ -167,6 +177,38 @@ const DashboardPage: React.FC = () => {
           activeZones,
           avgTemperature
         });
+
+        try {
+          const { getCultivos } = await import('../services/cultivoService');
+          const cultivos = await getCultivos();
+          setActiveCultivos(cultivos.filter(c => !c.finalizadoEm).length);
+        } catch {
+          setActiveCultivos(0);
+        }
+
+        const now = new Date();
+        const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        setUpcomingHarvests(
+          plants.filter(p => {
+            if (!p.estimatedHarvestDate) return false;
+            const d = new Date(p.estimatedHarvestDate);
+            return d >= now && d <= in30;
+          }).length
+        );
+
+        const allEntries = (await Promise.all(plants.map(p => fetchDiaryEntries(p.id)))).flat();
+        const diagnoses = allEntries
+          .filter(e => e.aiOverallDiagnosis)
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0,4)
+          .map(e => e.aiOverallDiagnosis as string);
+        setLatestDiagnoses(diagnoses);
+        setRecentEntries(
+          allEntries
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .slice(0,5)
+        );
+        setCriticalAlerts([]);
       }
     }
     if (isLoggedIn) {
@@ -221,8 +263,8 @@ const DashboardPage: React.FC = () => {
                 <StatsCard
                   title={t('dashboard.total_plants')}
                   value={stats.totalPlants}
-                  change="+2" // placeholder
-                  trend="up"
+                  change={plantChange === 0 ? '' : (plantChange > 0 ? `+${plantChange}` : `${plantChange}`)}
+                  trend={plantChange > 0 ? 'up' : plantChange < 0 ? 'down' : 'neutral'}
                   icon={<LeafIcon className="w-5 h-5" />}
                   color="green"
                 />
@@ -255,12 +297,44 @@ const DashboardPage: React.FC = () => {
           {/* Quick Actions */}
           <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
             <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.quick_actions')}</h2>
-            <QuickActions 
-              onAddPlant={() => setIsAddModalOpen(true)}
-              onScanQR={() => setIsScannerModalOpen(true)}
-              onOpenCultivos={() => navigate('/cultivos')}
-              onOpenStats={() => navigate('/garden-statistics')}
-            />
+          <QuickActions
+            onAddPlant={() => setIsAddModalOpen(true)}
+            onScanQR={() => setIsScannerModalOpen(true)}
+            onOpenCultivos={() => navigate('/cultivos')}
+            onOpenStats={() => navigate('/garden-statistics')}
+            onRegisterDiary={() => navigate('/plants')}
+          />
+          </section>
+
+          <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.active_grows')}</h2>
+              <p className="text-3xl font-semibold text-green-400">{activeCultivos}</p>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.upcoming_harvests')}</h2>
+              <p className="text-3xl font-semibold text-green-400">{upcomingHarvests}</p>
+            </div>
+            <div className="md:col-span-2">
+              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.critical_alerts')}</h2>
+              {criticalAlerts.length ? (
+                <ul className="list-disc ml-5 text-red-400 space-y-1">
+                  {criticalAlerts.map((a, idx) => <li key={idx}>{a}</li>)}
+                </ul>
+              ) : (
+                <p className="text-gray-400">-</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <h2 className="text-xl font-bold mb-2 text-white">{t('dashboard.latest_ai_diagnoses')}</h2>
+              {latestDiagnoses.length ? (
+                <ul className="list-disc ml-5 text-sky-300 space-y-1">
+                  {latestDiagnoses.map((d, idx) => <li key={idx}>{d}</li>)}
+                </ul>
+              ) : (
+                <p className="text-gray-400">-</p>
+              )}
+            </div>
           </section>
           
           {/* Plants List */}
@@ -315,42 +389,24 @@ const DashboardPage: React.FC = () => {
           <section className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm p-6 rounded-3xl">
             <h2 className="text-xl font-bold mb-4 text-white">{t('dashboard.recent_activity')}</h2>
             <div className="space-y-3">
-              {plants.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-                    <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                      </svg>
+              {recentEntries.length ? (
+                recentEntries.map(entry => {
+                  const plant = plants.find(p => p.id === entry.plantId);
+                  const time = new Date(entry.timestamp);
+                  return (
+                    <div key={entry.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
+                      <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-white">{plant ? plant.name : entry.plantId}</h3>
+                        <p className="text-sm text-gray-400">{time.toLocaleDateString()} {time.toLocaleTimeString()}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-white">Planta regada</h3>
-                      <p className="text-sm text-gray-400">2 horas atrás</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-                    <div className="p-2 bg-emerald-500/20 text-emerald-500 rounded-lg">
-                      <LeafIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-white">{t('dashboard.activity_new_plant')}</h3>
-                      <p className="text-sm text-gray-400">5 horas atrás</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-                    <div className="p-2 bg-purple-500/20 text-purple-500 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-white">{t('dashboard.activity_qr_scanned')}</h3>
-                      <p className="text-sm text-gray-400">1 dia atrás</p>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })
               ) : (
                 <div className="bg-gray-800 p-3 rounded-lg text-gray-400 text-center">
                   {t('dashboard.no_activity')}

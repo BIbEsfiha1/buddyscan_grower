@@ -21,6 +21,7 @@
   },
   "dashboard": {
     "quick_actions": "Quick Actions",
+    "register_diary": "Register Diary",
     "my_plants": "My Plants",
     "view_all": "View All",
     "no_plants": "You have no plants yet. Click the + button to add your first plant.",
@@ -28,6 +29,10 @@
     "activity_watered": "Plant watered",
     "activity_new_plant": "New plant added",
     "activity_qr_scanned": "QR Code scanned",
+    "active_grows": "Active Grows",
+    "critical_alerts": "Critical Alerts",
+    "latest_ai_diagnoses": "Latest AI Diagnoses",
+    "upcoming_harvests": "Upcoming Harvests",
     "total_plants": "Total Plants",
     "active_zones": "Active Zones",
     "avg_temperature": "Average Temperature",

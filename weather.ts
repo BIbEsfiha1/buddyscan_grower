@@ -2,7 +2,7 @@
 // Você precisa de uma API KEY gratuita: https://openweathermap.org/appid
 // Recomendo salvar a chave em .env.local ou variável de ambiente
 
-const OPENWEATHER_API_KEY = '12d976552e935e377e75b111d5f6e06a';
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '';
 const DEFAULT_CITY = 'São Paulo,BR';
 
 export async function fetchCurrentTemperature({lat, lon, city}: {lat?: number, lon?: number, city?: string} = {}): Promise<number | null> {

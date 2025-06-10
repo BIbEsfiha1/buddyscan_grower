@@ -24,10 +24,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
     try {
       // Busca todas as plantas e procura pelo qrCodeValue
       const plants = await getPlants();
-      console.log('[QrCodeScanner] Plants received in handleQrScan:', JSON.stringify(plants, null, 2));
-      console.log('[QrCodeScanner] QR code value read (result):', result);
       const plant = plants.find(p => p.qrCodeValue === result);
-      console.log('[QrCodeScanner] Plant found in handleQrScan:', plant ? JSON.stringify(plant, null, 2) : 'Not found');
       if (plant) {
         onScanSuccess(plant);
       } else {
@@ -61,10 +58,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
     try {
       // Busca todas as plantas e procura pelo qrCodeValue
       const plants = await getPlants();
-      console.log('[QrCodeScanner] Plants received in handleManualScan:', JSON.stringify(plants, null, 2));
-      console.log('[QrCodeScanner] Manual QR code value (qrValue):', qrValue);
       const plant = plants.find(p => p.qrCodeValue === qrValue);
-      console.log('[QrCodeScanner] Plant found in handleManualScan:', plant ? JSON.stringify(plant, null, 2) : 'Not found');
       if (plant) {
         onScanSuccess(plant);
       } else {

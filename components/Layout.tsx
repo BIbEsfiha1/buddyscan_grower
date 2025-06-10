@@ -1,5 +1,6 @@
 import React, { useState, ReactNode } from 'react';
 import HamburgerMenu from './HamburgerMenu';
+import BottomNavigation from './BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { APP_NAME } from '../constants';
@@ -24,13 +25,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Componente do Menu Hamburger */}
       <HamburgerMenu isOpen={isMenuOpen} onClose={toggleMenu} />
 
-      <main className="flex-grow px-0 py-6 sm:py-8 bg-slate-950">
+      <main className="flex-grow px-0 py-6 sm:py-8 bg-slate-950 pb-20 md:pb-8">
         {children}
       </main>
 
       <footer className="bg-slate-800 text-slate-400 text-center py-6 text-sm border-t border-slate-700 transition-colors duration-300">
         <p>&copy; {new Date().getFullYear()} {APP_NAME}. Todos os direitos reservados.</p>
       </footer>
+
+      {/* Navegação inferior para dispositivos móveis */}
+      <BottomNavigation />
     </div>
   );
 };

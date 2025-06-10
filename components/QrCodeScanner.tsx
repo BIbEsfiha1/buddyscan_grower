@@ -23,14 +23,19 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
     setIsScanning(true);
     setScanError(null);
     try {
-      // Busca todas as plantas e procura pelo qrCodeValue
+      // Busca todas as plantas e procura primeiro pelo qrCodeValue
       const plants = await getPlants();
-      const plant = plants.find(p => p.qrCodeValue === result);
+      let plant = plants.find(p => p.qrCodeValue === result);
+      if (!plant) {
+        // Se não encontrado pelo QR, tenta buscar por id
+        plant = plants.find(p => p.id === result);
+      }
       if (plant) {
         onScanSuccess(plant);
       } else {
-        setScanError('Nenhuma planta encontrada com este QR code.');
-        onScanError('Nenhuma planta encontrada com este QR code.');
+        const msg = 'Nenhuma planta encontrada com este QR code ou ID.';
+        setScanError(msg);
+        onScanError(msg);
       }
     } catch (error) {
       setScanError('Erro ao processar o QR code.');
@@ -57,13 +62,17 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
 
     setIsScanning(true);
     try {
-      // Busca todas as plantas e procura pelo qrCodeValue
+      // Busca todas as plantas e procura primeiro pelo qrCodeValue
       const plants = await getPlants();
-      const plant = plants.find(p => p.qrCodeValue === qrValue);
+      let plant = plants.find(p => p.qrCodeValue === qrValue);
+      if (!plant) {
+        // Se não encontrado pelo QR, tenta buscar por id
+        plant = plants.find(p => p.id === qrValue);
+      }
       if (plant) {
         onScanSuccess(plant);
       } else {
-        onScanError('Nenhuma planta encontrada com este QR code.');
+        onScanError('Nenhuma planta encontrada com este QR code ou ID.');
       }
     } catch (error) {
       onScanError('Erro ao processar o QR code.');

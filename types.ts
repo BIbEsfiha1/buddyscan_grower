@@ -59,7 +59,8 @@ export interface Plant {
   healthStatus: PlantHealthStatus; 
   operationalStatus: PlantOperationalStatus;
   cultivationType?: 'Indoor' | 'Outdoor' | 'Hydroponics' | 'Aeroponics' | 'Aquaponics' | 'Soil';
-  substrate?: string; // e.g., Coco Coir, Rockwool, Soil Mix
+  // Substrate used for the plant (e.g., Coco Coir, Rockwool, Soil Mix)
+  substrate?: string;
   estimatedHarvestDate?: string; 
   growRoomId?: string;
   heightCm?: number;

@@ -1,19 +1,25 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
-import { DiaryEntry, PlantStage, Photo, NewPhoto, NewDiaryEntryData } from '../types'; // Import centralized types
+import React, { useState, ChangeEvent, FormEvent, useEffect, useRef } from 'react';
+import { DiaryEntry, PlantStage, NewPhoto, NewDiaryEntryData } from '../types';
 import { PLANT_STAGES_OPTIONS, DEFAULT_AI_PROMPT } from '../constants';
 import ImageUpload from './ImageUpload';
-import { getImageDiagnosis } from '../services/geminiService';
+import useAIDiagnosis from '../hooks/useAIDiagnosis';
 import Loader from './Loader';
 import Button from './Button';
+import netlifyIdentity from 'netlify-identity-widget';
+import { updateDiaryEntry, getDiaryEntries } from '../services/plantService';
+import { useParams } from 'react-router-dom';
+import mergeAIDiagnoses from '../utils/mergeAIDiagnoses';
 
 interface DiaryEntryFormProps {
   plantCurrentStage: PlantStage;
-  onSubmit: (data: NewDiaryEntryData) => Promise<void>;
+  onSubmit: (data: NewDiaryEntryData) => Promise<DiaryEntry | undefined>;
   isLoading: boolean;
   initialData?: Partial<DiaryEntry>; // For editing
 }
 
 const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSubmit, isLoading, initialData }) => {
+  const { plantId } = useParams<{ plantId: string }>();
+  const { diagnose, isAnyDiagnosing } = useAIDiagnosis();
   const [formData, setFormData] = useState<Partial<Omit<DiaryEntry, 'id' | 'plantId' | 'timestamp' | 'author' | 'photos'>>>({
     stage: initialData?.stage || plantCurrentStage,
     notes: initialData?.notes || '',
@@ -33,9 +39,55 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
     actionsTaken: initialData?.actionsTaken || '',
     aiOverallDiagnosis: initialData?.aiOverallDiagnosis || '',
   });
-  const [uploadedPhotos, setUploadedPhotos] = useState<NewPhoto[]>(initialData?.photos ? initialData.photos.map(p => ({ urlOriginal: p.urlOriginal, caption: p.caption, aiSummary: p.aiSummary, aiRawJson: p.aiRawJson })) : []);
-  const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const [uploadedPhotos, setUploadedPhotos] = useState<NewPhoto[]>(
+    initialData?.photos
+      ? initialData.photos.map(p => ({
+          urlOriginal: p.urlOriginal,
+          urlThumb: p.urlThumb,
+          caption: p.caption,
+          aiSummary: p.aiSummary,
+          aiRawJson: p.aiRawJson,
+        }))
+      : []
+  );
   const [diagnosisError, setDiagnosisError] = useState<string | null>(null);
+  const [aiPendingCount, setAiPendingCount] = useState(0);
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(initialData?.id || null);
+  const uploadedPhotosRef = useRef<NewPhoto[]>(uploadedPhotos);
+
+  useEffect(() => {
+    uploadedPhotosRef.current = uploadedPhotos;
+  }, [uploadedPhotos]);
+
+  useEffect(() => {
+    if (!savedEntryId || !plantId || aiPendingCount === 0) return;
+    const interval = setInterval(async () => {
+      try {
+        const entries = await getDiaryEntries(plantId);
+        const entry = entries.find(e => e.id === savedEntryId);
+        if (entry) {
+          const photos = entry.photos.map(p => ({
+            urlOriginal: p.urlOriginal,
+            urlThumb: p.urlThumb,
+            caption: p.caption,
+            aiSummary: p.aiSummary,
+            aiRawJson: p.aiRawJson,
+          }));
+          setUploadedPhotos(photos);
+          const overall = mergeAIDiagnoses(photos.map(p => p.aiSummary));
+          setFormData(prev => ({ ...prev, aiOverallDiagnosis: overall }));
+          const remaining = photos.filter(p => p.aiSummary === 'Analisando...' || !p.aiSummary).length;
+          setAiPendingCount(remaining);
+          if (remaining === 0) {
+            clearInterval(interval);
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao obter diagnóstico atualizado', err);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [savedEntryId, plantId, aiPendingCount]);
 
   useEffect(() => {
     if (!initialData && !formData.notes && !formData.heightCm) { 
@@ -52,38 +104,68 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
     }));
   };
 
+  const uploadImage = async (file: File, base64: string) => {
+    const user = netlifyIdentity.currentUser();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const token = user?.token?.access_token;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/.netlify/functions/uploadPhoto', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ fileName: file.name, base64, contentType: file.type }),
+    });
+    if (!res.ok) {
+      throw new Error('Upload failed');
+    }
+    return res.json();
+  };
+
   const handleImageUploaded = async (file: File, base64: string) => {
-    const newPhoto: NewPhoto = {
-        urlOriginal: base64, 
-        caption: file.name,
-        aiSummary: 'Analisando...',
-        aiRawJson: '{}'
-    };
-    setUploadedPhotos(prev => [...prev, newPhoto]);
-    
-    setIsDiagnosing(true);
     setDiagnosisError(null);
     try {
-        const diagnosis = await getImageDiagnosis(base64, DEFAULT_AI_PROMPT);
-        setUploadedPhotos(prevPhotos => prevPhotos.map(p => 
-            p.urlOriginal === base64 ? { ...p, aiSummary: diagnosis.summary, aiRawJson: diagnosis.rawJson } : p
-        ));
-        if(!formData.aiOverallDiagnosis && diagnosis.summary) {
-            setFormData(prevForm => ({...prevForm, aiOverallDiagnosis: diagnosis.summary}));
+      const uploaded = await uploadImage(file, base64);
+      const newPhoto: NewPhoto = {
+        urlOriginal: uploaded.urlOriginal,
+        urlThumb: uploaded.urlThumb,
+        caption: file.name,
+        aiSummary: 'Analisando...',
+        aiRawJson: '{}',
+      };
+      setUploadedPhotos(prev => [...prev, newPhoto]);
+      setAiPendingCount(prev => prev + 1);
+
+      const diagnosis = await diagnose(uploaded.urlOriginal, base64, DEFAULT_AI_PROMPT);
+      const updatedPhotos = uploadedPhotosRef.current.map(p =>
+        p.urlOriginal === uploaded.urlOriginal
+          ? { ...p, aiSummary: diagnosis.summary, aiRawJson: diagnosis.rawJson }
+          : p
+      );
+      setUploadedPhotos(updatedPhotos);
+      const overall = mergeAIDiagnoses(updatedPhotos.map(p => p.aiSummary));
+      setFormData(prev => ({ ...prev, aiOverallDiagnosis: overall }));
+      if (savedEntryId && plantId) {
+        try {
+          await updateDiaryEntry(plantId, savedEntryId, {
+            photos: updatedPhotos,
+            aiOverallDiagnosis: overall,
+          });
+        } catch (err) {
+          console.error('Erro ao anexar diagnóstico', err);
         }
+      }
+      setAiPendingCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-        console.error("Error getting AI diagnosis:", error);
-        setDiagnosisError("Falha ao obter diagnóstico da IA.");
-        setUploadedPhotos(prevPhotos => prevPhotos.map(p => 
-            p.urlOriginal === base64 ? { ...p, aiSummary: "Erro na análise" } : p
-        ));
-    } finally {
-        setIsDiagnosing(false);
+      console.error('Error processing image:', error);
+      setDiagnosisError('Falha ao processar imagem.');
+      setAiPendingCount(prev => Math.max(0, prev - 1));
     }
   };
   
   const handleImageRemoved = (urlToRemove: string) => {
-    setUploadedPhotos(prev => prev.filter(p => p.urlOriginal !== urlToRemove));
+    const updated = uploadedPhotosRef.current.filter(p => p.urlOriginal !== urlToRemove);
+    setUploadedPhotos(updated);
+    const overall = mergeAIDiagnoses(updated.map(p => p.aiSummary));
+    setFormData(prev => ({ ...prev, aiOverallDiagnosis: overall }));
   };
 
 
@@ -113,7 +195,10 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
       aiOverallDiagnosis: formData.aiOverallDiagnosis,
       photos: uploadedPhotos,
     };
-    await onSubmit(dataToSubmit);
+    const saved = await onSubmit(dataToSubmit);
+    if (saved && saved.id) {
+      setSavedEntryId(saved.id);
+    }
   };
 
   const formFieldClass = "mt-1 block w-full px-3 py-2.5 bg-[#EAEAEA] dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-[#3E3E3E] dark:text-slate-100 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7AC943] focus:border-[#7AC943] sm:text-sm disabled:bg-gray-200 dark:disabled:bg-slate-800 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-400";
@@ -229,7 +314,7 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
               </div>
             </div>
           )}
-          {isDiagnosing && <Loader size="sm" message="Analisando imagem com IA..." />}
+          {isAnyDiagnosing && <Loader size="sm" message="Analisando imagem com IA..." />}
           {diagnosisError && <p className="text-xs text-red-500 dark:text-red-400">{diagnosisError}</p>}
       </div>
       
@@ -238,13 +323,18 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
         <textarea name="aiOverallDiagnosis" id="aiOverallDiagnosis" value={formData.aiOverallDiagnosis || ''} onChange={handleChange} rows={2} className={`${formFieldClass} min-h-[60px]`} placeholder="Resumo do diagnóstico da IA para esta entrada..."/>
       </div>
 
-      <div className="flex justify-end pt-5 border-t border-gray-200 dark:border-slate-700">
-        <Button 
-          type="submit" 
+      <div className="flex flex-col items-end gap-2 pt-5 border-t border-gray-200 dark:border-slate-700">
+        {aiPendingCount > 0 && (
+          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+            IA em processamento, resultado será anexado depois
+          </p>
+        )}
+        <Button
+          type="submit"
           variant="primary"
           size="md"
-          loading={isLoading || isDiagnosing} 
-          disabled={isLoading || isDiagnosing}
+          loading={isLoading}
+          disabled={isLoading}
           className="min-w-[180px]"
         >
           {initialData ? 'Atualizar Registro' : 'Adicionar Registro'}

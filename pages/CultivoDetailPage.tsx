@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import Loader from '../components/Loader';
+import ErrorBanner from '../components/ErrorBanner';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import CultivoPlantList from '../components/cultivo/CultivoPlantList';
@@ -160,8 +161,7 @@ const CultivoDetailPage: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-full p-6">
-        <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
-        <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
+        <ErrorBanner message={error} />
         <Button variant="secondary" onClick={() => window.location.reload()}>
           {t('cultivoDetailPage.try_again')}
         </Button>

@@ -9,6 +9,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import LeafIcon from '../components/icons/LeafIcon';
 import Loader from '../components/Loader';
+import ErrorBanner from '../components/ErrorBanner';
 
 const CultivosPage: React.FC = () => {
   const { t } = useTranslation();
@@ -52,8 +53,7 @@ const CultivosPage: React.FC = () => {
   if (error)
     return (
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" p={3}>
-        <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
-        <Typography color="error" sx={{ mb: 2, fontWeight: 600 }}>{error}</Typography>
+        <ErrorBanner message={error} />
         <Button variant="secondary" onClick={() => window.location.reload()}>
           {t('cultivosPage.try_again')}
         </Button>

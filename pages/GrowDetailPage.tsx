@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import ErrorBanner from '../components/ErrorBanner';
 import useToast from '../hooks/useToast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
@@ -24,6 +25,7 @@ export default function GrowDetailPage() {
   const [grow, setGrow] = useState<Grow | null>(null);
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toast, showToast] = useToast();
 
   const [showQrModal, setShowQrModal] = useState(false);
@@ -42,6 +44,7 @@ export default function GrowDetailPage() {
         setGrow(growList.find(g => g.id === growId) || null);
         setCultivos(cultivosList.filter(c => c.growId === growId));
       } catch {
+        setError(t('growDetailPage.error_loading_data') || 'Erro ao carregar dados');
         showToast({ message: t('growDetailPage.error_loading_data') || 'Erro ao carregar dados', type: 'error' });
       } finally {
         setLoading(false);
@@ -84,6 +87,16 @@ export default function GrowDetailPage() {
         p={6}
       >
         <Loader message={t('growDetailPage.loading_space') || "Carregando espaço..."} size="md" />
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
+        <ErrorBanner message={error} />
+        <Button variant="secondary" onClick={() => window.location.reload()}>
+          {t('growDetailPage.try_again') || 'Tentar novamente'}
+        </Button>
       </Box>
     );
   }

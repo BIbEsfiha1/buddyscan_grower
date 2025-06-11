@@ -14,6 +14,7 @@ import StatsCard from '../components/StatsCard';
 import QuickActions from '../components/QuickActions';
 import PlantCard from '../components/PlantCard';
 import PlantCardSkeleton from '../components/PlantCardSkeleton';
+import ErrorBanner from '../components/ErrorBanner';
 import Modal from '../components/Modal';
 import AddPlantModal from '../components/AddPlantModal';
 import QrCodeScanner, { ScanResult } from '../components/QrCodeScanner';
@@ -176,7 +177,7 @@ const DashboardPage: React.FC = () => {
                     ))}
                   </Grid>
                 ) : error ? (
-                  <Typography color="error">{t('dashboard.error_loading_plants')}: {error}</Typography>
+                  <ErrorBanner message={`${t('dashboard.error_loading_plants')}: ${error}`} />
                 ) : plants.length === 0 ? (
                   <Typography color="text.secondary">{t('dashboard.no_plants')}</Typography>
                 ) : filteredPlants.length === 0 ? (

@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -50,8 +51,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 
-  return {
-    statusCode: 201,
-    body: JSON.stringify(data && data[0])
-  };
+  return successResponse(data && data[0], 201);
 };

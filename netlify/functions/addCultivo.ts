@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { debugLog } from './utils';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -33,7 +34,16 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       };
     }
 
-    // 1. Criar o cultivo
+    const { error: beginError } = await supabase.rpc('pg_temp.begin');
+    if (beginError) {
+      debugLog('[addCultivo] Failed to start transaction:', beginError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Erro ao iniciar transação', details: beginError })
+      };
+    }
+
+    // 1. Criar o cultivo dentro da transação
     const { data: cultivo, error: cultivoError } = await supabase
       .from('cultivos')
       .insert([{ name, start_date: startDate, notes, substrate, grow_id: growId, user_id: userId }])
@@ -41,6 +51,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       .single();
     debugLog('[addCultivo] Cultivo insert result:', { cultivo, cultivoError });
     if (cultivoError || !cultivo) {
+      await supabase.rpc('pg_temp.rollback');
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Erro ao criar cultivo', details: cultivoError })
@@ -72,6 +83,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         .select();
       debugLog('[addCultivo] Plants insert result:', { plantsResult, plantsError });
       if (plantsError) {
+        await supabase.rpc('pg_temp.rollback');
         return {
           statusCode: 500,
           body: JSON.stringify({ error: 'Erro ao criar plantas', details: plantsError })
@@ -80,11 +92,18 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       createdPlants = plantsResult || [];
     }
 
+    const { error: commitError } = await supabase.rpc('pg_temp.commit');
+    if (commitError) {
+      debugLog('[addCultivo] Commit transaction failed:', commitError);
+      await supabase.rpc('pg_temp.rollback');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Erro ao finalizar transação', details: commitError })
+      };
+    }
+
     debugLog('[addCultivo] Success:', { cultivo, createdPlants });
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ cultivo, plants: createdPlants })
-    };
+    return successResponse({ cultivo, plants: createdPlants });
   } catch (error) {
     console.error('[addCultivo] Unexpected error:', error);
     return {

@@ -4,6 +4,7 @@ import { usePlantContext } from '../contexts/PlantContext';
 import { useTranslation } from 'react-i18next';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
+import ErrorBanner from '../components/ErrorBanner';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Sidebar from '../components/Sidebar';
@@ -104,9 +105,7 @@ const AllPlantsPage: React.FC = () => {
                 <Loader size="lg" />
               </Box>
             ) : error ? (
-              <Paper sx={{ p: 3, bgcolor: 'error.main', color: 'error.contrastText' }}>
-                <Typography>Erro ao carregar plantas: {error}</Typography>
-              </Paper>
+              <ErrorBanner message={error} />
             ) : plants.length === 0 ? (
               <Paper sx={{ p: 3, textAlign: 'center' }}>
                 <Typography>{t('allPlantsPage.no_plants')}</Typography>

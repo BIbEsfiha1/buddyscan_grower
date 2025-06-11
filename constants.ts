@@ -51,7 +51,6 @@ export const CULTIVATION_TYPE_OPTIONS = [
 ];
 
 export const SUBSTRATE_OPTIONS = [
-  { value: '', label: 'Selecione um substrato...' },
   { value: 'Terra Composta (Solo Org\u00e2nico)', label: 'Terra Composta (Solo Org\u00e2nico)' },
   { value: 'Fibra de Coco', label: 'Fibra de Coco' },
   { value: 'Perlita', label: 'Perlita' },

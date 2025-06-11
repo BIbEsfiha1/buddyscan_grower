@@ -1,5 +1,6 @@
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -42,10 +43,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         body: JSON.stringify({ error: 'Erro ao buscar cultivo', details: error }),
       };
     }
-    return {
-      statusCode: 200,
-      body: JSON.stringify(data),
-    };
+    return successResponse(data);
   } catch (e: any) {
     return {
       statusCode: 500,

@@ -17,6 +17,13 @@ create table if not exists diary_entries (
   humidity numeric,
   symptoms text,
   actions_taken text,
+  watering_volume numeric,
+  watering_type text,
+  fertilization_type text,
+  fertilization_concentration numeric,
+  photoperiod text,
+  spray_product text,
+  spray_amount numeric,
   photos jsonb,
   ai_overall_diagnosis text
 );

@@ -7,6 +7,7 @@ import Toast from '../components/Toast';
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
+  const [capacity, setCapacity] = useState<number | ''>('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function NovoGrowPage() {
     setSaving(true);
     try {
       const { addGrow } = await import('../services/growService');
-      const newGrow = await addGrow({ name, location: location || undefined });
+      const newGrow = await addGrow({ name, location: location || undefined, capacity: capacity === '' ? undefined : capacity });
       setToast({ message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.', type: 'success' });
       setTimeout(() => navigate(`/novo-cultivo?growId=${newGrow.id}`), 1500);
     } catch (err: any) {
@@ -66,6 +67,17 @@ export default function NovoGrowPage() {
           <div>
             <label htmlFor="growLocation" className={labelStyle}>Localização (opcional)</label>
             <input id="growLocation" type="text" className={inputStyle} value={location} onChange={e => setLocation(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="growCapacity" className={labelStyle}>Capacidade (opcional)</label>
+            <input
+              id="growCapacity"
+              type="number"
+              className={inputStyle}
+              value={capacity}
+              onChange={e => setCapacity(e.target.value === '' ? '' : parseInt(e.target.value))}
+              min="0"
+            />
           </div>
           <div className="mt-6 flex justify-center">
             <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!name}>Salvar Grow</Button>

@@ -85,6 +85,13 @@ const DiaryEntryItem: React.FC<DiaryEntryItemProps> = ({ entry }) => {
             <DetailItem label="pH" value={entry.ph} />
             <DetailItem label="Temp." value={entry.temperature} unit="°C" />
             <DetailItem label="Umidade" value={entry.humidity} unit="%" />
+            <DetailItem label="Rega" value={entry.wateringVolume} unit="L" />
+            <DetailItem label="Tipo de Água" value={entry.wateringType} />
+            <DetailItem label="Fertilizante" value={entry.fertilizationType} />
+            <DetailItem label="Concentração" value={entry.fertilizationConcentration} />
+            <DetailItem label="Fotoperíodo" value={entry.photoperiod} />
+            <DetailItem label="Pulverização" value={entry.sprayProduct} />
+            <DetailItem label="Qtde Pulverizada" value={entry.sprayAmount} unit="mL" />
           </div>
 
           {entry.aiOverallDiagnosis && (

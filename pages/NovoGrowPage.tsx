@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Button from '../components/Button';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
-import Toast from '../components/Toast';
-import useToast from '../hooks/useToast';
 import {
   Box,
+  Paper,
   Typography,
   TextField,
-  Breadcrumbs,
   IconButton,
-  Paper,
+  Breadcrumbs,
 } from '@mui/material';
+import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import Button from '../components/Button';
+import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
@@ -56,8 +56,8 @@ export default function NovoGrowPage() {
       display="flex"
       flexDirection="column"
       gap={2}
-      p={{ xs: 2, sm: 4 }}
       bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
     >
       {toast && <Toast message={toast.message} type={toast.type} />}
 
@@ -84,10 +84,22 @@ export default function NovoGrowPage() {
       </Box>
 
       <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }} variant="outlined">
-        <Typography variant="h5" color="primary" fontWeight="bold" textAlign="center" mb={3}>
+        <Typography
+          variant="h5"
+          color="primary"
+          fontWeight="bold"
+          textAlign="center"
+          mb={3}
+        >
           Novo Grow
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} display="flex" flexDirection="column" gap={2}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          display="flex"
+          flexDirection="column"
+          gap={2}
+        >
           <TextField
             id="growName"
             label="Nome do Grow"
@@ -115,7 +127,13 @@ export default function NovoGrowPage() {
             fullWidth
           />
           <Box mt={3} textAlign="center">
-            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!name}>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              loading={saving}
+              disabled={!name}
+            >
               Salvar Grow
             </Button>
           </Box>

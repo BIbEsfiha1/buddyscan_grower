@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Grow } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
-import PlusIcon from '../components/icons/PlusIcon';
+import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import Loader from '../components/Loader';
-import {
-  Box,
-  Typography,
-  Breadcrumbs,
-  Paper,
-  IconButton,
-  List,
-  ListItem,
-} from '@mui/material';
+import { Box, Typography, Paper, List, ListItem } from '@mui/material';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
@@ -37,7 +28,7 @@ export default function GrowsPage() {
       }
     }
     fetchData();
-  }, []);
+  }, [showToast]);
 
   if (loading) {
     return (
@@ -68,33 +59,22 @@ export default function GrowsPage() {
     >
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <Box
-        position="sticky"
-        top={0}
-        zIndex={20}
-        bgcolor="background.paper"
-        display="flex"
-        alignItems="center"
-        gap={1}
-        py={1}
-        px={{ xs: 1, sm: 0 }}
-        mb={2}
-        sx={{ backdropFilter: 'blur(4px)' }}
-      >
-        <IconButton onClick={() => navigate(-1)} aria-label="Voltar" color="primary">
-          <ArrowLeftIcon className="w-7 h-7" />
-        </IconButton>
-        <Breadcrumbs separator=">">
-          <Link to="/">Dashboard</Link>
-          <Typography color="text.primary">Grows</Typography>
-        </Breadcrumbs>
-        <Box flexGrow={1} />
-        <Link to="/novo-grow">
-          <Button variant="primary" size="icon" title="Novo Grow">
-            <PlusIcon className="w-5 h-5" />
-          </Button>
-        </Link>
-      </Box>
+      <Header
+        title="Grows"
+        onOpenSidebar={() => {}}
+        onOpenAddModal={() => navigate('/novo-grow')}
+        onOpenScannerModal={() => {}}
+        showBack
+        onBack={() => navigate(-1)}
+      />
+
+      <Breadcrumbs
+        items={[
+          { label: 'Dashboard', to: '/' },
+          { label: 'Grows' },
+        ]}
+        className="px-1 sm:px-0 mb-2"
+      />
 
       <Typography variant="h4" color="primary" fontWeight="bold">
         Meus Grows

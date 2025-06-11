@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Box, Container, Grid, Paper, Typography } from '@mui/material';
 import { Cultivo } from '../types';
 import Button from '../components/Button';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import LeafIcon from '../components/icons/LeafIcon';
 import Loader from '../components/Loader';
@@ -65,24 +66,21 @@ const CultivosPage: React.FC = () => {
     <Container maxWidth="sm" sx={{ py: 2 }}>
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <Box sx={{ position: 'sticky', top: 0, bgcolor: 'background.default', zIndex: 20, py: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
-          <ArrowLeftIcon className="w-6 h-6" />
-        </Button>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Typography variant="body2" color="text.secondary">Dashboard</Typography>
-        </Link>
-        <Typography variant="body2" color="text.secondary" sx={{ mx: 0.5 }}>
-          &gt;
-        </Typography>
-        <Typography variant="body2" fontWeight="bold" color="primary.main">
-          {t('sidebar.cultivos')}
-        </Typography>
-        <Box sx={{ flexGrow: 1 }} />
-        <Button variant="primary" size="icon" onClick={() => navigate('/novo-cultivo')} title={t('cultivosPage.new_cultivo')}>
-          <Typography component="span" sx={{ fontSize: 20, fontWeight: 'bold', lineHeight: 1 }}>+</Typography>
-        </Button>
-      </Box>
+      <Header
+        title={t('sidebar.cultivos')}
+        onOpenSidebar={() => {}}
+        onOpenAddModal={() => navigate('/novo-cultivo')}
+        onOpenScannerModal={() => {}}
+        showBack
+        onBack={() => navigate(-1)}
+      />
+      <Breadcrumbs
+        items={[
+          { label: 'Dashboard', to: '/' },
+          { label: t('sidebar.cultivos') },
+        ]}
+        className="mb-2"
+      />
 
       <Typography variant="h5" fontWeight="bold" color="primary.main" sx={{ mt: 3, mb: 2 }}>
         {hasCultivos ? t('cultivosPage.title_with_count', { count: cultivos.length }) : t('cultivosPage.title')}

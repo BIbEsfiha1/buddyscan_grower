@@ -12,10 +12,12 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import LeafIcon from '../components/icons/LeafIcon';
 import Toast from '../components/Toast';
+import { useTranslation } from 'react-i18next';
 
 const PlantDetailPage: React.FC = () => {
   const { plantId } = useParams<{ plantId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     getPlantById,
     fetchPlantById,
@@ -284,7 +286,7 @@ const PlantDetailPage: React.FC = () => {
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex-1 flex flex-col min-h-full">
         <Header
-          title="Detalhes da Planta"
+          title={t('plantDetailPage.title')}
           onOpenSidebar={() => setSidebarOpen(true)}
           onOpenAddModal={() => {}}
           onOpenScannerModal={() => {}}
@@ -395,7 +397,7 @@ const PlantDetailPage: React.FC = () => {
 
               <section className="lg:col-span-2 flex flex-col gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Checklist Diário</h2>
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('plantDetailPage.daily_checklist')}</h2>
                   <DailyChecklist
                     stage={plant.currentStage}
                     checklistState={checklistState}
@@ -404,12 +406,12 @@ const PlantDetailPage: React.FC = () => {
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">Diário da Planta</h2>
+                  <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">{t('plantDetailPage.diary')}</h2>
                     <button
                       onClick={() => setShowDiaryEntryModal(true)}
                       className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
                     >
-                      Nova Entrada
+                      {t('plantDetailPage.new_entry')}
                     </button>
                   </div>
                   {diaryEntries.length > 0 ? (
@@ -428,7 +430,7 @@ const PlantDetailPage: React.FC = () => {
           <Modal
             isOpen={showDiaryEntryModal}
             onClose={() => setShowDiaryEntryModal(false)}
-            title="Nova Entrada no Diário"
+            title={t('plantDetailPage.new_entry')}
             maxWidth="md"
           >
             {plant && (
@@ -443,12 +445,12 @@ const PlantDetailPage: React.FC = () => {
           <Modal
             isOpen={showRemoveByDiseaseModal}
             onClose={() => setShowRemoveByDiseaseModal(false)}
-            title="Remover Planta por Doença"
+            title={t('plantDetailPage.remove_disease')}
           >
             <div className="p-1">
-              <p className="mb-3 text-gray-700 dark:text-gray-300">Tem certeza que deseja remover esta planta por doença?</p>
+              <p className="mb-3 text-gray-700 dark:text-gray-300">{t('plantDetailPage.confirm_remove')}</p>
               <textarea
-                placeholder="Motivo ou observação (opcional)"
+                placeholder={t('plantDetailPage.reason_optional')}
                 value={removeByDiseaseNote}
                 onChange={e => setRemoveByDiseaseNote(e.target.value)}
                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[60px] mb-4 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
@@ -477,7 +479,7 @@ const PlantDetailPage: React.FC = () => {
                   onClick={handleDownloadQrCode}
                   className="w-full max-w-[180px] bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                 >
-                  Baixar QR Code
+                  {t('plantDetailPage.download_qr')}
                 </button>
               </div>
             </Modal>

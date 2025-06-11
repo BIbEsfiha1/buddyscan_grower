@@ -98,5 +98,86 @@
     "no_cultivos": "No cultivos registered yet.",
     "create_first": "Create your first cultivo",
     "new_cultivo": "New Cultivo"
+  },
+  "allPlantsPage": {
+    "title": "All Plants",
+    "move_plants": "Move Plants",
+    "selection": "{{count}} selected. Tap plants to select.",
+    "no_plants": "No plants registered yet.",
+    "add_new_plant": "Add New Plant",
+    "choose_cultivo": "Choose cultivo",
+    "move": "Move",
+    "cancel": "Cancel",
+    "move_success": "Plants moved successfully!",
+    "move_error": "Error moving plants:"
+  },
+  "growsPage": {
+    "title": "My Grows",
+    "loading": "Loading grows...",
+    "no_grows": "No grows registered yet.",
+    "create_first": "Create your first grow",
+    "new_grow": "New Grow"
+  },
+  "growDetailPage": {
+    "not_found": "Grow not found",
+    "view_qr": "View QR Code",
+    "select_cultivo": "Select Plantio",
+    "mass_action": "Mass Action",
+    "no_cultivos": "No cultivo in this grow.",
+    "mass_title": "Mass Registration"
+  },
+  "cultivoDetailPage": {
+    "loading": "Loading cultivo...",
+    "try_again": "Try again",
+    "not_found": "Cultivo not found.",
+    "back_to_list": "Back to cultivos"
+  },
+  "novoGrowPage": {
+    "title": "New Grow",
+    "name": "Grow Name",
+    "location": "Location (optional)",
+    "capacity": "Capacity (optional)",
+    "save": "Save Grow"
+  },
+  "cultivoEtiquetasPage": {
+    "title": "Cultivo QR Labels",
+    "print": "Print"
+  },
+  "novoCultivoPage": {
+    "title": "New Cultivo",
+    "info_section": "Cultivo Information",
+    "plants_section": "Plants",
+    "cultivo_name": "Cultivo Name",
+    "start_date": "Start Date",
+    "grow": "Grow / Greenhouse",
+    "substrate": "Substrate",
+    "notes": "Notes (optional)",
+    "add_plant": "Add Plant",
+    "remove": "Remove",
+    "save": "Save Cultivo"
+  },
+  "novaPlantaPage": {
+    "title": "New Plant",
+    "add_new_plant": "Add New Plant",
+    "error_no_cultivo": "Cultivo ID not provided"
+  },
+  "plantDetailPage": {
+    "title": "Plant Details",
+    "daily_checklist": "Daily Checklist",
+    "diary": "Plant Diary",
+    "new_entry": "New Entry",
+    "download_qr": "Download QR Code",
+    "remove_disease": "Remove Plant due to Disease",
+    "confirm_remove": "Are you sure you want to remove this plant due to disease?",
+    "reason_optional": "Reason or note (optional)"
+  },
+  "plantStatisticsPage": {
+    "title": "Statistics of {{name}}",
+    "back": "Back to Details",
+    "more_details": "More Plant Details"
+  },
+  "gardenStatisticsPage": {
+    "title": "Garden Statistics",
+    "back_dashboard": "Back to Dashboard"
   }
 }

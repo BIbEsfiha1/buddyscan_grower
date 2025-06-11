@@ -6,12 +6,14 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Toast from '../components/Toast';
 import Loader from "../components/Loader";
+import { useTranslation } from 'react-i18next';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -44,7 +46,7 @@ export default function GrowsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-full p-6">
-        <Loader message="Carregando estufas..." size="md" />
+        <Loader message={t('growsPage.loading')} size="md" />
       </div>
     );
   }
@@ -67,13 +69,13 @@ export default function GrowsPage() {
         </nav>
         <div className="flex-1" />
         <Link to="/novo-grow">
-          <Button variant="primary" size="icon" className="shadow" title="Novo Grow">
+          <Button variant="primary" size="icon" className="shadow" title={t('growsPage.new_grow')}>
             <PlusIcon className="w-5 h-5" />
           </Button>
         </Link>
       </div>
 
-      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">Meus Grows</h1>
+      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">{t('growsPage.title')}</h1>
 
       <div className="mt-6">
         {grows.length ? (
@@ -90,8 +92,8 @@ export default function GrowsPage() {
           </ul>
         ) : (
           <div className="text-gray-400 dark:text-gray-500 text-center py-8">
-            Nenhum grow cadastrado ainda.<br />
-            <Link to="/novo-grow" className="underline text-green-700 dark:text-green-300">Crie sua primeira estufa</Link>
+            {t('growsPage.no_grows')}<br />
+            <Link to="/novo-grow" className="underline text-green-700 dark:text-green-300">{t('growsPage.create_first')}</Link>
           </div>
         )}
       </div>

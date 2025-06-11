@@ -13,6 +13,7 @@ import {
 } from '../constants';
 import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import ChevronUpIcon from '../components/icons/ChevronUpIcon';
+import { useTranslation } from 'react-i18next';
 
 const PlantStatisticsPage: React.FC = () => {
   const { plantId } = useParams<{ plantId: string }>();
@@ -20,6 +21,7 @@ const PlantStatisticsPage: React.FC = () => {
   const [plant, setPlant] = useState<Plant | null | undefined>(null);
   const [isLoadingLocal, setIsLoadingLocal] = useState(false);
   const [showExtraDetails, setShowExtraDetails] = useState(false);
+  const { t } = useTranslation();
 
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
@@ -54,12 +56,12 @@ const PlantStatisticsPage: React.FC = () => {
   return (
     <div className="p-4 bg-slate-900 min-h-full text-slate-100 space-y-8 w-full">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-green-400">Estatísticas de {plant.name}</h1>
+        <h1 className="text-3xl font-bold text-green-400">{t('plantStatisticsPage.title', { name: plant.name })}</h1>
         <Link 
           to={`/plant/${plantId}`}
           className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors"
         >
-          Voltar aos Detalhes
+          {t('plantStatisticsPage.back')}
         </Link>
       </div>
       
@@ -111,7 +113,7 @@ const PlantStatisticsPage: React.FC = () => {
           aria-expanded={showExtraDetails}
           className="w-full flex justify-between items-center p-4 sm:p-5 text-left text-lg font-semibold text-[#7AC943] hover:bg-green-50 dark:hover:bg-slate-700/50 transition-colors duration-150 rounded-t-xl focus:outline-none"
         >
-          Mais Detalhes da Planta
+          {t('plantStatisticsPage.more_details')}
           {showExtraDetails ? <ChevronUpIcon className="w-6 h-6 text-[#7AC943]" /> : <ChevronDownIcon className="w-6 h-6 text-[#7AC943]" />}
         </button>
         {showExtraDetails && (

@@ -5,6 +5,7 @@ import Toast from '../components/Toast';
 import PlantaForm from '../components/PlantaForm';
 import { usePlantContext } from '../contexts/PlantContext';
 import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function NovaPlantaPage() {
   const [searchParams] = useSearchParams();
@@ -13,11 +14,12 @@ export default function NovaPlantaPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
   const { addPlant, error: plantContextError } = usePlantContext();
+  const { t } = useTranslation();
 
   // Verifica se há um cultivoId na URL
   useEffect(() => {
     if (!cultivoId) {
-      setToast({ message: 'ID do cultivo não fornecido', type: 'error' });
+      setToast({ message: t('novaPlantaPage.error_no_cultivo'), type: 'error' });
       setTimeout(() => navigate('/cultivos'), 2000);
     }
   }, [cultivoId, navigate]);
@@ -33,7 +35,7 @@ export default function NovaPlantaPage() {
   // Handler para submissão do formulário usando o método principal
   const handlePlantaSubmit = async (values: { name: string; strain: string; birthDate: string; substrate: string }) => {
     if (!cultivoId) {
-      setToast({ message: 'ID do cultivo não encontrado', type: 'error' });
+      setToast({ message: t('novaPlantaPage.error_no_cultivo'), type: 'error' });
       return;
     }
     setSaving(true);
@@ -89,12 +91,12 @@ export default function NovaPlantaPage() {
             </>
           )}
           <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Nova Planta</span>
+          <span className="font-bold text-green-700 dark:text-green-300">{t('novaPlantaPage.title')}</span>
         </nav>
       </div>
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">
-          Adicionar Nova Planta
+          {t('novaPlantaPage.add_new_plant')}
         </h1>
         <PlantaForm onSubmit={handlePlantaSubmit} loading={saving} />
       </div>

@@ -9,10 +9,12 @@ import Toast from '../components/Toast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import { addMassDiaryEntry } from '../services/plantService';
+import { useTranslation } from 'react-i18next';
 
 export default function GrowDetailPage() {
   const { growId } = useParams<{ growId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [grow, setGrow] = useState<Grow | null>(null);
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,7 @@ export default function GrowDetailPage() {
   if (!grow) {
     return (
       <div className="flex flex-col items-center justify-center min-h-full p-6">
-        Espaço não encontrado
+        {t('growDetailPage.not_found')}
       </div>
     );
   }
@@ -130,7 +132,7 @@ export default function GrowDetailPage() {
         onClick={() => setShowQrModal(true)}
         className="mt-2 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition w-max"
       >
-        Ver QR Code
+        {t('growDetailPage.view_qr')}
       </button>
 
       <div className="mt-4">
@@ -145,16 +147,16 @@ export default function GrowDetailPage() {
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/cultivo/${c.id}`}>
-                      <Button variant="primary" size="sm">Selecionar Plantio</Button>
+                      <Button variant="primary" size="sm">{t('growDetailPage.select_cultivo')}</Button>
                     </Link>
-                    <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>Registrar Ação em Massa</Button>
+                    <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>{t('growDetailPage.mass_action')}</Button>
                   </div>
                 </div>
               </li>
             ))}
           </ul>
         ) : (
-          <div className="text-gray-400 dark:text-gray-500">Nenhum plantio neste espaço.</div>
+          <div className="text-gray-400 dark:text-gray-500">{t('growDetailPage.no_cultivos')}</div>
         )}
       </div>
       {grow && (

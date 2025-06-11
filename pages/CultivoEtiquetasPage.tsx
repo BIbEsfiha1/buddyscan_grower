@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode.react';
 import Button from '../components/Button';
 import { Plant } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function CultivoEtiquetasPage() {
   const { cultivoId } = useParams<{ cultivoId: string }>();
   const [plants, setPlants] = useState<Plant[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (cultivoId) {
@@ -22,8 +24,8 @@ export default function CultivoEtiquetasPage() {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Etiquetas QR do Cultivo</h1>
-        <Button onClick={() => window.print()}>Imprimir</Button>
+        <h1 className="text-2xl font-bold">{t('cultivoEtiquetasPage.title')}</h1>
+        <Button onClick={() => window.print()}>{t('cultivoEtiquetasPage.print')}</Button>
       </div>
       <div className="a4-print-grid">
         {plants.map((plant) => (

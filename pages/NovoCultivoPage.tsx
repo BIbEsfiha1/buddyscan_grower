@@ -5,6 +5,7 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
 import { SUBSTRATE_OPTIONS } from '../constants';
 import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function NovoCultivoPage() {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,7 @@ export default function NovoCultivoPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchGrows() {
@@ -96,35 +98,35 @@ export default function NovoCultivoPage() {
         <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
           <Link to="/" className="hover:underline">Dashboard</Link>
           <span>&gt;</span>
-          <Link to="/cultivos" className="hover:underline">Cultivos</Link>
+          <Link to="/cultivos" className="hover:underline">{t('sidebar.cultivos')}</Link>
           <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Novo Cultivo</span>
+          <span className="font-bold text-green-700 dark:text-green-300">{t('novoCultivoPage.title')}</span>
         </nav>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">Novo Cultivo</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">{t('novoCultivoPage.title')}</h1>
         <form onSubmit={handleSalvarCultivo} className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Detalhes do Cultivo */}
           <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
-            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Informações do Cultivo</legend>
+            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">{t('novoCultivoPage.info_section')}</legend>
             <div>
-              <label htmlFor="cultivoNome" className={labelStyle}>Nome do Cultivo</label>
+              <label htmlFor="cultivoNome" className={labelStyle}>{t('novoCultivoPage.cultivo_name')}</label>
               <input id="cultivoNome" type="text" className={inputStyle} value={cultivoNome} onChange={e => setCultivoNome(e.target.value)} required />
             </div>
             <div>
-              <label htmlFor="startDate" className={labelStyle}>Data de Início</label>
+              <label htmlFor="startDate" className={labelStyle}>{t('novoCultivoPage.start_date')}</label>
               <input id="startDate" type="date" className={inputStyle} value={startDate} onChange={e => setStartDate(e.target.value)} required />
             </div>
             <div>
-              <label htmlFor="grow" className={labelStyle}>Grow / Estufa</label>
+              <label htmlFor="grow" className={labelStyle}>{t('novoCultivoPage.grow')}</label>
               <select id="grow" className={inputStyle} value={growId} onChange={e => setGrowId(e.target.value)}>
                 <option value="">Selecione...</option>
                 {grows.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="substrate" className={labelStyle}>Substrato</label>
+              <label htmlFor="substrate" className={labelStyle}>{t('novoCultivoPage.substrate')}</label>
               <select id="substrate" className={inputStyle} value={substrate} onChange={e => setSubstrate(e.target.value)}>
                 {SUBSTRATE_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -132,13 +134,13 @@ export default function NovoCultivoPage() {
               </select>
             </div>
             <div>
-              <label htmlFor="notes" className={labelStyle}>Notas (opcional)</label>
+              <label htmlFor="notes" className={labelStyle}>{t('novoCultivoPage.notes')}</label>
               <textarea id="notes" className={inputStyle} value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
             </div>
           </fieldset>
 
           <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
-            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">Plantas</legend>
+            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">{t('novoCultivoPage.plants_section')}</legend>
             {plants.map((p, idx) => (
               <div key={idx} className="grid grid-cols-2 gap-2 items-center">
                 <input
@@ -156,16 +158,16 @@ export default function NovoCultivoPage() {
                   onChange={e => updatePlant(idx, 'strain', e.target.value)}
                 />
                 {plants.length > 1 && (
-                  <button type="button" onClick={() => removePlantField(idx)} className="text-red-500 text-sm">Remover</button>
+                  <button type="button" onClick={() => removePlantField(idx)} className="text-red-500 text-sm">{t('novoCultivoPage.remove')}</button>
                 )}
               </div>
             ))}
-            <button type="button" onClick={addPlantField} className="text-green-700 text-sm">+ Adicionar Planta</button>
+            <button type="button" onClick={addPlantField} className="text-green-700 text-sm">{t('novoCultivoPage.add_plant')}</button>
           </fieldset>
 
           <div className="mt-8 flex justify-center lg:col-span-2">
             <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!cultivoNome || !startDate}>
-              Salvar Cultivo
+              {t('novoCultivoPage.save')}
             </Button>
           </div>
         </form>

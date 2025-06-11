@@ -11,6 +11,7 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
+import { useTranslation } from 'react-i18next';
 import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
@@ -18,6 +19,7 @@ import { updatePlant } from '../services/plantService';
 const CultivoDetailPage: React.FC = () => {
   const { cultivoId } = useParams<{ cultivoId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [cultivo, setCultivo] = useState<Cultivo | null>(null);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -237,21 +239,21 @@ const CultivoDetailPage: React.FC = () => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-full p-6">
-      <Loader message="Carregando cultivo..." size="md" />
+      <Loader message={t('cultivoDetailPage.loading')} size="md" />
     </div>
   );
   if (error) return (
     <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
       <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
-      <Button variant="secondary" onClick={() => window.location.reload()}>Tentar novamente</Button>
+      <Button variant="secondary" onClick={() => window.location.reload()}>{t('cultivoDetailPage.try_again')}</Button>
     </div>
   );
   if (!cultivo) return (
     <div className="flex flex-col items-center justify-center min-h-full p-6">
       <LeafIcon className="w-12 h-12 text-gray-400 mb-3" />
-      <span className="text-gray-500 dark:text-gray-400 font-semibold text-lg">Cultivo não encontrado.</span>
-      <Button variant="secondary" onClick={() => navigate('/cultivos')}>Voltar para cultivos</Button>
+      <span className="text-gray-500 dark:text-gray-400 font-semibold text-lg">{t('cultivoDetailPage.not_found')}</span>
+      <Button variant="secondary" onClick={() => navigate('/cultivos')}>{t('cultivoDetailPage.back_to_list')}</Button>
     </div>
   );
 

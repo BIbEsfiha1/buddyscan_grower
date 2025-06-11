@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { usePlantContext } from '../contexts/PlantContext';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import { Cultivo } from '../types';
 import {
   Box,
@@ -31,7 +33,7 @@ const AllPlantsPage: React.FC = () => {
   const [cultivos, setCultivos] = React.useState<Cultivo[]>([]);
   const [selectedCultivo, setSelectedCultivo] = React.useState('');
   const [moving, setMoving] = React.useState(false);
-  const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
 
   React.useEffect(() => {
     if (selectionMode) {
@@ -39,12 +41,6 @@ const AllPlantsPage: React.FC = () => {
     }
   }, [selectionMode]);
 
-  React.useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -60,12 +56,12 @@ const AllPlantsPage: React.FC = () => {
     try {
       await Promise.all(Array.from(selectedIds).map(id => updatePlantDetails(id, { cultivoId: selectedCultivo })));
       await refreshPlants();
-      setToast({ message: 'Plantas movidas com sucesso!', type: 'success' });
+      showToast({ message: 'Plantas movidas com sucesso!', type: 'success' });
       setSelectionMode(false);
       setSelectedIds(new Set());
       setSelectedCultivo('');
     } catch (err: any) {
-      setToast({ message: 'Erro ao mover plantas: ' + (err.message || err), type: 'error' });
+      showToast({ message: 'Erro ao mover plantas: ' + (err.message || err), type: 'error' });
     } finally {
       setMoving(false);
     }
@@ -86,15 +82,12 @@ const AllPlantsPage: React.FC = () => {
           />
           <Container sx={{ py: 4 }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary">Dashboard</Typography>
-              </Link>
-              <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>
-                &gt;
-              </Typography>
-              <Typography variant="body2" fontWeight="bold">
-                Todas as Plantas
-              </Typography>
+              <Breadcrumbs
+                items={[
+                  { label: 'Dashboard', to: '/' },
+                  { label: 'Todas as Plantas' },
+                ]}
+              />
               <Box sx={{ flexGrow: 1 }} />
               {!selectionMode && plants.length > 0 && (
                 <Button variant="secondary" onClick={() => setSelectionMode(true)}>
@@ -172,7 +165,7 @@ const AllPlantsPage: React.FC = () => {
           <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>Cancelar</Button>
         </Paper>
       )}
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
     </>
   );
 };

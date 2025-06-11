@@ -2,6 +2,7 @@
 
 import { Plant, DiaryEntry, NewPlantData } from '../types';
 import netlifyIdentity from 'netlify-identity-widget';
+import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
 
@@ -28,7 +29,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     }
     headers.set('Authorization', `Bearer ${token}`);
 
-    console.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
+    logger.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
     
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
       ...options,
@@ -45,7 +46,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       throw new Error(`Falha ao processar resposta do servidor (${response.status} ${response.statusText}). Resposta: ${responseText.substring(0, 200)}`);
     }
 
-    console.log(`[fetchWithAuth] Response from ${endpoint}:`, {
+    logger.log(`[fetchWithAuth] Response from ${endpoint}:`, {
       status: response.status,
       data: responseData
     });
@@ -134,7 +135,7 @@ export const updatePlant = async (plantId: string, plantData: Partial<Omit<Plant
     }
   });
 
-  console.log('[updatePlant] Sending update data:', { id: plantId, ...updateData });
+  logger.log('[updatePlant] Sending update data:', { id: plantId, ...updateData });
   
   const result = await fetchWithAuth('updatePlant', {
     method: 'PUT',

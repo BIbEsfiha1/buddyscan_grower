@@ -5,6 +5,7 @@ import { Cultivo, Plant, PlantOperationalStatus, PlantStage, Grow } from '../typ
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import Loader from "../components/Loader";
 import PlantCard from '../components/PlantCard';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
@@ -36,7 +37,7 @@ const CultivoDetailPage: React.FC = () => {
   const [massSprayAmount, setMassSprayAmount] = useState('');
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Novo: função para buscar plantas separadamente
@@ -86,21 +87,14 @@ const CultivoDetailPage: React.FC = () => {
     }
   };
 
-  // Toast auto-hide
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   const handlePrintQRCodes = async () => {
     if (!cultivo || plants.length === 0) {
-      setToast({ message: 'Nenhuma planta neste cultivo para imprimir QR codes.', type: 'info' });
+      showToast({ message: 'Nenhuma planta neste cultivo para imprimir QR codes.', type: 'info' });
       return;
     }
     setIsGeneratingPDF(true);
-    setToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
+    showToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
     try {
       // Dynamically import the PDF generation utility
       const { generateQRCodesPDF } = await import('@/utils/pdfUtils.ts'); // Ensure path is correct
@@ -108,7 +102,7 @@ const CultivoDetailPage: React.FC = () => {
       // Success toast is optional as download starts
     } catch (error: any) {
       console.error("Error generating QR Code PDF:", error);
-      setToast({ message: `Erro ao gerar PDF: ${error.message || 'Falha desconhecida'}`, type: 'error' });
+      showToast({ message: `Erro ao gerar PDF: ${error.message || 'Falha desconhecida'}`, type: 'error' });
   } finally {
     setIsGeneratingPDF(false);
   }
@@ -120,9 +114,9 @@ const CultivoDetailPage: React.FC = () => {
       await updateCultivo(cultivoId, { growId: selectedGrow });
       setCultivo(prev => prev ? { ...prev, growId: selectedGrow } : prev);
       setShowMoveModal(false);
-      setToast({ message: 'Plantio movido com sucesso!', type: 'success' });
+      showToast({ message: 'Plantio movido com sucesso!', type: 'success' });
     } catch (err) {
-      setToast({ message: 'Erro ao mover plantio.', type: 'error' });
+      showToast({ message: 'Erro ao mover plantio.', type: 'error' });
     }
   };
 
@@ -141,7 +135,7 @@ const CultivoDetailPage: React.FC = () => {
         sprayProduct: massSprayProduct || undefined,
         sprayAmount: massSprayAmount ? parseFloat(massSprayAmount) : undefined,
       });
-      setToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
+      showToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
       setShowMassModal(false);
       setMassNotes('');
       setMassWateringVolume('');
@@ -152,7 +146,7 @@ const CultivoDetailPage: React.FC = () => {
       setMassSprayProduct('');
       setMassSprayAmount('');
     } catch (err) {
-      setToast({ message: 'Erro ao registrar em massa', type: 'error' });
+      showToast({ message: 'Erro ao registrar em massa', type: 'error' });
     }
   };
 
@@ -214,9 +208,9 @@ const CultivoDetailPage: React.FC = () => {
       // Por exemplo: updateCultivoInContext(cultivoId, { finalizadoEm: new Date().toISOString() });
       
       setShowFinishModal(false);
-      setToast({ 
-        message: 'Cultivo finalizado! Todas as plantas ativas foram marcadas como colhidas.', 
-        type: 'success' 
+      showToast({
+        message: 'Cultivo finalizado! Todas as plantas ativas foram marcadas como colhidas.',
+        type: 'success'
       });
       
       // 4. Redireciona após um curto atraso para o usuário ver a mensagem
@@ -226,9 +220,9 @@ const CultivoDetailPage: React.FC = () => {
       console.error('[handleFinishCultivo] Erro ao finalizar cultivo:', err);
       const errorMessage = err.message || 'Erro desconhecido ao finalizar cultivo';
       setError('Erro ao finalizar cultivo: ' + errorMessage);
-      setToast({ 
-        message: `Erro ao finalizar cultivo: ${errorMessage}`, 
-        type: 'error' 
+      showToast({
+        message: `Erro ao finalizar cultivo: ${errorMessage}`,
+        type: 'error'
       });
     } finally {
       setFinishing(false);
@@ -260,7 +254,7 @@ const CultivoDetailPage: React.FC = () => {
   return (
     <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900">
       {/* Toast global */}
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       {/* Breadcrumbs e botão de voltar mobile first */}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md">

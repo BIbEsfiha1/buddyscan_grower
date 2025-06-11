@@ -3,10 +3,12 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Cultivo, Plant, PlantOperationalStatus, PlantStage, Grow } from '../types';
 // import { generateQRCodesPDF } from '../../utils/pdfUtils'; // Removed static import
 import Button from '../components/Button';
-import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import Loader from "../components/Loader";
-import PlantCard from '../components/PlantCard';
+import CultivoPlantList from '../components/cultivo/CultivoPlantList';
+import MassActionModal from '../components/cultivo/MassActionModal';
+import MoveCultivoModal from '../components/cultivo/MoveCultivoModal';
+import FinishCultivoModal from '../components/cultivo/FinishCultivoModal';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
@@ -324,109 +326,35 @@ const CultivoDetailPage: React.FC = () => {
       </div>
 
       {/* Lista de plantas */}
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Plantas deste cultivo</h2>
-          <div className="flex items-center gap-2"> {/* Added a div to group buttons */}
-            <button
-              onClick={handlePrintQRCodes}
-              className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition"
-              title="Imprimir Etiquetas QR do Cultivo"
-              disabled={isGeneratingPDF || plants.length === 0}
-            >
-              {/* Optional: <PrinterIcon className="w-4 h-4 mr-1 inline" /> */}
-              {isGeneratingPDF ? 'Gerando PDF...' : 'Imprimir Etiquetas QR'}
-            </button>
-            <button
-              onClick={fetchPlants} // Existing button
-              className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 rounded hover:bg-green-200 dark:hover:bg-green-800 transition"
-              title="Atualizar lista de plantas"
-            >
-              Atualizar
-            </button>
-            <button
-              onClick={() => setShowMassModal(true)}
-              className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition"
-              title="Registrar em massa"
-            >
-              Ação em Massa
-            </button>
-          </div>
-        </div>
-        {plants.length === 0 ? (
-          <div className="text-gray-400 dark:text-gray-500 text-center py-6">Nenhuma planta cadastrada ainda.</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {plants.map(plant => (
-              <PlantCard key={plant.id} plant={plant} />
-            ))}
-          </div>
-        )}
-      </div>
+      <CultivoPlantList
+        plants={plants}
+        onPrint={handlePrintQRCodes}
+        onRefresh={fetchPlants}
+        onMassAction={() => setShowMassModal(true)}
+        isGeneratingPDF={isGeneratingPDF}
+      />
 
-      <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
-        <div className="flex flex-col gap-3 p-2">
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Volume de Rega (L)"
-            value={massWateringVolume}
-            onChange={e => setMassWateringVolume(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Tipo de Água/Solução"
-            value={massWateringType}
-            onChange={e => setMassWateringType(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Tipo de Fertilizante"
-            value={massFertilizationType}
-            onChange={e => setMassFertilizationType(e.target.value)}
-          />
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Concentração do Fertilizante"
-            value={massFertilizationConcentration}
-            onChange={e => setMassFertilizationConcentration(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Fotoperíodo (ex: 12/12)"
-            value={massPhotoperiod}
-            onChange={e => setMassPhotoperiod(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Produto de Pulverização"
-            value={massSprayProduct}
-            onChange={e => setMassSprayProduct(e.target.value)}
-          />
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Quantidade Pulverizada"
-            value={massSprayAmount}
-            onChange={e => setMassSprayAmount(e.target.value)}
-          />
-          <textarea
-            className="p-2 border rounded"
-            placeholder="Notas"
-            value={massNotes}
-            onChange={e => setMassNotes(e.target.value)}
-          />
-          <div className="flex gap-3 mt-2">
-            <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleMassRegister} disabled={!massNotes && !massWateringVolume && !massFertilizationType && !massPhotoperiod && !massSprayProduct}>Salvar</Button>
-          </div>
-        </div>
-      </Modal>
+      <MassActionModal
+        isOpen={showMassModal}
+        onClose={() => setShowMassModal(false)}
+        onSave={handleMassRegister}
+        massNotes={massNotes}
+        setMassNotes={setMassNotes}
+        massWateringVolume={massWateringVolume}
+        setMassWateringVolume={setMassWateringVolume}
+        massWateringType={massWateringType}
+        setMassWateringType={setMassWateringType}
+        massFertilizationType={massFertilizationType}
+        setMassFertilizationType={setMassFertilizationType}
+        massFertilizationConcentration={massFertilizationConcentration}
+        setMassFertilizationConcentration={setMassFertilizationConcentration}
+        massPhotoperiod={massPhotoperiod}
+        setMassPhotoperiod={setMassPhotoperiod}
+        massSprayProduct={massSprayProduct}
+        setMassSprayProduct={setMassSprayProduct}
+        massSprayAmount={massSprayAmount}
+        setMassSprayAmount={setMassSprayAmount}
+      />
 
       {/* Botão de finalizar cultivo */}
       <Button
@@ -440,33 +368,23 @@ const CultivoDetailPage: React.FC = () => {
         Finalizar Cultivo
       </Button>
 
-      <Modal isOpen={showMoveModal} onClose={() => setShowMoveModal(false)} title="Mover Plantio" maxWidth="sm">
-        <div className="flex flex-col gap-3 p-2">
-          <select value={selectedGrow} onChange={e => setSelectedGrow(e.target.value)} className="p-2 border rounded">
-            <option value="">Selecione o destino</option>
-            {grows.filter(g => g.id !== cultivo?.growId).map(g => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
-          </select>
-          <div className="flex gap-3 mt-2">
-            <Button variant="secondary" onClick={() => setShowMoveModal(false)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleMoveCultivo} disabled={!selectedGrow}>Mover</Button>
-          </div>
-        </div>
-      </Modal>
+      <MoveCultivoModal
+        isOpen={showMoveModal}
+        onClose={() => setShowMoveModal(false)}
+        grows={grows}
+        currentGrowId={cultivo?.growId}
+        selectedGrow={selectedGrow}
+        setSelectedGrow={setSelectedGrow}
+        onMove={handleMoveCultivo}
+      />
 
       {/* Modal de confirmação */}
-      <Modal isOpen={showFinishModal} onClose={() => setShowFinishModal(false)} title="Finalizar Cultivo" maxWidth="md">
-        <div className="flex flex-col items-center gap-4 p-2">
-          <CheckCircleIcon className="w-16 h-16 text-green-500 mb-2" />
-          <span className="text-lg font-bold text-green-800 dark:text-green-300 text-center">Tem certeza que deseja finalizar este cultivo?</span>
-          <span className="text-gray-600 dark:text-gray-300 text-center">Todas as plantas ativas serão marcadas como colhidas e passarão para a fase de secagem.</span>
-          <div className="flex w-full justify-between gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={() => setShowFinishModal(false)}>Cancelar</Button>
-            <Button variant="primary" fullWidth loading={finishing} onClick={handleFinishCultivo}>Confirmar</Button>
-          </div>
-        </div>
-      </Modal>
+      <FinishCultivoModal
+        isOpen={showFinishModal}
+        onClose={() => setShowFinishModal(false)}
+        onConfirm={handleFinishCultivo}
+        finishing={finishing}
+      />
     </div>
   );
 };

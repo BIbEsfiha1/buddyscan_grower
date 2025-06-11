@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -37,10 +38,7 @@ export const handler: Handler = async (event, context) => {
         body: JSON.stringify({ error: 'Erro ao buscar plantas.', details: error.message }),
       };
     }
-    return {
-      statusCode: 200,
-      body: JSON.stringify(plants || []),
-    };
+    return successResponse(plants || []);
   } catch (e: any) {
     console.error('Erro inesperado na função getPlants:', e);
     return {

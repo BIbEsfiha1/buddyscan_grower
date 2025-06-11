@@ -14,6 +14,7 @@ import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useTranslation } from 'react-i18next';
+import { usePlantContext } from '../contexts/PlantContext';
 import { SUBSTRATE_OPTIONS } from '../constants';
 import {
   Grow,
@@ -36,6 +37,8 @@ export default function NovoCultivoPage() {
     { name: '', strain: '' },
   ]);
   const [saving, setSaving] = useState(false);
+
+  const { refreshPlants } = usePlantContext();
 
   const { t } = useTranslation();
   const [toast, showToast] = useToast();
@@ -95,6 +98,8 @@ export default function NovoCultivoPage() {
         growId: growId || undefined,
         plants: plantsToSend,
       });
+
+      await refreshPlants();
 
       showToast({ message: t('novoCultivo.success'), type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1800);
@@ -188,6 +193,7 @@ export default function NovoCultivoPage() {
                 value={substrate}
                 onChange={e => setSubstrate(e.target.value)}
               >
+                <MenuItem value="">{t('form.select_option')}</MenuItem>
                 {SUBSTRATE_OPTIONS.map(opt => (
                   <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
                 ))}

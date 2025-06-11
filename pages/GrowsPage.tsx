@@ -12,6 +12,7 @@ import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import Loader from '../components/Loader';
+import ErrorBanner from '../components/ErrorBanner';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -21,6 +22,7 @@ import { Grow } from '../types';
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toast, showToast] = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -33,6 +35,7 @@ export default function GrowsPage() {
         setGrows(data);
       } catch (e) {
         console.error('Erro ao buscar grows', e);
+        setError(t('growsPage.error_load'));
         showToast({ message: t('growsPage.error_load'), type: 'error' });
       } finally {
         setLoading(false);
@@ -52,6 +55,16 @@ export default function GrowsPage() {
         p={6}
       >
         <Loader message={t('growsPage.loading')} size="md" />
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
+        <ErrorBanner message={error} />
+        <Button variant="secondary" onClick={() => window.location.reload()}>
+          {t('growsPage.try_again')}
+        </Button>
       </Box>
     );
   }

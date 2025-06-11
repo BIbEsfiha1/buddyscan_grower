@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { debugLog } from './utils';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -22,7 +23,7 @@ export const handler: Handler = async (event, context) => {
     if (!name) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Nome obrigatório.' }) };
     }
-    const qrCodeValue = uuidv4();
+    const qrCodeValue = `GROW-${uuidv4()}`;
     const { data, error } = await supabase
       .from('grows')
       .insert([{ name, location, capacity, qr_code_value: qrCodeValue, user_id: user.sub }])
@@ -32,7 +33,7 @@ export const handler: Handler = async (event, context) => {
     if (error || !data) {
       return { statusCode: 500, body: JSON.stringify({ error: 'Erro ao criar grow', details: error }) };
     }
-    return { statusCode: 201, body: JSON.stringify(data) };
+    return successResponse(data, 201);
   } catch (e: any) {
     console.error('[addGrow] Unexpected error:', e);
     return { statusCode: 500, body: JSON.stringify({ error: 'Erro inesperado', details: e.message }) };

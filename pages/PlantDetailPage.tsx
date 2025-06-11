@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Plant,
@@ -30,7 +30,9 @@ const PlantDetailPage: React.FC = () => {
     fetchPlantById,
     updatePlantDetails,
     addNewDiaryEntry,
-    getDiaryEntries,
+    fetchDiaryEntries,
+    deletePlant,
+    refreshPlants,
   } = usePlantContext();
 
   const STATIC_CHECKLIST_FIELDS = [
@@ -55,6 +57,9 @@ const PlantDetailPage: React.FC = () => {
   const [isSavingDiaryEntry, setIsSavingDiaryEntry] = useState(false);
   const [checklistState, setChecklistState] = useState<Record<string, boolean>>({});
 
+  const [hasMoreEntries, setHasMoreEntries] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const loadPlantData = useCallback(async () => {
     if (!plantId) return;
     let current = getPlantById(plantId);
@@ -63,10 +68,24 @@ const PlantDetailPage: React.FC = () => {
     }
     setPlant(current || null);
     if (current) {
-      const entries = await getDiaryEntries(plantId);
-      setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+      const entries = await fetchDiaryEntries(plantId, 20, 0);
+      setDiaryEntries(entries);
+      setHasMoreEntries(entries.length === 20);
     }
-  }, [plantId, getPlantById, fetchPlantById, getDiaryEntries]);
+  }, [plantId, getPlantById, fetchPlantById, fetchDiaryEntries]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        loadMoreEntries();
+      }
+    });
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [loadMoreEntries]);
 
   useEffect(() => {
     loadPlantData();
@@ -96,8 +115,9 @@ const PlantDetailPage: React.FC = () => {
       photos: [],
     });
     try {
-      const res = await fetch(`/.netlify/functions/deletePlant?id=${plantId}`, { method: 'DELETE', credentials: 'include' });
-      if (res.status === 204) {
+      const success = await deletePlant(plantId);
+      if (success) {
+        await refreshPlants();
         setShowRemoveByDiseaseModal(false);
         setRemoveByDiseaseNote('');
         try {
@@ -106,11 +126,10 @@ const PlantDetailPage: React.FC = () => {
             localStorage.removeItem('lastPlantId');
             localStorage.removeItem('lastPlantName');
           }
-        } catch {};
+        } catch {}
         window.location.href = '/';
       } else {
-        const err = await res.json();
-        showToast({ message: t('plantDetailPage.deleteError', { error: err.error || res.status }), type: 'error' });
+        showToast({ message: t('plantDetailPage.deleteError', { error: 'failed' }), type: 'error' });
       }
     } catch (e: any) {
       showToast({ message: t('plantDetailPage.deleteUnexpected', { error: e.message || e }), type: 'error' });
@@ -148,23 +167,33 @@ const PlantDetailPage: React.FC = () => {
 
   const handleDownloadQrCode = () => { /* canvas logic */ };
 
-  const handleDiaryEntrySubmit = async (data: NewDiaryEntryData) => {
+  const handleDiaryEntrySubmit = async (data: NewDiaryEntryData): Promise<DiaryEntry | undefined> => {
     if (!plantId) return;
     setIsSavingDiaryEntry(true);
     try {
       const newEntry = await addNewDiaryEntry(plantId, data);
       if (newEntry) {
-        const entries = await getDiaryEntries(plantId);
-        setDiaryEntries(entries.sort((a,b)=>new Date(b.timestamp).getTime()-new Date(a.timestamp).getTime()));
+        setDiaryEntries(prev => [newEntry, ...prev]);
         setShowDiaryEntryModal(false);
         showToast({ message: t('plantDetailPage.diarySaveSuccess'), type: 'success' });
+        return newEntry;
       } else {
         showToast({ message: t('plantDetailPage.diarySaveError'), type: 'error' });
       }
     } catch (err: any) {
       showToast({ message: t('plantDetailPage.diarySaveException', { error: err.message || err }), type: 'error' });
     } finally { setIsSavingDiaryEntry(false); }
+    return undefined;
   };
+
+  const loadMoreEntries = useCallback(async () => {
+    if (!plantId || isLoadingMore || !hasMoreEntries) return;
+    setIsLoadingMore(true);
+    const more = await fetchDiaryEntries(plantId, 20, diaryEntries.length);
+    setDiaryEntries(prev => [...prev, ...more]);
+    setHasMoreEntries(more.length === 20);
+    setIsLoadingMore(false);
+  }, [plantId, isLoadingMore, hasMoreEntries, fetchDiaryEntries, diaryEntries.length]);
 
   if (!plant) return (
     <div className="flex items-center justify-center min-h-full bg-gray-50 dark:bg-gray-900">
@@ -258,7 +287,11 @@ const PlantDetailPage: React.FC = () => {
                   <Typography variant="h6">{t('plantDetailPage.diary')}</Typography>
                   <Button onClick={()=>setShowDiaryEntryModal(true)}>{t('plantDetailPage.newEntry')}</Button>
                 </div>
-                {diaryEntries.length? diaryEntries.map(e=><DiaryEntryItem key={e.id} entry={e}/>) : <Typography>{t('plantDetailPage.noEntries')}</Typography>}
+                {diaryEntries.length
+                  ? diaryEntries.map(e => <DiaryEntryItem key={e.id} entry={e} />)
+                  : <Typography>{t('plantDetailPage.noEntries')}</Typography>}
+                <div ref={sentinelRef} className="h-1" />
+                {isLoadingMore && <p className="text-center py-2">{t('loading')}</p>}
               </Paper>
             </section>
           </div>

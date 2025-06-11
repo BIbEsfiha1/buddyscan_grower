@@ -160,8 +160,15 @@ export const deletePlant = async (id: string): Promise<void> => {
 
 // --- Funções para Entradas do Diário utilizando Supabase ---
 
-export const getDiaryEntries = async (plantId: string): Promise<DiaryEntry[]> => {
-  const result = await fetchWithAuth(`getDiaryEntries?plantId=${plantId}`);
+export const getDiaryEntries = async (
+  plantId: string,
+  limit?: number,
+  offset?: number
+): Promise<DiaryEntry[]> => {
+  const params = new URLSearchParams({ plantId });
+  if (typeof limit === 'number') params.append('limit', String(limit));
+  if (typeof offset === 'number') params.append('offset', String(offset));
+  const result = await fetchWithAuth(`getDiaryEntries?${params.toString()}`);
   return convertKeysToCamelCase(result);
 };
 

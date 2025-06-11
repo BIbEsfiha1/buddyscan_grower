@@ -3,6 +3,7 @@ import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types'
 import StrainAutocomplete from './StrainAutocomplete';
 
 import { SUBSTRATE_OPTIONS } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 interface PlantaFormProps {
   initialValues?: {
@@ -19,6 +20,7 @@ const inputStyle = "w-full px-3 py-2 text-gray-700 dark:text-gray-200 bg-white d
 const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
 export default function PlantaForm({ initialValues, onSubmit, loading }: PlantaFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(initialValues?.name || '');
   const [strain, setStrain] = useState(initialValues?.strain || '');
   const [birthDate, setBirthDate] = useState(initialValues?.birthDate || '');
@@ -107,6 +109,7 @@ export default function PlantaForm({ initialValues, onSubmit, loading }: PlantaF
             }}
             data-testid="substrate-select" // Adicionado
           >
+            <option value="">{t('form.select_option')}</option>
             {SUBSTRATE_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}

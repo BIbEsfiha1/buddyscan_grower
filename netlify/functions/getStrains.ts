@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -57,10 +58,7 @@ export const handler: Handler = async (event) => {
 
   // Se já tem pelo menos 5 sugestões locais, retorna só elas
   if (localStrains.length >= 5) {
-    return {
-      statusCode: 200,
-      body: JSON.stringify(localStrains)
-    };
+    return successResponse(localStrains);
   }
 
   // Busca externa
@@ -79,8 +77,5 @@ export const handler: Handler = async (event) => {
     ...externalStrains.filter(s => !namesSet.has(s.name.toLowerCase())),
   ];
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(merged)
-  };
+  return successResponse(merged);
 };

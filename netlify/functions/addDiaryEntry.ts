@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -45,7 +46,7 @@ export const handler: Handler = async (event, context) => {
     if (error) {
       return { statusCode: 500, body: JSON.stringify({ error: 'Erro ao adicionar entrada.', details: error.message }) };
     }
-    return { statusCode: 201, body: JSON.stringify(data) };
+    return successResponse(data, 201);
   } catch (e: any) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Erro inesperado no servidor.', details: e.message }) };
   }

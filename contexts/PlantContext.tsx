@@ -23,7 +23,7 @@ interface PlantContextType {
   updatePlantDetails: (plantId: string, updates: Partial<Plant>) => Promise<Plant | undefined>;
   deletePlant: (plantId: string) => Promise<boolean>;
   getDiaryEntries: (plantId: string) => DiaryEntry[];
-  fetchDiaryEntries: (plantId: string) => Promise<DiaryEntry[]>;
+  fetchDiaryEntries: (plantId: string, limit?: number, offset?: number) => Promise<DiaryEntry[]>;
   addNewDiaryEntry: (plantId: string, entryData: NewDiaryEntryData) => Promise<DiaryEntry | undefined>;
   refreshPlants: () => Promise<void>;
 }
@@ -122,11 +122,18 @@ export const PlantProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, []);
 
-  const fetchDiaryEntries = useCallback(async (plantId: string) => {
+  const fetchDiaryEntries = useCallback(async (
+    plantId: string,
+    limit?: number,
+    offset?: number
+  ) => {
     setIsLoading(true);
     try {
-      const entries = await apiGetDiaryEntriesByPlantId(plantId);
-      setDiaryEntries(prev => ({ ...prev, [plantId]: entries }));
+      const entries = await apiGetDiaryEntriesByPlantId(plantId, limit, offset);
+      setDiaryEntries(prev => ({
+        ...prev,
+        [plantId]: offset ? [...(prev[plantId] || []), ...entries] : entries,
+      }));
       setIsLoading(false);
       return entries;
     } catch (e) {

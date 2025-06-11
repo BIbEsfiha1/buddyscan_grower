@@ -1,6 +1,8 @@
 import React from 'react';
 import { Plant } from '../../types';
 import PlantCard from '../PlantCard';
+import Loader from '../Loader';
+import ErrorBanner from '../ErrorBanner';
 
 interface CultivoPlantListProps {
   plants: Plant[];
@@ -8,6 +10,8 @@ interface CultivoPlantListProps {
   onRefresh: () => void;
   onMassAction: () => void;
   isGeneratingPDF: boolean;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 const CultivoPlantList: React.FC<CultivoPlantListProps> = ({
@@ -16,6 +20,8 @@ const CultivoPlantList: React.FC<CultivoPlantListProps> = ({
   onRefresh,
   onMassAction,
   isGeneratingPDF,
+  isLoading = false,
+  error = null,
 }) => (
   <div className="mb-2">
     <div className="flex items-center justify-between mb-1">
@@ -45,7 +51,13 @@ const CultivoPlantList: React.FC<CultivoPlantListProps> = ({
         </button>
       </div>
     </div>
-    {plants.length === 0 ? (
+    {isLoading ? (
+      <div className="flex justify-center py-6">
+        <Loader />
+      </div>
+    ) : error ? (
+      <ErrorBanner message={error} />
+    ) : plants.length === 0 ? (
       <div className="text-gray-400 dark:text-gray-500 text-center py-6">Nenhuma planta cadastrada ainda.</div>
     ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

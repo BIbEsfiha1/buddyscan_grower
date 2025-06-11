@@ -2,6 +2,7 @@
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { debugLog } from './utils';
+import { successResponse } from './_utils/responseHelpers';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -116,10 +117,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     debugLog('[addPlant] Plant inserted successfully. ID:', insertedPlant.id);
     debugLog('[addPlant] Full insertedPlant object:', JSON.stringify(insertedPlant, null, 2));
 
-    return {
-      statusCode: 201, // 201 Created
-      body: JSON.stringify(insertedPlant),
-    };
+    return successResponse(insertedPlant, 201);
   } catch (e: any) {
     console.error('[addPlant] Erro ao processar requisição em addPlant:', e);
     if (e instanceof SyntaxError) {

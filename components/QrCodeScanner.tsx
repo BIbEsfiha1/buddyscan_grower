@@ -4,6 +4,7 @@ import { getPlants } from '../services/plantService';
 import { getGrows } from '../services/growService';
 import { Plant, Grow } from '../types';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import Modal from './Modal';
 
 
 export interface ScanResult {
@@ -25,6 +26,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
   const [isScanning, setIsScanning] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
 
   // Handler para leitura real do QR code pela câmera
@@ -37,16 +39,19 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
       let plant: Plant | undefined;
       let grow: Grow | undefined;
 
-      if (scanType !== 'grow') {
+      const isGrowCode = result.startsWith('GROW-');
+
+      if (!isGrowCode && scanType !== 'grow') {
         const plants = await getPlants();
         plant = plants.find(p => p.qrCodeValue === result) ||
                 plants.find(p => p.id === result);
       }
 
-      if (!plant && scanType !== 'plant') {
+      if (!plant && (scanType !== 'plant' || isGrowCode)) {
         const grows = await getGrows();
+        const idCandidate = isGrowCode ? result.replace('GROW-', '') : result;
         grow = grows.find(g => g.qrCodeValue === result) ||
-               grows.find(g => g.id === result);
+               grows.find(g => g.id === idCandidate);
       }
 
       if (plant) {
@@ -68,34 +73,44 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
 
   // Handler para erro do Scanner
   const handleQrError = (error: any) => {
-    setScanError('Erro ao acessar a câmera ou ler o QR code.');
-    onScanError('Erro ao acessar a câmera ou ler o QR code.');
-    console.error("QR Scan Error:", error);
+    const msg = 'Permita acesso à câmera para escanear QR codes.';
+    setScanError(msg);
+    onScanError(msg);
+    if (error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError') {
+      setShowPermissionModal(true);
+    }
+    console.error('QR Scan Error:', error);
   };
 
 
 
   const handleManualScan = async () => {
     if (!qrValue.trim()) {
-      onScanError('Por favor, insira um valor de QR code.');
+      const msg = 'Por favor, insira um valor de QR code.';
+      setScanError(msg);
+      onScanError(msg);
       return;
     }
 
     setIsScanning(true);
+    setScanError(null);
     try {
       let plant: Plant | undefined;
       let grow: Grow | undefined;
 
-      if (scanType !== 'grow') {
+      const isGrowCode = qrValue.startsWith('GROW-');
+
+      if (!isGrowCode && scanType !== 'grow') {
         const plants = await getPlants();
         plant = plants.find(p => p.qrCodeValue === qrValue) ||
                 plants.find(p => p.id === qrValue);
       }
 
-      if (!plant && scanType !== 'plant') {
+      if (!plant && (scanType !== 'plant' || isGrowCode)) {
         const grows = await getGrows();
+        const idCandidate = isGrowCode ? qrValue.replace('GROW-', '') : qrValue;
         grow = grows.find(g => g.qrCodeValue === qrValue) ||
-               grows.find(g => g.id === qrValue);
+               grows.find(g => g.id === idCandidate);
       }
 
       if (plant) {
@@ -103,10 +118,14 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
       } else if (grow) {
         onScanSuccess({ type: 'grow', grow });
       } else {
-        onScanError('Nenhum registro encontrado com este QR code ou ID.');
+        const msg = 'Nenhum registro encontrado com este QR code ou ID.';
+        setScanError(msg);
+        onScanError(msg);
       }
     } catch (error) {
-      onScanError('Erro ao processar o QR code.');
+      const msg = 'Erro ao processar o QR code.';
+      setScanError(msg);
+      onScanError(msg);
     } finally {
       setIsScanning(false);
     }
@@ -148,12 +167,13 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
           <TextField
             value={qrValue}
             onChange={(e) => setQrValue(e.target.value)}
-            placeholder="Ex: PLANT-ABC123XYZ"
+            placeholder="Ex: GROW-ABC123 ou PLANT-XYZ123"
             size="small"
             fullWidth
+            error={Boolean(scanError)}
           />
           {scanError && (
-            <Typography color="error" align="center">
+            <Typography color="error" align="center" sx={{ mb: 1 }}>
               {scanError}
             </Typography>
           )}
@@ -194,6 +214,18 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
           z-index: 9;
         }
       `}} />
+      <Modal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        title="Permissão da Câmera"
+      >
+        <Typography sx={{ mb: 2 }}>
+          Para usar o scanner, permita o acesso à câmera nas configurações do seu navegador e recarregue a página.
+        </Typography>
+        <Button variant="contained" onClick={() => setShowPermissionModal(false)}>
+          OK
+        </Button>
+      </Modal>
     </Box>
   );
 };

@@ -1,234 +1,232 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Grow, Cultivo, PlantStage } from '../types';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/Button';
+import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
+import MassRegisterModal from '../components/grow/MassRegisterModal';
 import { addMassDiaryEntry } from '../services/plantService';
-import { useTranslation } from 'react-i18next';
+import { Box, Typography, Paper, List, ListItem, IconButton } from '@mui/material';
 
 export default function GrowDetailPage() {
   const { growId } = useParams<{ growId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
   const [grow, setGrow] = useState<Grow | null>(null);
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
+
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedCultivo, setSelectedCultivo] = useState<Cultivo | null>(null);
   const [showMassModal, setShowMassModal] = useState(false);
-  const [massNotes, setMassNotes] = useState('');
-  const [massWateringVolume, setMassWateringVolume] = useState('');
-  const [massWateringType, setMassWateringType] = useState('');
-  const [massFertilizationType, setMassFertilizationType] = useState('');
-  const [massFertilizationConcentration, setMassFertilizationConcentration] = useState('');
-  const [massPhotoperiod, setMassPhotoperiod] = useState('');
-  const [massSprayProduct, setMassSprayProduct] = useState('');
-  const [massSprayAmount, setMassSprayAmount] = useState('');
 
   useEffect(() => {
     async function fetchData() {
       try {
         const { getGrows } = await import('../services/growService');
         const { getCultivos } = await import('../services/cultivoService');
-        const [growList, cultivosList] = await Promise.all([getGrows(), getCultivos()]);
+        const [growList, cultivosList] = await Promise.all([
+          getGrows(),
+          getCultivos(),
+        ]);
         setGrow(growList.find(g => g.id === growId) || null);
         setCultivos(cultivosList.filter(c => c.growId === growId));
-      } catch (err) {
-        setToast({ message: 'Erro ao carregar dados', type: 'error' });
+      } catch {
+        showToast({ message: t('growDetailPage.error_loading_data') || 'Erro ao carregar dados', type: 'error' });
       } finally {
         setLoading(false);
       }
     }
     if (growId) fetchData();
-  }, [growId]);
+  }, [growId, showToast, t]);
 
   const openMassModal = (cultivo: Cultivo) => {
     setSelectedCultivo(cultivo);
     setShowMassModal(true);
-    setMassNotes('');
-    setMassWateringVolume('');
-    setMassWateringType('');
-    setMassFertilizationType('');
-    setMassFertilizationConcentration('');
-    setMassPhotoperiod('');
-    setMassSprayProduct('');
-    setMassSprayAmount('');
   };
 
-  const handleMassRegister = async () => {
-    if (!selectedCultivo) return;
-    try {
-      await addMassDiaryEntry(selectedCultivo.id, {
-        notes: massNotes || undefined,
-        wateringVolume: massWateringVolume ? Number(massWateringVolume) : undefined,
-        wateringType: massWateringType || undefined,
-        fertilizationType: massFertilizationType || undefined,
-        fertilizationConcentration: massFertilizationConcentration ? Number(massFertilizationConcentration) : undefined,
-        photoperiod: massPhotoperiod || undefined,
-        sprayProduct: massSprayProduct || undefined,
-        sprayAmount: massSprayAmount ? Number(massSprayAmount) : undefined,
-        stage: PlantStage.VEGETATIVE,
-      });
-      setToast({ message: 'Ação registrada em massa com sucesso', type: 'success' });
-    } catch (e: any) {
-      setToast({ message: e.message || 'Erro ao registrar ação em massa', type: 'error' });
-    } finally {
-      setShowMassModal(false);
-    }
+  const handleMassSuccess = () => {
+    showToast({ 
+      message: t('growDetailPage.mass_action_success') || 'Ação registrada em massa com sucesso', 
+      type: 'success' 
+    });
+    setShowMassModal(false);
+    setSelectedCultivo(null);
+  };
+
+  const handleMassError = (message?: string) => {
+    showToast({ 
+      message: message || t('growDetailPage.mass_action_error') || 'Erro ao registrar ação em massa', 
+      type: 'error' 
+    });
+    setShowMassModal(false);
+    setSelectedCultivo(null);
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full p-6">
-        <Loader message="Carregando espaço..." size="md" />
-      </div>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
+        <Loader message={t('growDetailPage.loading_space') || "Carregando espaço..."} size="md" />
+      </Box>
     );
   }
 
   if (!grow) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full p-6">
-        {t('growDetailPage.not_found')}
-      </div>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
+        <Typography color="text.secondary">
+          {t('growDetailPage.not_found') || 'Espaço não encontrado'}
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
-      {toast && <Toast message={toast.message} type={toast.type} />}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
+    <Box
+      maxWidth="lg"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
+    >
+      {toast && <Toast toast={toast} />}
+
+      {/* Mobile-first header + breadcrumbs */}
+      <Box
+        className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2"
+      >
+        <IconButton onClick={() => navigate(-1)} aria-label={t('common.back') || "Voltar"} color="primary">
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/grows" className="hover:underline">Grows</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">{grow.name}</span>
-        </nav>
-        <div className="flex-1" />
+        </IconButton>
+        <Breadcrumbs
+          items={[
+            { label: t('common.dashboard') || 'Dashboard', to: '/' },
+            { label: t('common.grows') || 'Grows', to: '/grows' },
+            { label: grow.name },
+          ]}
+        />
+        <Box flexGrow={1} />
         <Link to={`/novo-cultivo?growId=${grow.id}`}>
-          <Button variant="primary" size="icon" className="shadow" title="Novo Plantio">
+          <Button 
+            variant="primary" 
+            size="icon" 
+            className="shadow" 
+            title={t('growDetailPage.new_planting') || "Novo Plantio"}
+          >
             <PlusIcon className="w-5 h-5" />
           </Button>
         </Link>
-      </div>
+      </Box>
 
-      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-2 mb-2">{grow.name}</h1>
-      {grow.location && <p className="text-sm text-gray-500 dark:text-gray-400">{grow.location}</p>}
-      {grow.capacity && <p className="text-sm text-gray-500 dark:text-gray-400">Capacidade: {grow.capacity}</p>}
-      <button
-        onClick={() => setShowQrModal(true)}
-        className="mt-2 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition w-max"
+      <Typography variant="h5" color="primary" fontWeight="bold">
+        {grow.name}
+      </Typography>
+      {grow.location && (
+        <Typography variant="body2" color="text.secondary">
+          {grow.location}
+        </Typography>
+      )}
+      {grow.capacity && (
+        <Typography variant="body2" color="text.secondary">
+          {t('growDetailPage.capacity') || 'Capacidade'}: {grow.capacity}
+        </Typography>
+      )}
+      <Button 
+        variant="secondary" 
+        size="sm" 
+        onClick={() => setShowQrModal(true)} 
+        sx={{ mt: 1, width: 'max-content' }}
       >
-        {t('growDetailPage.view_qr')}
-      </button>
+        {t('growDetailPage.view_qr') || 'Ver QR Code'}
+      </Button>
 
-      <div className="mt-4">
+      <Box mt={3}>
         {cultivos.length ? (
-          <ul className="space-y-2">
+          <List>
             {cultivos.map(c => (
-              <li key={c.id} className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-gray-800 dark:text-gray-100">{c.name}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(c.startDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link to={`/cultivo/${c.id}`}>
-                      <Button variant="primary" size="sm">{t('growDetailPage.select_cultivo')}</Button>
-                    </Link>
-                    <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>{t('growDetailPage.mass_action')}</Button>
-                  </div>
-                </div>
-              </li>
+              <ListItem key={c.id} sx={{ p: 0, mb: 1 }}>
+                <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
+                  <Box
+                    display="flex"
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ sm: 'center' }}
+                    justifyContent="space-between"
+                    gap={2}
+                  >
+                    <Box>
+                      <Typography fontWeight="bold">{c.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(c.startDate).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Link to={`/cultivo/${c.id}`}>
+                        <Button variant="primary" size="sm">
+                          {t('growDetailPage.select_cultivo') || 'Selecionar Plantio'}
+                        </Button>
+                      </Link>
+                      <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>
+                        {t('growDetailPage.mass_action') || 'Registrar Ação em Massa'}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Paper>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         ) : (
-          <div className="text-gray-400 dark:text-gray-500">{t('growDetailPage.no_cultivos')}</div>
+          <Typography color="text.secondary">
+            {t('growDetailPage.no_cultivos') || 'Nenhum plantio neste espaço.'}
+          </Typography>
         )}
-      </div>
-      {grow && (
-        <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code do Espaço">
-          <GrowQrCodeDisplay grow={grow} />
-        </Modal>
-      )}
+      </Box>
+
+      <Modal 
+        isOpen={showQrModal} 
+        onClose={() => setShowQrModal(false)} 
+        title={t('growDetailPage.qr_code_title') || "QR Code do Espaço"}
+      >
+        <GrowQrCodeDisplay grow={grow} />
+      </Modal>
+
       {selectedCultivo && (
-        <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
-          <div className="flex flex-col gap-3 p-2">
-            <input
-              type="number"
-              className="p-2 border rounded"
-              placeholder="Volume de Rega (L)"
-              value={massWateringVolume}
-              onChange={e => setMassWateringVolume(e.target.value)}
-            />
-            <input
-              type="text"
-              className="p-2 border rounded"
-              placeholder="Tipo de Água/Solução"
-              value={massWateringType}
-              onChange={e => setMassWateringType(e.target.value)}
-            />
-            <input
-              type="text"
-              className="p-2 border rounded"
-              placeholder="Tipo de Fertilizante"
-              value={massFertilizationType}
-              onChange={e => setMassFertilizationType(e.target.value)}
-            />
-            <input
-              type="number"
-              className="p-2 border rounded"
-              placeholder="Concentração do Fertilizante"
-              value={massFertilizationConcentration}
-              onChange={e => setMassFertilizationConcentration(e.target.value)}
-            />
-            <input
-              type="text"
-              className="p-2 border rounded"
-              placeholder="Fotoperíodo (ex: 12/12)"
-              value={massPhotoperiod}
-              onChange={e => setMassPhotoperiod(e.target.value)}
-            />
-            <input
-              type="text"
-              className="p-2 border rounded"
-              placeholder="Produto de Pulverização"
-              value={massSprayProduct}
-              onChange={e => setMassSprayProduct(e.target.value)}
-            />
-            <input
-              type="number"
-              className="p-2 border rounded"
-              placeholder="Quantidade Pulverizada"
-              value={massSprayAmount}
-              onChange={e => setMassSprayAmount(e.target.value)}
-            />
-            <textarea
-              className="p-2 border rounded"
-              placeholder="Notas"
-              value={massNotes}
-              onChange={e => setMassNotes(e.target.value)}
-            />
-            <div className="flex gap-3 mt-2">
-              <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
-              <Button variant="primary" onClick={handleMassRegister} disabled={!massNotes && !massWateringVolume && !massFertilizationType && !massPhotoperiod && !massSprayProduct}>Salvar</Button>
-            </div>
-          </div>
-        </Modal>
+        <MassRegisterModal
+          cultivoId={selectedCultivo.id}
+          isOpen={showMassModal}
+          onClose={() => setShowMassModal(false)}
+          plantStage={PlantStage.VEGETATIVE}
+          onSuccess={handleMassSuccess}
+          onError={handleMassError}
+        />
       )}
-    </div>
+    </Box>
   );
 }

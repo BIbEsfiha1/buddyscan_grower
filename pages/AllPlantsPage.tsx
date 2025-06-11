@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import { Cultivo } from '../types';
 import {
   Box,
@@ -20,8 +22,6 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-// ArrowLeftIcon is not used in the provided JSX, so commenting out for now.
-// import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 
 const AllPlantsPage: React.FC = () => {
   const { plants, isLoading, error, updatePlantDetails, refreshPlants } = usePlantContext();
@@ -33,20 +33,13 @@ const AllPlantsPage: React.FC = () => {
   const [cultivos, setCultivos] = React.useState<Cultivo[]>([]);
   const [selectedCultivo, setSelectedCultivo] = React.useState('');
   const [moving, setMoving] = React.useState(false);
-  const [toast, setToast] = React.useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
 
   React.useEffect(() => {
     if (selectionMode) {
       import('../services/cultivoService').then(m => m.getCultivos().then(setCultivos).catch(() => setCultivos([])));
     }
   }, [selectionMode]);
-
-  React.useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -62,12 +55,12 @@ const AllPlantsPage: React.FC = () => {
     try {
       await Promise.all(Array.from(selectedIds).map(id => updatePlantDetails(id, { cultivoId: selectedCultivo })));
       await refreshPlants();
-      setToast({ message: t('allPlantsPage.move_success'), type: 'success' });
+      showToast({ message: t('allPlantsPage.move_success'), type: 'success' });
       setSelectionMode(false);
       setSelectedIds(new Set());
       setSelectedCultivo('');
     } catch (err: any) {
-      setToast({ message: t('allPlantsPage.move_error') + (err.message || err), type: 'error' });
+      showToast({ message: t('allPlantsPage.move_error') + (err.message || err), type: 'error' });
     } finally {
       setMoving(false);
     }
@@ -88,15 +81,12 @@ const AllPlantsPage: React.FC = () => {
           />
           <Container sx={{ py: 4 }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary">{t('sidebar.dashboard')}</Typography>
-              </Link>
-              <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>
-                &gt;
-              </Typography>
-              <Typography variant="body2" fontWeight="bold">
-                {t('allPlantsPage.title')}
-              </Typography>
+              <Breadcrumbs
+                items={[
+                  { label: t('sidebar.dashboard'), to: '/' },
+                  { label: t('allPlantsPage.title') },
+                ]}
+              />
               <Box sx={{ flexGrow: 1 }} />
               {!selectionMode && plants.length > 0 && (
                 <Button variant="secondary" onClick={() => setSelectionMode(true)}>
@@ -174,7 +164,7 @@ const AllPlantsPage: React.FC = () => {
           <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>{t('allPlantsPage.cancel')}</Button>
         </Paper>
       )}
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
     </>
   );
 };

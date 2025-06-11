@@ -1,29 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import Button from '../components/Button';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  MenuItem,
+  IconButton,
+} from '@mui/material';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import Button from '../components/Button';
 import Toast from '../components/Toast';
-import { SUBSTRATE_OPTIONS } from '../constants';
-import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
+import useToast from '../hooks/useToast';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { useTranslation } from 'react-i18next';
+import { SUBSTRATE_OPTIONS } from '../constants';
+import {
+  Grow,
+  PlantStage,
+  PlantHealthStatus,
+  PlantOperationalStatus,
+} from '../types';
 
 export default function NovoCultivoPage() {
   const [searchParams] = useSearchParams();
   const initialGrowId = searchParams.get('growId') || '';
+
   const [cultivoNome, setCultivoNome] = useState('');
   const [startDate, setStartDate] = useState('');
   const [notes, setNotes] = useState('');
   const [substrate, setSubstrate] = useState('');
   const [grows, setGrows] = useState<Grow[]>([]);
   const [growId, setGrowId] = useState(initialGrowId);
-  const [plants, setPlants] = useState<{ name: string; strain: string }[]>([{ name: '', strain: '' }]);
+  const [plants, setPlants] = useState<{ name: string; strain: string }[]>([
+    { name: '', strain: '' },
+  ]);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const navigate = useNavigate();
-  const { t } = useTranslation();
 
+  const { t } = useTranslation();
+  const [toast, showToast] = useToast();
+  const navigate = useNavigate();
+
+  // Fetch available grows
   useEffect(() => {
-    async function fetchGrows() {
+    (async () => {
       try {
         const { getGrows } = await import('../services/growService');
         const data = await getGrows();
@@ -31,21 +51,27 @@ export default function NovoCultivoPage() {
       } catch (e) {
         console.error('Erro ao carregar grows', e);
       }
-    }
-    fetchGrows();
+    })();
   }, []);
 
-  const updatePlant = (index: number, field: 'name' | 'strain', value: string) => {
-    setPlants(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
+  const updatePlant = (
+    index: number,
+    field: 'name' | 'strain',
+    value: string
+  ) => {
+    setPlants(prev =>
+      prev.map((p, i) => (i === index ? { ...p, [field]: value } : p))
+    );
   };
 
-  const addPlantField = () => setPlants(prev => [...prev, { name: '', strain: '' }]);
+  const addPlantField = () =>
+    setPlants(prev => [...prev, { name: '', strain: '' }]);
 
   const removePlantField = (index: number) => {
     setPlants(prev => prev.filter((_, i) => i !== index));
   };
 
-  async function handleSalvarCultivo(e: React.FormEvent) {
+  const handleSalvarCultivo = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -60,118 +86,171 @@ export default function NovoCultivoPage() {
           operationalStatus: PlantOperationalStatus.ACTIVE,
           substrate,
         }));
-      const cultivoData = {
+
+      await addCultivo({
         name: cultivoNome,
         startDate,
         notes,
         substrate,
         growId: growId || undefined,
         plants: plantsToSend,
-      };
-      await addCultivo(cultivoData);
-      setSaving(false);
-      setToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
+      });
+
+      showToast({ message: t('novoCultivo.success'), type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1800);
     } catch (err: any) {
+      showToast({ message: `${t('novoCultivo.error')}: ${err.message || err}`, type: 'error' });
+    } finally {
       setSaving(false);
-      setToast({ message: 'Erro ao salvar cultivo: ' + (err.message || err), type: 'error' });
     }
-  }
+  };
 
-  const inputStyle = "w-full px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500";
-  const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+  // Styles
+  const inputStyle =
+    'w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ' +
+    'border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500';
+  const labelStyle = 'block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1';
 
   return (
-    <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
-      {/* Toast global */}
+    <Box className="mx-auto w-full max-w-3xl p-4 flex flex-col gap-4 bg-white dark:bg-gray-900">
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      {/* Breadcrumbs e botão de voltar */}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
-          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/cultivos" className="hover:underline">{t('sidebar.cultivos')}</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">{t('novoCultivoPage.title')}</span>
-        </nav>
-      </div>
+      <Box className="sticky top-0 z-20 bg-white dark:bg-gray-900 backdrop-blur p-2 flex items-center gap-2 mb-4">
+        <IconButton onClick={() => navigate(-1)} color="primary">
+          <ArrowLeftIcon />
+        </IconButton>
+        <Breadcrumbs
+          items={[
+            { label: t('sidebar.dashboard'), to: '/' },
+            { label: t('sidebar.cultivos'), to: '/cultivos' },
+            { label: t('novoCultivo.title') },
+          ]}
+        />
+      </Box>
 
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">{t('novoCultivoPage.title')}</h1>
-        <form onSubmit={handleSalvarCultivo} className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-          {/* Detalhes do Cultivo */}
-          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
-            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">{t('novoCultivoPage.info_section')}</legend>
+      <Paper className="p-6" variant="outlined">
+        <Typography variant="h5" className="mb-4 text-center">
+          {t('novoCultivo.title')}
+        </Typography>
+        <Box component="form" onSubmit={handleSalvarCultivo} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Cultivo Info */}
+          <fieldset className="space-y-4">
+            <legend className="font-semibold">{t('novoCultivo.sectionInfo')}</legend>
             <div>
-              <label htmlFor="cultivoNome" className={labelStyle}>{t('novoCultivoPage.cultivo_name')}</label>
-              <input id="cultivoNome" type="text" className={inputStyle} value={cultivoNome} onChange={e => setCultivoNome(e.target.value)} required />
+              <label htmlFor="cultivoNome" className={labelStyle}>
+                {t('novoCultivo.fieldName')}
+              </label>
+              <input
+                id="cultivoNome"
+                className={inputStyle}
+                value={cultivoNome}
+                onChange={e => setCultivoNome(e.target.value)}
+                required
+              />
             </div>
             <div>
-              <label htmlFor="startDate" className={labelStyle}>{t('novoCultivoPage.start_date')}</label>
-              <input id="startDate" type="date" className={inputStyle} value={startDate} onChange={e => setStartDate(e.target.value)} required />
+              <label htmlFor="startDate" className={labelStyle}>
+                {t('novoCultivo.fieldStartDate')}
+              </label>
+              <input
+                id="startDate"
+                type="date"
+                className={inputStyle}
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                required
+              />
             </div>
             <div>
-              <label htmlFor="grow" className={labelStyle}>{t('novoCultivoPage.grow')}</label>
-              <select id="grow" className={inputStyle} value={growId} onChange={e => setGrowId(e.target.value)}>
-                <option value="">Selecione...</option>
-                {grows.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="substrate" className={labelStyle}>{t('novoCultivoPage.substrate')}</label>
-              <select id="substrate" className={inputStyle} value={substrate} onChange={e => setSubstrate(e.target.value)}>
-                {SUBSTRATE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <label htmlFor="growId" className={labelStyle}>
+                {t('novoCultivo.fieldGrow')}
+              </label>
+              <select
+                id="growId"
+                className={inputStyle}
+                value={growId}
+                onChange={e => setGrowId(e.target.value)}
+              >
+                <option value="">{t('novoCultivo.selectGrow')}</option>
+                {grows.map(g => (
+                  <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
                 ))}
               </select>
             </div>
             <div>
-              <label htmlFor="notes" className={labelStyle}>{t('novoCultivoPage.notes')}</label>
-              <textarea id="notes" className={inputStyle} value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+              <label htmlFor="substrate" className={labelStyle}>
+                {t('novoCultivo.fieldSubstrate')}
+              </label>
+              <select
+                id="substrate"
+                className={inputStyle}
+                value={substrate}
+                onChange={e => setSubstrate(e.target.value)}
+              >
+                {SUBSTRATE_OPTIONS.map(opt => (
+                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="notes" className={labelStyle}>
+                {t('novoCultivo.fieldNotes')}
+              </label>
+              <textarea
+                id="notes"
+                className={inputStyle}
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={3}
+              />
             </div>
           </fieldset>
 
-          <fieldset className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md lg:flex-1">
-            <legend className="text-lg font-semibold text-gray-700 dark:text-gray-300 px-2">{t('novoCultivoPage.plants_section')}</legend>
-            {plants.map((p, idx) => (
-              <div key={idx} className="grid grid-cols-2 gap-2 items-center">
+          {/* Plants Section */}
+          <fieldset className="space-y-4">
+            <legend className="font-semibold">{t('novoCultivo.sectionPlants')}</legend>
+            {plants.map((p, i) => (
+              <div key={i} className="flex gap-2 items-center">
                 <input
-                  type="text"
-                  className={inputStyle}
-                  placeholder="Nome"
+                  placeholder={t('novoCultivo.plantName')}
                   value={p.name}
-                  onChange={e => updatePlant(idx, 'name', e.target.value)}
+                  onChange={e => updatePlant(i, 'name', e.target.value)}
+                  className={inputStyle}
                 />
                 <input
-                  type="text"
-                  className={inputStyle}
-                  placeholder="Strain"
+                  placeholder={t('novoCultivo.plantStrain')}
                   value={p.strain}
-                  onChange={e => updatePlant(idx, 'strain', e.target.value)}
+                  onChange={e => updatePlant(i, 'strain', e.target.value)}
+                  className={inputStyle}
                 />
                 {plants.length > 1 && (
-                  <button type="button" onClick={() => removePlantField(idx)} className="text-red-500 text-sm">{t('novoCultivoPage.remove')}</button>
+                  <Button
+                    variant="text"
+                    onClick={() => removePlantField(i)}
+                  >
+                    {t('novoCultivo.removePlant')}
+                  </Button>
                 )}
               </div>
             ))}
-            <button type="button" onClick={addPlantField} className="text-green-700 text-sm">{t('novoCultivoPage.add_plant')}</button>
+            <Button variant="text" onClick={addPlantField}>
+              + {t('novoCultivo.addPlant')}
+            </Button>
           </fieldset>
 
-          <div className="mt-8 flex justify-center lg:col-span-2">
-            <Button type="submit" variant="primary" size="lg" loading={saving} disabled={!cultivoNome || !startDate}>
-              {t('novoCultivoPage.save')}
+          {/* Submit */}
+          <Box className="lg:col-span-2 flex justify-center">
+            <Button
+              type="submit"
+              variant="primary"
+              loading={saving}
+            >
+              {t('novoCultivo.save')}
             </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

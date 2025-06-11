@@ -113,7 +113,7 @@ export default function NovoCultivoPage() {
 
   return (
     <Box className="mx-auto w-full max-w-3xl p-4 flex flex-col gap-4 bg-white dark:bg-gray-900">
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       <Box className="sticky top-0 z-20 bg-white dark:bg-gray-900 backdrop-blur p-2 flex items-center gap-2 mb-4">
         <IconButton onClick={() => navigate(-1)} color="primary">

@@ -6,12 +6,13 @@ import {
   Typography,
   TextField,
   IconButton,
-  Breadcrumbs,
+  Breadcrumbs as MUIBreadcrumbs,
 } from '@mui/material';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
@@ -76,11 +77,13 @@ export default function NovoGrowPage() {
         <IconButton onClick={() => navigate(-1)} aria-label="Voltar" color="primary">
           <ArrowLeftIcon className="w-7 h-7" />
         </IconButton>
-        <Breadcrumbs separator=">">
-          <Link to="/">Dashboard</Link>
-          <Link to="/grows">Grows</Link>
-          <Typography color="text.primary">Novo Grow</Typography>
-        </Breadcrumbs>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Grows', to: '/grows' },
+            { label: 'Novo Grow' },
+          ]}
+        />
       </Box>
 
       <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }} variant="outlined">

@@ -117,7 +117,6 @@ const CultivoDetailPage: React.FC = () => {
       });
       showToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
       setShowMassModal(false);
-      // reset fields
       setMassNotes('');
       setMassWateringVolume('');
       setMassWateringType('');
@@ -151,9 +150,7 @@ const CultivoDetailPage: React.FC = () => {
     setFinishing(true);
     logger.log(`[Finalizando cultivo ${cultivoId}]`);
     try {
-      // 1) marca cultivo finalizado
       await updateCultivo(cultivoId, { finalizadoEm: new Date().toISOString() });
-      // 2) colhe plantas ativas
       const active = plants.filter(p => p.operationalStatus === PlantOperationalStatus.ACTIVE);
       await Promise.all(active.map(p =>
         updatePlant(p.id, {
@@ -161,7 +158,6 @@ const CultivoDetailPage: React.FC = () => {
           currentStage: PlantStage.DRYING
         })
       ));
-      // 3) atualiza estado local
       setCultivo(c => c ? { ...c, finalizadoEm: new Date().toISOString() } : c);
       setPlants(prev => prev.map(p =>
         p.operationalStatus === PlantOperationalStatus.ACTIVE

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Grow, Cultivo, PlantStage } from '../types';
+import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/Button';
 import Header from '../components/Header';
@@ -11,14 +12,7 @@ import useToast from '../hooks/useToast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import { addMassDiaryEntry } from '../services/plantService';
-import {
-  Box,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  TextField,
-} from '@mui/material';
+import { Box, Typography, Paper, List, ListItem, TextField, IconButton } from '@mui/material';
 
 export default function GrowDetailPage() {
   const { growId } = useParams<{ growId: string }>();
@@ -80,9 +74,7 @@ export default function GrowDetailPage() {
     try {
       await addMassDiaryEntry(selectedCultivo.id, {
         notes: massNotes || undefined,
-        wateringVolume: massWateringVolume
-          ? Number(massWateringVolume)
-          : undefined,
+        wateringVolume: massWateringVolume ? Number(massWateringVolume) : undefined,
         wateringType: massWateringType || undefined,
         fertilizationType: massFertilizationType || undefined,
         fertilizationConcentration: massFertilizationConcentration
@@ -145,23 +137,27 @@ export default function GrowDetailPage() {
     >
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <Header
-        title="Detalhes do Grow"
-        onOpenSidebar={() => {}}
-        onOpenAddModal={() => navigate(`/novo-cultivo?growId=${grow.id}`)}
-        onOpenScannerModal={() => {}}
-        showBack
-        onBack={() => navigate(-1)}
-      />
-
-      <Breadcrumbs
-        items={[
-          { label: 'Dashboard', to: '/' },
-          { label: 'Grows', to: '/grows' },
-          { label: grow.name },
-        ]}
-        className="px-1 sm:px-0 mb-2"
-      />
+      {/* Mobile-first header + breadcrumbs */}
+      <Box
+        className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2"
+      >
+        <IconButton onClick={() => navigate(-1)} aria-label="Voltar" color="primary">
+          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
+        </IconButton>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Grows', to: '/grows' },
+            { label: grow.name },
+          ]}
+        />
+        <Box flexGrow={1} />
+        <Link to={`/novo-cultivo?growId=${grow.id}`}>
+          <Button variant="primary" size="icon" className="shadow" title="Novo Plantio">
+            <PlusIcon className="w-5 h-5" />
+          </Button>
+        </Link>
+      </Box>
 
       <Typography variant="h5" color="primary" fontWeight="bold">
         {grow.name}
@@ -176,12 +172,7 @@ export default function GrowDetailPage() {
           Capacidade: {grow.capacity}
         </Typography>
       )}
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => setShowQrModal(true)}
-        sx={{ mt: 1, width: 'max-content' }}
-      >
+      <Button variant="secondary" size="sm" onClick={() => setShowQrModal(true)} sx={{ mt: 1, width: 'max-content' }}>
         Ver QR Code
       </Button>
 
@@ -206,15 +197,9 @@ export default function GrowDetailPage() {
                     </Box>
                     <Box display="flex" gap={1}>
                       <Link to={`/cultivo/${c.id}`}>
-                        <Button variant="primary" size="sm">
-                          Selecionar Plantio
-                        </Button>
+                        <Button variant="primary" size="sm">Selecionar Plantio</Button>
                       </Link>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => openMassModal(c)}
-                      >
+                      <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>
                         Registrar Ação em Massa
                       </Button>
                     </Box>
@@ -224,27 +209,16 @@ export default function GrowDetailPage() {
             ))}
           </List>
         ) : (
-          <Typography color="text.secondary">
-            Nenhum plantio neste espaço.
-          </Typography>
+          <Typography color="text.secondary">Nenhum plantio neste espaço.</Typography>
         )}
       </Box>
 
-      <Modal
-        isOpen={showQrModal}
-        onClose={() => setShowQrModal(false)}
-        title="QR Code do Espaço"
-      >
+      <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code do Espaço">
         <GrowQrCodeDisplay grow={grow} />
       </Modal>
 
       {selectedCultivo && (
-        <Modal
-          isOpen={showMassModal}
-          onClose={() => setShowMassModal(false)}
-          title="Registro em Massa"
-          maxWidth="sm"
-        >
+        <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
           <Box display="flex" flexDirection="column" gap={2} p={2}>
             <TextField
               type="number"
@@ -300,12 +274,7 @@ export default function GrowDetailPage() {
               fullWidth
             />
             <Box display="flex" gap={1} mt={1}>
-              <Button
-                variant="secondary"
-                onClick={() => setShowMassModal(false)}
-              >
-                Cancelar
-              </Button>
+              <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
               <Button
                 variant="primary"
                 onClick={handleMassRegister}

@@ -6,12 +6,12 @@ import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import PlantaForm from '../components/PlantaForm';
 import { usePlantContext } from '../contexts/PlantContext';
-import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
-import { 
-  Box, 
-  Paper, 
-  Typography 
-} from '@mui/material';
+import {
+  PlantStage,
+  PlantHealthStatus,
+  PlantOperationalStatus,
+} from '../types';
+import { Box, Paper, Typography } from '@mui/material';
 
 export default function NovaPlantaPage() {
   const [searchParams] = useSearchParams();
@@ -49,16 +49,24 @@ export default function NovaPlantaPage() {
       };
       const addedPlant = await addPlant(newPlant);
       if (addedPlant) {
-        showToast({ message: 'Planta adicionada com sucesso!', type: 'success' });
+        showToast({
+          message: 'Planta adicionada com sucesso!',
+          type: 'success',
+        });
         setTimeout(() => navigate(`/cultivo/${cultivoId}`), 1400);
       } else {
         showToast({
-          message: `Erro ao adicionar planta: ${plantContextError || 'Nenhum detalhe retornado.'}`,
+          message: `Erro ao adicionar planta: ${
+            plantContextError || 'Nenhum detalhe retornado.'
+          }`,
           type: 'error',
         });
       }
     } catch (err: any) {
-      showToast({ message: 'Erro ao adicionar planta: ' + (err.message || err), type: 'error' });
+      showToast({
+        message: 'Erro ao adicionar planta: ' + (err.message || err),
+        type: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -91,7 +99,9 @@ export default function NovaPlantaPage() {
         items={[
           { label: 'Dashboard', to: '/' },
           { label: 'Cultivos', to: '/cultivos' },
-          ...(cultivoId ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }] : []),
+          ...(cultivoId
+            ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }]
+            : []),
           { label: 'Nova Planta' },
         ]}
         sx={{ px: { xs: 1, sm: 0 }, mb: 2 }}

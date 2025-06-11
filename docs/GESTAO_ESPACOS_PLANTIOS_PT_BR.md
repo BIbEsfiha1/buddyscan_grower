@@ -5,7 +5,7 @@ Este documento detalha como criar e gerenciar **espaços físicos** e **plantios
 ## 1. Espaços Físicos
 - Exemplos de espaços: **estufas** e **growrooms**.
 - Cadastro simples com **nome**, **localização** e **capacidade**.
-- Cada espaço gera um **QR Code** exclusivo para acesso imediato.
+- O QR Code do espaço é gerado automaticamente e pode ser baixado na página de detalhes.
 
 ## 2. Plantios dentro do Espaço
 - Cada espaço possui múltiplos **plantios** cadastrados individualmente.
@@ -22,12 +22,13 @@ Este documento detalha como criar e gerenciar **espaços físicos** e **plantios
 - Botões visíveis permitem **Selecionar Plantio** ou **Registrar Ação em Massa**.
 
 ## 5. Registro em Massa
-- Selecionando todo um plantio, o usuário registra ações de forma simplificada para todas as plantas:
+- Selecionando todo um plantio, o usuário registra ações de forma simplificada para todas as plantas. O formulário inclui:
   - **Rega**: volume e tipo de água ou solução.
   - **Fertilização**: tipo de nutriente e concentração.
   - **Mudança de fotoperíodo**: 12/12, 18/6 ou valor personalizado.
   - **Pulverização preventiva**: produto e quantidade aplicada.
 - Após o registro em massa, cada planta recebe automaticamente seu diário individual.
+ - Também é possível registrar notas rápidas para todas as plantas de uma vez.
 
 ## 6. Registro Individual
 - Cada planta também possui seu próprio **QR Code**.

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Cultivo, Plant, PlantOperationalStatus, PlantStage } from '../types'; // Adicionado PlantStage
+import { Cultivo, Plant, PlantOperationalStatus, PlantStage, Grow } from '../types';
 // import { generateQRCodesPDF } from '../../utils/pdfUtils'; // Removed static import
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -12,6 +12,7 @@ import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
+import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
 
 const CultivoDetailPage: React.FC = () => {
@@ -21,6 +22,18 @@ const CultivoDetailPage: React.FC = () => {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFinishModal, setShowFinishModal] = useState(false);
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [grows, setGrows] = useState<Grow[]>([]);
+  const [selectedGrow, setSelectedGrow] = useState<string>('');
+  const [showMassModal, setShowMassModal] = useState(false);
+  const [massNotes, setMassNotes] = useState('');
+  const [massWateringVolume, setMassWateringVolume] = useState('');
+  const [massWateringType, setMassWateringType] = useState('');
+  const [massFertilizationType, setMassFertilizationType] = useState('');
+  const [massFertilizationConcentration, setMassFertilizationConcentration] = useState('');
+  const [massPhotoperiod, setMassPhotoperiod] = useState('');
+  const [massSprayProduct, setMassSprayProduct] = useState('');
+  const [massSprayAmount, setMassSprayAmount] = useState('');
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -48,6 +61,8 @@ const CultivoDetailPage: React.FC = () => {
         const data = await getCultivos();
         const found = data.find((c: Cultivo) => c.id === cultivoId);
         setCultivo(found || null);
+        const growList = await getGrows();
+        setGrows(growList);
       } catch (err: any) {
         setError('Erro ao carregar dados do cultivo.');
       } finally {
@@ -94,8 +109,50 @@ const CultivoDetailPage: React.FC = () => {
     } catch (error: any) {
       console.error("Error generating QR Code PDF:", error);
       setToast({ message: `Erro ao gerar PDF: ${error.message || 'Falha desconhecida'}`, type: 'error' });
-    } finally {
-      setIsGeneratingPDF(false);
+  } finally {
+    setIsGeneratingPDF(false);
+  }
+};
+
+  const handleMoveCultivo = async () => {
+    if (!cultivoId || !selectedGrow) return;
+    try {
+      await updateCultivo(cultivoId, { growId: selectedGrow });
+      setCultivo(prev => prev ? { ...prev, growId: selectedGrow } : prev);
+      setShowMoveModal(false);
+      setToast({ message: 'Plantio movido com sucesso!', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Erro ao mover plantio.', type: 'error' });
+    }
+  };
+
+  const handleMassRegister = async () => {
+    if (!cultivoId) return;
+    try {
+      const { addMassDiaryEntry } = await import('../services/plantService');
+      await addMassDiaryEntry(cultivoId, {
+        notes: massNotes,
+        stage: plants[0]?.currentStage || PlantStage.SEEDLING,
+        wateringVolume: massWateringVolume ? parseFloat(massWateringVolume) : undefined,
+        wateringType: massWateringType || undefined,
+        fertilizationType: massFertilizationType || undefined,
+        fertilizationConcentration: massFertilizationConcentration ? parseFloat(massFertilizationConcentration) : undefined,
+        photoperiod: massPhotoperiod || undefined,
+        sprayProduct: massSprayProduct || undefined,
+        sprayAmount: massSprayAmount ? parseFloat(massSprayAmount) : undefined,
+      });
+      setToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
+      setShowMassModal(false);
+      setMassNotes('');
+      setMassWateringVolume('');
+      setMassWateringType('');
+      setMassFertilizationType('');
+      setMassFertilizationConcentration('');
+      setMassPhotoperiod('');
+      setMassSprayProduct('');
+      setMassSprayAmount('');
+    } catch (err) {
+      setToast({ message: 'Erro ao registrar em massa', type: 'error' });
     }
   };
 
@@ -234,10 +291,11 @@ const CultivoDetailPage: React.FC = () => {
           )}
         </h1>
         {!cultivo.finalizadoEm && (
-          <Button 
-          variant="primary" 
-          size="icon" 
-          className="shadow ml-2" 
+        <>
+        <Button
+          variant="primary"
+          size="icon"
+          className="shadow ml-2"
           title="Adicionar nova planta"
           onClick={() => {
             // Navega para a página de nova planta com o ID do cultivo
@@ -246,6 +304,16 @@ const CultivoDetailPage: React.FC = () => {
         >
           <PlusIcon className="w-6 h-6" />
         </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="shadow ml-2"
+          title="Mover plantio"
+          onClick={() => setShowMoveModal(true)}
+        >
+          M
+        </Button>
+        </>
         )}
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
@@ -276,6 +344,13 @@ const CultivoDetailPage: React.FC = () => {
             >
               Atualizar
             </button>
+            <button
+              onClick={() => setShowMassModal(true)}
+              className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition"
+              title="Registrar em massa"
+            >
+              Ação em Massa
+            </button>
           </div>
         </div>
         {plants.length === 0 ? (
@@ -289,6 +364,70 @@ const CultivoDetailPage: React.FC = () => {
         )}
       </div>
 
+      <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
+        <div className="flex flex-col gap-3 p-2">
+          <input
+            type="number"
+            className="p-2 border rounded"
+            placeholder="Volume de Rega (L)"
+            value={massWateringVolume}
+            onChange={e => setMassWateringVolume(e.target.value)}
+          />
+          <input
+            type="text"
+            className="p-2 border rounded"
+            placeholder="Tipo de Água/Solução"
+            value={massWateringType}
+            onChange={e => setMassWateringType(e.target.value)}
+          />
+          <input
+            type="text"
+            className="p-2 border rounded"
+            placeholder="Tipo de Fertilizante"
+            value={massFertilizationType}
+            onChange={e => setMassFertilizationType(e.target.value)}
+          />
+          <input
+            type="number"
+            className="p-2 border rounded"
+            placeholder="Concentração do Fertilizante"
+            value={massFertilizationConcentration}
+            onChange={e => setMassFertilizationConcentration(e.target.value)}
+          />
+          <input
+            type="text"
+            className="p-2 border rounded"
+            placeholder="Fotoperíodo (ex: 12/12)"
+            value={massPhotoperiod}
+            onChange={e => setMassPhotoperiod(e.target.value)}
+          />
+          <input
+            type="text"
+            className="p-2 border rounded"
+            placeholder="Produto de Pulverização"
+            value={massSprayProduct}
+            onChange={e => setMassSprayProduct(e.target.value)}
+          />
+          <input
+            type="number"
+            className="p-2 border rounded"
+            placeholder="Quantidade Pulverizada"
+            value={massSprayAmount}
+            onChange={e => setMassSprayAmount(e.target.value)}
+          />
+          <textarea
+            className="p-2 border rounded"
+            placeholder="Notas"
+            value={massNotes}
+            onChange={e => setMassNotes(e.target.value)}
+          />
+          <div className="flex gap-3 mt-2">
+            <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleMassRegister} disabled={!massNotes && !massWateringVolume && !massFertilizationType && !massPhotoperiod && !massSprayProduct}>Salvar</Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Botão de finalizar cultivo */}
       <Button
         variant="primary"
@@ -300,6 +439,21 @@ const CultivoDetailPage: React.FC = () => {
       >
         Finalizar Cultivo
       </Button>
+
+      <Modal isOpen={showMoveModal} onClose={() => setShowMoveModal(false)} title="Mover Plantio" maxWidth="sm">
+        <div className="flex flex-col gap-3 p-2">
+          <select value={selectedGrow} onChange={e => setSelectedGrow(e.target.value)} className="p-2 border rounded">
+            <option value="">Selecione o destino</option>
+            {grows.filter(g => g.id !== cultivo?.growId).map(g => (
+              <option key={g.id} value={g.id}>{g.name}</option>
+            ))}
+          </select>
+          <div className="flex gap-3 mt-2">
+            <Button variant="secondary" onClick={() => setShowMoveModal(false)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleMoveCultivo} disabled={!selectedGrow}>Mover</Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal de confirmação */}
       <Modal isOpen={showFinishModal} onClose={() => setShowFinishModal(false)} title="Finalizar Cultivo" maxWidth="md">

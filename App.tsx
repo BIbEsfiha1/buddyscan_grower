@@ -13,6 +13,7 @@ import CultivoEtiquetasPage from './pages/CultivoEtiquetasPage';
 import CultivoDetailPage from './pages/CultivoDetailPage';
 import GrowsPage from './pages/GrowsPage';
 import NovoGrowPage from './pages/NovoGrowPage';
+import GrowDetailPage from './pages/GrowDetailPage';
 import SettingsPage from './pages/SettingsPage';
 import ScannerPage from './pages/ScannerPage';
 import { PlantProvider } from './contexts/PlantContext';
@@ -68,6 +69,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <NovoGrowPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/grow/:growId"
+            element={
+              <ProtectedRoute>
+                <GrowDetailPage />
               </ProtectedRoute>
             }
           />

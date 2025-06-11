@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
 import { debugLog } from './utils';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -17,13 +18,14 @@ export const handler: Handler = async (event, context) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Corpo da requisição ausente.' }) };
   }
   try {
-    const { name, location } = JSON.parse(event.body);
+    const { name, location, capacity } = JSON.parse(event.body);
     if (!name) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Nome obrigatório.' }) };
     }
+    const qrCodeValue = uuidv4();
     const { data, error } = await supabase
       .from('grows')
-      .insert([{ name, location, user_id: user.sub }])
+      .insert([{ name, location, capacity, qr_code_value: qrCodeValue, user_id: user.sub }])
       .select()
       .single();
     debugLog('[addGrow] Insert result:', { data, error });

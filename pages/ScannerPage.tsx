@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import QrCodeScanner from '../components/QrCodeScanner';
-import { Plant } from '../types';
+import QrCodeScanner, { ScanResult } from '../components/QrCodeScanner';
 import { Box, Container, Typography } from '@mui/material';
 
 const ScannerPage: React.FC = () => {
@@ -13,8 +12,12 @@ const ScannerPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleScanSuccess = (plant: Plant) => {
-    navigate(`/plant/${plant.id}`);
+  const handleScanSuccess = (result: ScanResult) => {
+    if (result.type === 'plant' && result.plant) {
+      navigate(`/plant/${result.plant.id}`);
+    } else if (result.type === 'grow' && result.grow) {
+      navigate(`/grow/${result.grow.id}`);
+    }
   };
 
   const handleScanError = (message: string) => {
@@ -39,7 +42,7 @@ const ScannerPage: React.FC = () => {
               {scanError}
             </Typography>
           )}
-          <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+          <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} scanType="auto" />
         </Container>
       </Box>
     </Box>

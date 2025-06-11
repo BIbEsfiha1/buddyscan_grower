@@ -80,8 +80,11 @@ export default function GrowsPage() {
           <ul className="space-y-2">
             {grows.map(g => (
               <li key={g.id} className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                <div className="font-semibold text-gray-800 dark:text-gray-100">{g.name}</div>
-                {g.location && <div className="text-sm text-gray-500 dark:text-gray-400">{g.location}</div>}
+                <Link to={`/grow/${g.id}`} className="block">
+                  <div className="font-semibold text-gray-800 dark:text-gray-100">{g.name}</div>
+                  {g.location && <div className="text-sm text-gray-500 dark:text-gray-400">{g.location}</div>}
+                  {g.capacity && <div className="text-sm text-gray-500 dark:text-gray-400">Capacidade: {g.capacity}</div>}
+                </Link>
               </li>
             ))}
           </ul>

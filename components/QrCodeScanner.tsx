@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { getPlants } from '../services/plantService';
-import { Plant } from '../types';
+import { getGrows } from '../services/growService';
+import { Plant, Grow } from '../types';
 import { Box, Button, TextField, Typography } from '@mui/material';
 
 
-interface QrCodeScannerProps {
-  onScanSuccess: (plant: Plant) => void;
-  onScanError: (error: string) => void;
+export interface ScanResult {
+  type: 'plant' | 'grow';
+  plant?: Plant;
+  grow?: Grow;
 }
 
-const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanError }) => {
+interface QrCodeScannerProps {
+  onScanSuccess: (result: ScanResult) => void;
+  onScanError: (error: string) => void;
+  /**
+   * Define o tipo de entidade a buscar. 'auto' tenta planta e grow.
+   */
+  scanType?: 'plant' | 'grow' | 'auto';
+}
+
+const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanError, scanType = 'auto' }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -23,17 +34,27 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
     setIsScanning(true);
     setScanError(null);
     try {
-      // Busca todas as plantas e procura primeiro pelo qrCodeValue
-      const plants = await getPlants();
-      let plant = plants.find(p => p.qrCodeValue === result);
-      if (!plant) {
-        // Se não encontrado pelo QR, tenta buscar por id
-        plant = plants.find(p => p.id === result);
+      let plant: Plant | undefined;
+      let grow: Grow | undefined;
+
+      if (scanType !== 'grow') {
+        const plants = await getPlants();
+        plant = plants.find(p => p.qrCodeValue === result) ||
+                plants.find(p => p.id === result);
       }
+
+      if (!plant && scanType !== 'plant') {
+        const grows = await getGrows();
+        grow = grows.find(g => g.qrCodeValue === result) ||
+               grows.find(g => g.id === result);
+      }
+
       if (plant) {
-        onScanSuccess(plant);
+        onScanSuccess({ type: 'plant', plant });
+      } else if (grow) {
+        onScanSuccess({ type: 'grow', grow });
       } else {
-        const msg = 'Nenhuma planta encontrada com este QR code ou ID.';
+        const msg = 'Nenhum registro encontrado com este QR code ou ID.';
         setScanError(msg);
         onScanError(msg);
       }
@@ -62,17 +83,27 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
 
     setIsScanning(true);
     try {
-      // Busca todas as plantas e procura primeiro pelo qrCodeValue
-      const plants = await getPlants();
-      let plant = plants.find(p => p.qrCodeValue === qrValue);
-      if (!plant) {
-        // Se não encontrado pelo QR, tenta buscar por id
-        plant = plants.find(p => p.id === qrValue);
+      let plant: Plant | undefined;
+      let grow: Grow | undefined;
+
+      if (scanType !== 'grow') {
+        const plants = await getPlants();
+        plant = plants.find(p => p.qrCodeValue === qrValue) ||
+                plants.find(p => p.id === qrValue);
       }
+
+      if (!plant && scanType !== 'plant') {
+        const grows = await getGrows();
+        grow = grows.find(g => g.qrCodeValue === qrValue) ||
+               grows.find(g => g.id === qrValue);
+      }
+
       if (plant) {
-        onScanSuccess(plant);
+        onScanSuccess({ type: 'plant', plant });
+      } else if (grow) {
+        onScanSuccess({ type: 'grow', grow });
       } else {
-        onScanError('Nenhuma planta encontrada com este QR code ou ID.');
+        onScanError('Nenhum registro encontrado com este QR code ou ID.');
       }
     } catch (error) {
       onScanError('Erro ao processar o QR code.');
@@ -112,7 +143,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
       ) : (
         <Box display="flex" flexDirection="column" gap={2} width="100%" maxWidth={300}>
           <Typography align="center" color="text.secondary">
-            Digite o valor do QR code da planta:
+            Digite o valor do QR code:
           </Typography>
           <TextField
             value={qrValue}
@@ -128,7 +159,7 @@ const QrCodeScanner: React.FC<QrCodeScannerProps> = ({ onScanSuccess, onScanErro
           )}
           <Box display="flex" flexDirection="column" gap={1}>
             <Button variant="contained" color="success" onClick={handleManualScan} disabled={isScanning}>
-              {isScanning ? 'Processando...' : 'Buscar Planta'}
+              {isScanning ? 'Processando...' : 'Buscar'}
             </Button>
             <Button variant="text" onClick={() => { setShowManualInput(false); setQrValue(''); setScanError(null); }}>
               Voltar para câmera

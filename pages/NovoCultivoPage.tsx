@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
@@ -7,12 +7,14 @@ import { SUBSTRATE_OPTIONS } from '../constants';
 import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
 export default function NovoCultivoPage() {
+  const [searchParams] = useSearchParams();
+  const initialGrowId = searchParams.get('growId') || '';
   const [cultivoNome, setCultivoNome] = useState('');
   const [startDate, setStartDate] = useState('');
   const [notes, setNotes] = useState('');
   const [substrate, setSubstrate] = useState('');
   const [grows, setGrows] = useState<Grow[]>([]);
-  const [growId, setGrowId] = useState('');
+  const [growId, setGrowId] = useState(initialGrowId);
   const [plants, setPlants] = useState<{ name: string; strain: string }[]>([{ name: '', strain: '' }]);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);

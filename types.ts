@@ -28,6 +28,8 @@ export interface Grow {
   id: string;
   name: string;
   location?: string;
+  capacity?: number;
+  qrCodeValue: string;
   userId: string;
   createdAt: string;
 }
@@ -99,11 +101,18 @@ export interface DiaryEntry {
   ec?: number; 
   ph?: number;
   temperature?: number; 
-  humidity?: number; 
+  humidity?: number;
   symptoms?: string;
-  actionsTaken?: string; 
+  actionsTaken?: string;
+  wateringVolume?: number;
+  wateringType?: string;
+  fertilizationType?: string;
+  fertilizationConcentration?: number;
+  photoperiod?: string;
+  sprayProduct?: string;
+  sprayAmount?: number;
   photos: Photo[];
-  aiOverallDiagnosis?: string; 
+  aiOverallDiagnosis?: string;
 }
 
 export interface SensorReading {

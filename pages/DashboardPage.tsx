@@ -17,7 +17,7 @@ import PlantCardSkeleton from '../components/PlantCardSkeleton';
 import Modal from '../components/Modal';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
-import QrCodeScanner from '../components/QrCodeScanner';
+import QrCodeScanner, { ScanResult } from '../components/QrCodeScanner';
 import { usePlantContext } from '../contexts/PlantContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData, DiaryEntry } from '../types';
@@ -154,8 +154,12 @@ const DashboardPage: React.FC = () => {
     setIsAddingPlant(false);
   };
 
-  const handleScanSuccess = (plant: Plant) => {
-    navigate(`/plant/${plant.id}`);
+  const handleScanSuccess = (result: ScanResult) => {
+    if (result.type === 'plant' && result.plant) {
+      navigate(`/plant/${result.plant.id}`);
+    } else if (result.type === 'grow' && result.grow) {
+      navigate(`/grow/${result.grow.id}`);
+    }
   };
 
   const handleScanError = (msg: string) => {
@@ -374,7 +378,7 @@ const DashboardPage: React.FC = () => {
         {scannerError && (
           <Typography color="error" sx={{ mb: 2 }}>{scannerError}</Typography>
         )}
-        <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+        <QrCodeScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} scanType="auto" />
       </Modal>
     </Box>
   );

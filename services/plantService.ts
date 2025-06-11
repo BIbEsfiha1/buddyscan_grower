@@ -189,6 +189,17 @@ export const updateDiaryEntry = async (
   return convertKeysToCamelCase(result);
 };
 
+export const addMassDiaryEntry = async (
+  cultivoId: string,
+  entry: Omit<DiaryEntry, 'id' | 'timestamp' | 'plantId'>
+): Promise<number> => {
+  const result = await fetchWithAuth('addMassDiaryEntry', {
+    method: 'POST',
+    body: JSON.stringify({ cultivoId, entry }),
+  });
+  return result.count || 0;
+};
+
 export const deleteDiaryEntry = async (plantId: string, entryId: string): Promise<boolean> => {
   await fetchWithAuth(`deleteDiaryEntry?id=${entryId}&plantId=${plantId}`, {
     method: 'DELETE',

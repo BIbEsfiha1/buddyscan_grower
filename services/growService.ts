@@ -29,10 +29,16 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
 
 export const getGrows = async (): Promise<Grow[]> => {
   const data = await fetchWithAuth('getGrows');
-  return Array.isArray(data) ? data : [];
+  return Array.isArray(data)
+    ? data.map((g: any) => ({
+        ...g,
+        qrCodeValue: g.qr_code_value || g.qrCodeValue,
+        createdAt: g.created_at || g.createdAt,
+      }))
+    : [];
 };
 
-export const addGrow = async (grow: { name: string; location?: string }): Promise<Grow> => {
+export const addGrow = async (grow: { name: string; location?: string; capacity?: number }): Promise<Grow> => {
   const data = await fetchWithAuth('addGrow', {
     method: 'POST',
     body: JSON.stringify(grow),

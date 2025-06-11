@@ -22,6 +22,13 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
     ph: initialData?.ph || undefined,
     temperature: initialData?.temperature || undefined,
     humidity: initialData?.humidity || undefined,
+    wateringVolume: initialData?.wateringVolume || undefined,
+    wateringType: initialData?.wateringType || '',
+    fertilizationType: initialData?.fertilizationType || '',
+    fertilizationConcentration: initialData?.fertilizationConcentration || undefined,
+    photoperiod: initialData?.photoperiod || '',
+    sprayProduct: initialData?.sprayProduct || '',
+    sprayAmount: initialData?.sprayAmount || undefined,
     symptoms: initialData?.symptoms || '',
     actionsTaken: initialData?.actionsTaken || '',
     aiOverallDiagnosis: initialData?.aiOverallDiagnosis || '',
@@ -87,13 +94,20 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
         return;
     }
     const dataToSubmit: NewDiaryEntryData = {
-      stage: formData.stage, 
+      stage: formData.stage,
       notes: formData.notes,
       heightCm: formData.heightCm,
       ec: formData.ec,
       ph: formData.ph,
       temperature: formData.temperature,
       humidity: formData.humidity,
+      wateringVolume: formData.wateringVolume,
+      wateringType: formData.wateringType,
+      fertilizationType: formData.fertilizationType,
+      fertilizationConcentration: formData.fertilizationConcentration,
+      photoperiod: formData.photoperiod,
+      sprayProduct: formData.sprayProduct,
+      sprayAmount: formData.sprayAmount,
       symptoms: formData.symptoms,
       actionsTaken: formData.actionsTaken,
       aiOverallDiagnosis: formData.aiOverallDiagnosis,
@@ -135,6 +149,34 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
         <div>
           <label htmlFor="humidity" className={labelClass}>Umidade Ambiente (%)</label>
           <input type="number" name="humidity" id="humidity" value={formData.humidity || ''} onChange={handleChange} step="0.1" className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="wateringVolume" className={labelClass}>Rega (L)</label>
+          <input type="number" name="wateringVolume" id="wateringVolume" value={formData.wateringVolume || ''} onChange={handleChange} step="0.1" className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="wateringType" className={labelClass}>Tipo de Água</label>
+          <input type="text" name="wateringType" id="wateringType" value={formData.wateringType || ''} onChange={handleChange} className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="fertilizationType" className={labelClass}>Fertilizante</label>
+          <input type="text" name="fertilizationType" id="fertilizationType" value={formData.fertilizationType || ''} onChange={handleChange} className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="fertilizationConcentration" className={labelClass}>Concentração</label>
+          <input type="number" name="fertilizationConcentration" id="fertilizationConcentration" value={formData.fertilizationConcentration || ''} onChange={handleChange} step="0.01" className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="photoperiod" className={labelClass}>Fotoperíodo</label>
+          <input type="text" name="photoperiod" id="photoperiod" value={formData.photoperiod || ''} onChange={handleChange} className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="sprayProduct" className={labelClass}>Produto de Pulverização</label>
+          <input type="text" name="sprayProduct" id="sprayProduct" value={formData.sprayProduct || ''} onChange={handleChange} className={formFieldClass} />
+        </div>
+        <div>
+          <label htmlFor="sprayAmount" className={labelClass}>Quantidade Pulverizada (mL)</label>
+          <input type="number" name="sprayAmount" id="sprayAmount" value={formData.sprayAmount || ''} onChange={handleChange} step="0.1" className={formFieldClass} />
         </div>
       </div>
 

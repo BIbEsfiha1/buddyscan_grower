@@ -19,10 +19,15 @@ export const handler: Handler = async (event, context) => {
       .eq('user_id', user.sub)
       .order('created_at', { ascending: false });
     if (error) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Erro ao buscar grows', details: error }) };
+      console.error('Erro ao buscar grows no Supabase:', error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Erro ao buscar grows', details: error.message }),
+      };
     }
     return successResponse(data);
   } catch (e: any) {
+    console.error('Erro inesperado na função getGrows:', e);
     return { statusCode: 500, body: JSON.stringify({ error: 'Erro inesperado', details: e.message }) };
   }
 };

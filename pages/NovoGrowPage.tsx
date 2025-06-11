@@ -3,21 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [capacity, setCapacity] = useState<number | ''>('');
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +21,10 @@ export default function NovoGrowPage() {
     try {
       const { addGrow } = await import('../services/growService');
       const newGrow = await addGrow({ name, location: location || undefined, capacity: capacity === '' ? undefined : capacity });
-      setToast({ message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.', type: 'success' });
+      showToast({ message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.', type: 'success' });
       setTimeout(() => navigate(`/novo-cultivo?growId=${newGrow.id}`), 1500);
     } catch (err: any) {
-      setToast({ message: 'Erro ao criar grow: ' + (err.message || err), type: 'error' });
+      showToast({ message: 'Erro ao criar grow: ' + (err.message || err), type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -40,7 +35,7 @@ export default function NovoGrowPage() {
 
   return (
     <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
         <button
           onClick={() => navigate(-1)}

@@ -5,12 +5,13 @@ import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import Loader from "../components/Loader";
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,12 +35,6 @@ export default function GrowsPage() {
     setGrows(data);
   };
 
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   if (loading) {
     return (
@@ -51,7 +46,7 @@ export default function GrowsPage() {
 
   return (
     <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
         <button
           onClick={() => navigate(-1)}

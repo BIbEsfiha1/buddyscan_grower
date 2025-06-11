@@ -1,8 +1,8 @@
 import React from 'react';
+import { ToastData } from '../hooks/useToast';
 
 interface ToastProps {
-  message: string;
-  type?: 'success' | 'error' | 'info';
+  toast: ToastData;
   onClose?: () => void;
 }
 
@@ -12,12 +12,14 @@ const typeStyles = {
   info: 'bg-blue-500 text-white',
 };
 
-const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose }) => (
-  <div
-    className={`fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 ${typeStyles[type]} animate-toast-in`}
-    role="alert"
-    style={{ minWidth: 200 }}
-  >
+const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
+  const { message, type = 'info' } = toast;
+  return (
+    <div
+      className={`fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 ${typeStyles[type]} animate-toast-in`}
+      role="alert"
+      style={{ minWidth: 200 }}
+    >
     {type === 'success' && (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
     )}
@@ -36,6 +38,7 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose }) => (
       .animate-toast-in { animation: toast-in 0.3s cubic-bezier(.4,0,.2,1); }
     `}</style>
   </div>
-);
+  );
+};
 
 export default Toast;

@@ -6,6 +6,7 @@ import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/Button';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import { addMassDiaryEntry } from '../services/plantService';
@@ -16,7 +17,7 @@ export default function GrowDetailPage() {
   const [grow, setGrow] = useState<Grow | null>(null);
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedCultivo, setSelectedCultivo] = useState<Cultivo | null>(null);
   const [showMassModal, setShowMassModal] = useState(false);
@@ -38,7 +39,7 @@ export default function GrowDetailPage() {
         setGrow(growList.find(g => g.id === growId) || null);
         setCultivos(cultivosList.filter(c => c.growId === growId));
       } catch (err) {
-        setToast({ message: 'Erro ao carregar dados', type: 'error' });
+        showToast({ message: 'Erro ao carregar dados', type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -73,9 +74,9 @@ export default function GrowDetailPage() {
         sprayAmount: massSprayAmount ? Number(massSprayAmount) : undefined,
         stage: PlantStage.VEGETATIVE,
       });
-      setToast({ message: 'Ação registrada em massa com sucesso', type: 'success' });
+      showToast({ message: 'Ação registrada em massa com sucesso', type: 'success' });
     } catch (e: any) {
-      setToast({ message: e.message || 'Erro ao registrar ação em massa', type: 'error' });
+      showToast({ message: e.message || 'Erro ao registrar ação em massa', type: 'error' });
     } finally {
       setShowMassModal(false);
     }
@@ -99,7 +100,7 @@ export default function GrowDetailPage() {
 
   return (
     <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
         <button
           onClick={() => navigate(-1)}

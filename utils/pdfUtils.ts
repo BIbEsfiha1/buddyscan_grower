@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { Plant } from '../types'; // Assuming Plant type is available
+import logger from './logger';
 
 // Helper to get Data URL using 'qrcode' library
 async function getQRCodeDataURL(qrValue: string, size: number): Promise<string> {
@@ -31,7 +32,7 @@ async function getQRCodeDataURL(qrValue: string, size: number): Promise<string> 
 }
 
 export const generateQRCodesPDF = async (plants: Plant[], cultivoName: string) => {
-  console.log('[generateQRCodesPDF] Received plants data:', JSON.stringify(plants, null, 2)); // Log received plant data
+  logger.log('[generateQRCodesPDF] Received plants data:', JSON.stringify(plants, null, 2));
 
   const pdf = new jsPDF({
     orientation: 'portrait',

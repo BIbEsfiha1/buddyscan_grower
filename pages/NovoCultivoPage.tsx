@@ -4,6 +4,7 @@ import Button from '../components/Button';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import { SUBSTRATE_OPTIONS } from '../constants';
 import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
@@ -18,7 +19,7 @@ export default function NovoCultivoPage() {
   const [growId, setGrowId] = useState(initialGrowId);
   const [plants, setPlants] = useState<{ name: string; strain: string }[]>([{ name: '', strain: '' }]);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,11 +70,11 @@ export default function NovoCultivoPage() {
       };
       await addCultivo(cultivoData);
       setSaving(false);
-      setToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
+      showToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1800);
     } catch (err: any) {
       setSaving(false);
-      setToast({ message: 'Erro ao salvar cultivo: ' + (err.message || err), type: 'error' });
+      showToast({ message: 'Erro ao salvar cultivo: ' + (err.message || err), type: 'error' });
     }
   }
 
@@ -83,7 +84,7 @@ export default function NovoCultivoPage() {
   return (
     <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {/* Toast global */}
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       <Header
         title="Novo Cultivo"

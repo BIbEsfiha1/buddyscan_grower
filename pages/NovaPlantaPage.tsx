@@ -3,44 +3,43 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import PlantaForm from '../components/PlantaForm';
 import { usePlantContext } from '../contexts/PlantContext';
 import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
+import { 
+  Box, 
+  Paper, 
+  Typography 
+} from '@mui/material';
 
 export default function NovaPlantaPage() {
   const [searchParams] = useSearchParams();
   const cultivoId = searchParams.get('cultivoId');
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
   const { addPlant, error: plantContextError } = usePlantContext();
 
-  // Verifica se há um cultivoId na URL
   useEffect(() => {
     if (!cultivoId) {
-      setToast({ message: 'ID do cultivo não fornecido', type: 'error' });
+      showToast({ message: 'ID do cultivo não fornecido', type: 'error' });
       setTimeout(() => navigate('/cultivos'), 2000);
     }
-  }, [cultivoId, navigate]);
+  }, [cultivoId, navigate, showToast]);
 
-  // Auto-hide para o toast
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  // Handler para submissão do formulário usando o método principal
-  const handlePlantaSubmit = async (values: { name: string; strain: string; birthDate: string; substrate: string }) => {
+  const handlePlantaSubmit = async (values: {
+    name: string;
+    strain: string;
+    birthDate: string;
+    substrate: string;
+  }) => {
     if (!cultivoId) {
-      setToast({ message: 'ID do cultivo não encontrado', type: 'error' });
+      showToast({ message: 'ID do cultivo não encontrado', type: 'error' });
       return;
     }
     setSaving(true);
     try {
-      // Monta o objeto NewPlantData incluindo cultivoId
-      const { PlantStage, PlantHealthStatus, PlantOperationalStatus } = await import('../types');
       const newPlant = {
         ...values,
         currentStage: PlantStage.SEEDLING,
@@ -50,22 +49,35 @@ export default function NovaPlantaPage() {
       };
       const addedPlant = await addPlant(newPlant);
       if (addedPlant) {
-        setToast({ message: 'Planta adicionada com sucesso!', type: 'success' });
+        showToast({ message: 'Planta adicionada com sucesso!', type: 'success' });
         setTimeout(() => navigate(`/cultivo/${cultivoId}`), 1400);
       } else {
-        setToast({ message: `Erro ao adicionar planta: ${plantContextError || 'Nenhum detalhe retornado.'}`, type: 'error' });
+        showToast({
+          message: `Erro ao adicionar planta: ${plantContextError || 'Nenhum detalhe retornado.'}`,
+          type: 'error',
+        });
       }
-    } catch (error: any) {
-      setToast({ message: 'Erro ao adicionar planta: ' + (error.message || error), type: 'error' });
+    } catch (err: any) {
+      showToast({ message: 'Erro ao adicionar planta: ' + (err.message || err), type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-
   return (
-    <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <Box
+      maxWidth="sm"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
+    >
       {toast && <Toast message={toast.message} type={toast.type} />}
+
       <Header
         title="Nova Planta"
         onOpenSidebar={() => {}}
@@ -74,6 +86,7 @@ export default function NovaPlantaPage() {
         showBack
         onBack={() => navigate(-1)}
       />
+
       <Breadcrumbs
         items={[
           { label: 'Dashboard', to: '/' },
@@ -81,14 +94,21 @@ export default function NovaPlantaPage() {
           ...(cultivoId ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }] : []),
           { label: 'Nova Planta' },
         ]}
-        className="px-1 sm:px-0 mb-2"
+        sx={{ px: { xs: 1, sm: 0 }, mb: 2 }}
       />
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">
+
+      <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
+        <Typography
+          variant="h5"
+          color="primary"
+          fontWeight="bold"
+          textAlign="center"
+          mb={3}
+        >
           Adicionar Nova Planta
-        </h1>
+        </Typography>
         <PlantaForm onSubmit={handlePlantaSubmit} loading={saving} />
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 }

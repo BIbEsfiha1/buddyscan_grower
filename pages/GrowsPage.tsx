@@ -4,12 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
-import Loader from "../components/Loader";
+import useToast from '../hooks/useToast';
+import Loader from '../components/Loader';
+import { Box, Typography, Paper, List, ListItem } from '@mui/material';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,37 +22,43 @@ export default function GrowsPage() {
         setGrows(data);
       } catch (e) {
         console.error('Erro ao buscar grows', e);
+        showToast({ message: 'Erro ao carregar grows', type: 'error' });
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, []);
-
-  const refresh = async () => {
-    const { getGrows } = await import('../services/growService');
-    const data = await getGrows();
-    setGrows(data);
-  };
-
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
+  }, [showToast]);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full p-6">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
         <Loader message="Carregando estufas..." size="md" />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <Box
+      maxWidth="lg"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
+    >
       {toast && <Toast message={toast.message} type={toast.type} />}
+
       <Header
         title="Grows"
         onOpenSidebar={() => {}}
@@ -59,6 +67,7 @@ export default function GrowsPage() {
         showBack
         onBack={() => navigate(-1)}
       />
+
       <Breadcrumbs
         items={[
           { label: 'Dashboard', to: '/' },
@@ -67,28 +76,43 @@ export default function GrowsPage() {
         className="px-1 sm:px-0 mb-2"
       />
 
-      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">Meus Grows</h1>
+      <Typography variant="h4" color="primary" fontWeight="bold">
+        Meus Grows
+      </Typography>
 
-      <div className="mt-6">
+      <Box mt={3}>
         {grows.length ? (
-          <ul className="space-y-2">
+          <List>
             {grows.map(g => (
-              <li key={g.id} className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                <Link to={`/grow/${g.id}`} className="block">
-                  <div className="font-semibold text-gray-800 dark:text-gray-100">{g.name}</div>
-                  {g.location && <div className="text-sm text-gray-500 dark:text-gray-400">{g.location}</div>}
-                  {g.capacity && <div className="text-sm text-gray-500 dark:text-gray-400">Capacidade: {g.capacity}</div>}
-                </Link>
-              </li>
+              <ListItem key={g.id} sx={{ p: 0, mb: 1 }}>
+                <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
+                  <Link to={`/grow/${g.id}`} style={{ textDecoration: 'none' }}>
+                    <Typography fontWeight="bold" color="text.primary">
+                      {g.name}
+                    </Typography>
+                    {g.location && (
+                      <Typography variant="body2" color="text.secondary">
+                        {g.location}
+                      </Typography>
+                    )}
+                    {g.capacity && (
+                      <Typography variant="body2" color="text.secondary">
+                        Capacidade: {g.capacity}
+                      </Typography>
+                    )}
+                  </Link>
+                </Paper>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         ) : (
-          <div className="text-gray-400 dark:text-gray-500 text-center py-8">
-            Nenhum grow cadastrado ainda.<br />
-            <Link to="/novo-grow" className="underline text-green-700 dark:text-green-300">Crie sua primeira estufa</Link>
-          </div>
+          <Typography color="text.secondary" textAlign="center" py={4}>
+            Nenhum grow cadastrado ainda.
+            <br />
+            <Link to="/novo-grow">Crie sua primeira estufa</Link>
+          </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

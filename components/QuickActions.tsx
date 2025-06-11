@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdQrCodeScanner, MdLocalFlorist, MdBarChart, MdEdit } from 'react-icons/md';
+import { MdAdd, MdQrCodeScanner, MdLocalFlorist, MdBarChart, MdEdit, MdHome } from 'react-icons/md';
 import { Box, Button, Typography } from '@mui/material';
 
 interface QuickActionProps {
@@ -54,6 +54,7 @@ const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }
 interface QuickActionsProps {
   onAddPlant: () => void;
   onScanQR: () => void;
+  onOpenGrows: () => void;
   onOpenCultivos: () => void;
   onOpenStats: () => void;
   onRegisterDiary: () => void;
@@ -62,6 +63,7 @@ interface QuickActionsProps {
 const QuickActions: React.FC<QuickActionsProps> = ({
   onAddPlant,
   onScanQR,
+  onOpenGrows,
   onOpenCultivos,
   onOpenStats,
   onRegisterDiary
@@ -90,6 +92,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         icon={<MdQrCodeScanner size={32} />}
         color="purple"
         onClick={onScanQR}
+      />
+      <QuickAction
+        title={t('sidebar.grows')}
+        icon={<MdHome size={32} />}
+        color="blue"
+        onClick={onOpenGrows}
       />
       <QuickAction
         title={t('sidebar.cultivos')}

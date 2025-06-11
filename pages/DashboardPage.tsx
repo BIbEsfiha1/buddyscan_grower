@@ -210,6 +210,7 @@ const DashboardPage: React.FC = () => {
                 <QuickActions
                   onAddPlant={() => setIsAddModalOpen(true)}
                   onScanQR={() => setIsScannerModalOpen(true)}
+                  onOpenGrows={() => navigate('/grows')}
                   onOpenCultivos={() => navigate('/cultivos')}
                   onOpenStats={() => navigate('/garden-statistics')}
                   onRegisterDiary={() => navigate('/plants')}

@@ -22,6 +22,7 @@ import CalendarViewMonthOutlinedIcon from '@mui/icons-material/CalendarViewMonth
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import LeafIcon from './icons/LeafIcon';
 
 interface SidebarProps {
@@ -55,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: t('sidebar.dashboard'), path: '/', icon: <DashboardOutlinedIcon /> },
     { name: t('sidebar.plants'), path: '/plants', icon: <YardOutlinedIcon /> },
     { name: t('sidebar.cultivos'), path: '/cultivos', icon: <CalendarViewMonthOutlinedIcon /> },
+    { name: t('sidebar.grows'), path: '/grows', icon: <HomeWorkOutlinedIcon /> },
     { name: t('sidebar.scanner'), path: '/scanner', icon: <QrCodeScannerIcon /> },
     { name: t('sidebar.statistics'), path: '/statistics', icon: <BarChartOutlinedIcon /> },
     { name: t('sidebar.settings'), path: '/settings', icon: <SettingsOutlinedIcon /> },

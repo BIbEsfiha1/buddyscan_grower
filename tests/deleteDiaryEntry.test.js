@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { transformSync } from 'esbuild';
 
-const tsSource = readFileSync(new URL('./deleteDiaryEntry.ts', import.meta.url), 'utf8');
+const tsSource = readFileSync(new URL('../netlify/functions/deleteDiaryEntry.ts', import.meta.url), 'utf8');
 const { code } = transformSync(tsSource, { loader: 'ts', format: 'esm' });
 const outfile = join(process.cwd(), 'deleteDiaryEntry.compiled.mjs');
 writeFileSync(outfile, code);

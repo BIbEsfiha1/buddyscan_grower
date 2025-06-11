@@ -8,7 +8,7 @@ import Loader from '../components/Loader';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import CultivoPlantList from '../components/cultivo/CultivoPlantList';
-import MassActionModal from '../components/cultivo/MassActionModal';
+import MassRegisterModal from '../components/grow/MassRegisterModal';
 import MoveCultivoModal from '../components/cultivo/MoveCultivoModal';
 import FinishCultivoModal from '../components/cultivo/FinishCultivoModal';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
@@ -31,21 +31,10 @@ const CultivoDetailPage: React.FC = () => {
   const [toast, showToast] = useToast();
 
   const [showMassModal, setShowMassModal] = useState(false);
-  const [massNotes, setMassNotes] = useState('');
-  const [massWateringVolume, setMassWateringVolume] = useState('');
-  const [massWateringType, setMassWateringType] = useState('');
-  const [massFertilizationType, setMassFertilizationType] = useState('');
-  const [massFertilizationConcentration, setMassFertilizationConcentration] = useState('');
-  const [massPhotoperiod, setMassPhotoperiod] = useState('');
-  const [massSprayProduct, setMassSprayProduct] = useState('');
-  const [massSprayAmount, setMassSprayAmount] = useState('');
-
   const [selectedGrow, setSelectedGrow] = useState<string>('');
   const [showMoveModal, setShowMoveModal] = useState(false);
-
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishing, setFinishing] = useState(false);
-
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Fetch cultivo details + list of grows
@@ -98,36 +87,18 @@ const CultivoDetailPage: React.FC = () => {
     }
   };
 
-  const handleMassRegister = async () => {
-    if (!cultivoId) return;
-    try {
-      const { addMassDiaryEntry } = await import('../services/plantService');
-      await addMassDiaryEntry(cultivoId, {
-        notes: massNotes,
-        stage: plants[0]?.currentStage || PlantStage.SEEDLING,
-        wateringVolume: massWateringVolume ? parseFloat(massWateringVolume) : undefined,
-        wateringType: massWateringType || undefined,
-        fertilizationType: massFertilizationType || undefined,
-        fertilizationConcentration: massFertilizationConcentration
-          ? parseFloat(massFertilizationConcentration)
-          : undefined,
-        photoperiod: massPhotoperiod || undefined,
-        sprayProduct: massSprayProduct || undefined,
-        sprayAmount: massSprayAmount ? parseFloat(massSprayAmount) : undefined,
-      });
-      showToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
-      setShowMassModal(false);
-      setMassNotes('');
-      setMassWateringVolume('');
-      setMassWateringType('');
-      setMassFertilizationType('');
-      setMassFertilizationConcentration('');
-      setMassPhotoperiod('');
-      setMassSprayProduct('');
-      setMassSprayAmount('');
-    } catch {
-      showToast({ message: 'Erro ao registrar em massa', type: 'error' });
-    }
+  const handleMassSuccess = () => {
+    showToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
+    setShowMassModal(false);
+    fetchPlants(); // Refresh plants after mass registration
+  };
+
+  const handleMassError = (errorMessage?: string) => {
+    showToast({ 
+      message: errorMessage || 'Erro ao registrar em massa', 
+      type: 'error' 
+    });
+    setShowMassModal(false);
   };
 
   const handleMoveCultivo = async () => {
@@ -274,26 +245,13 @@ const CultivoDetailPage: React.FC = () => {
         isGeneratingPDF={isGeneratingPDF}
       />
 
-      <MassActionModal
+      <MassRegisterModal
+        cultivoId={cultivo.id}
         isOpen={showMassModal}
         onClose={() => setShowMassModal(false)}
-        onSave={handleMassRegister}
-        massNotes={massNotes}
-        setMassNotes={setMassNotes}
-        massWateringVolume={massWateringVolume}
-        setMassWateringVolume={setMassWateringVolume}
-        massWateringType={massWateringType}
-        setMassWateringType={setMassWateringType}
-        massFertilizationType={massFertilizationType}
-        setMassFertilizationType={setMassFertilizationType}
-        massFertilizationConcentration={massFertilizationConcentration}
-        setMassFertilizationConcentration={setMassFertilizationConcentration}
-        massPhotoperiod={massPhotoperiod}
-        setMassPhotoperiod={setMassPhotoperiod}
-        massSprayProduct={massSprayProduct}
-        setMassSprayProduct={setMassSprayProduct}
-        massSprayAmount={massSprayAmount}
-        setMassSprayAmount={setMassSprayAmount}
+        plantStage={plants[0]?.currentStage || PlantStage.SEEDLING}
+        onSuccess={handleMassSuccess}
+        onError={handleMassError}
       />
 
       <Button

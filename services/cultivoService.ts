@@ -1,6 +1,7 @@
 import { Cultivo, Plant } from '../types';
 import { convertKeysToCamelCase } from './plantService';
 import netlifyIdentity from 'netlify-identity-widget';
+import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
 
@@ -26,7 +27,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     }
     headers.set('Authorization', `Bearer ${token}`);
 
-    console.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
+    logger.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
     
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
       ...options,
@@ -43,7 +44,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       throw new Error('Resposta inválida do servidor');
     }
 
-    console.log(`[fetchWithAuth] Response from ${endpoint}:`, {
+    logger.log(`[fetchWithAuth] Response from ${endpoint}:`, {
       status: response.status,
       data: responseData
     });
@@ -122,7 +123,7 @@ export const addCultivo = async (cultivoData: { name: string; startDate: string;
 
 export const getCultivos = async (): Promise<Cultivo[]> => {
   try {
-    console.log('[getCultivos] Fetching cultivos');
+    logger.log('[getCultivos] Fetching cultivos');
     const result = await fetchWithAuth('getCultivos');
     
     // Ensure all dates are properly parsed
@@ -147,7 +148,7 @@ export const getPlantsByCultivo = async (cultivoId: string): Promise<Plant[]> =>
       return [];
     }
 
-    console.log(`[getPlantsByCultivo] Fetching plants for cultivo ${cultivoId}`);
+    logger.log(`[getPlantsByCultivo] Fetching plants for cultivo ${cultivoId}`);
     const result = await fetchWithAuth(
       `getPlants?cultivoId=${encodeURIComponent(cultivoId)}`
     );
@@ -187,7 +188,7 @@ export const updateCultivo = async (cultivoId: string, cultivoData: Partial<Omit
       }
     });
 
-    console.log('[updateCultivo] Sending update data:', { id: cultivoId, ...updateData });
+    logger.log('[updateCultivo] Sending update data:', { id: cultivoId, ...updateData });
     
     const result = await fetchWithAuth('updateCultivo', {
       method: 'PUT',

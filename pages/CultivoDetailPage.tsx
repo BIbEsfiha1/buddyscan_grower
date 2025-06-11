@@ -14,6 +14,7 @@ import PlusIcon from '../components/icons/PlusIcon';
 import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
+import logger from '../utils/logger';
 
 const CultivoDetailPage: React.FC = () => {
   const { cultivoId } = useParams<{ cultivoId: string }>();
@@ -164,29 +165,29 @@ const CultivoDetailPage: React.FC = () => {
     }
     
     setFinishing(true);
-    console.log(`[handleFinishCultivo] Iniciando finalização do cultivo ${cultivoId}`);
+    logger.log(`[handleFinishCultivo] Iniciando finalização do cultivo ${cultivoId}`);
     
     try {
       // 1. Atualiza status do cultivo (finalizadoEm)
-      console.log(`[handleFinishCultivo] Atualizando status do cultivo ${cultivoId} para finalizado`);
+      logger.log(`[handleFinishCultivo] Atualizando status do cultivo ${cultivoId} para finalizado`);
       await updateCultivo(cultivoId, { 
         finalizadoEm: new Date().toISOString() 
       });
       
       // 2. Atualiza todas as plantas ativas para "colhida"
       const activePlants = plants.filter(p => p.operationalStatus === PlantOperationalStatus.ACTIVE);
-      console.log(`[handleFinishCultivo] ${activePlants.length} plantas ativas para marcar como colhidas`);
+      logger.log(`[handleFinishCultivo] ${activePlants.length} plantas ativas para marcar como colhidas`);
       
       if (activePlants.length > 0) {
         await Promise.all(
           activePlants.map(async (p) => {
-            console.log(`[handleFinishCultivo] Atualizando planta ${p.id} para colhida`);
+            logger.log(`[handleFinishCultivo] Atualizando planta ${p.id} para colhida`);
             try {
               await updatePlant(p.id, {
                 operationalStatus: PlantOperationalStatus.HARVESTED,
                 currentStage: PlantStage.DRYING
               });
-              console.log(`[handleFinishCultivo] Planta ${p.id} atualizada com sucesso`);
+              logger.log(`[handleFinishCultivo] Planta ${p.id} atualizada com sucesso`);
             } catch (plantError) {
               console.error(`[handleFinishCultivo] Erro ao atualizar planta ${p.id}:`, plantError);
               // Não interrompe o fluxo se uma planta falhar

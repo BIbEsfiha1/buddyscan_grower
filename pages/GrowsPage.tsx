@@ -6,6 +6,15 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Toast from '../components/Toast';
 import Loader from "../components/Loader";
+import {
+  Box,
+  Typography,
+  Breadcrumbs,
+  Paper,
+  IconButton,
+  List,
+  ListItem,
+} from '@mui/material';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
@@ -43,58 +52,80 @@ export default function GrowsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-full p-6">
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
         <Loader message="Carregando estufas..." size="md" />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
+    <Box maxWidth="lg" mx="auto" width="100%" minHeight="100%" display="flex" flexDirection="column" gap={2} bgcolor="background.paper" p={{ xs: 2, sm: 4 }}>
       {toast && <Toast message={toast.message} type={toast.type} />}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
-          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Grows</span>
-        </nav>
-        <div className="flex-1" />
+      <Box
+        position="sticky"
+        top={0}
+        zIndex={20}
+        bgcolor="background.paper"
+        display="flex"
+        alignItems="center"
+        gap={1}
+        py={1}
+        px={{ xs: 1, sm: 0 }}
+        mb={2}
+        sx={{ backdropFilter: 'blur(4px)' }}
+      >
+        <IconButton onClick={() => navigate(-1)} aria-label="Voltar" color="primary">
+          <ArrowLeftIcon className="w-7 h-7" />
+        </IconButton>
+        <Breadcrumbs separator=">">
+          <Link to="/">Dashboard</Link>
+          <Typography color="text.primary">Grows</Typography>
+        </Breadcrumbs>
+        <Box flexGrow={1} />
         <Link to="/novo-grow">
-          <Button variant="primary" size="icon" className="shadow" title="Novo Grow">
+          <Button variant="primary" size="icon" title="Novo Grow">
             <PlusIcon className="w-5 h-5" />
           </Button>
         </Link>
-      </div>
+      </Box>
 
-      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">Meus Grows</h1>
+      <Typography variant="h4" color="primary" fontWeight="bold" mt={2} mb={2}>
+        Meus Grows
+      </Typography>
 
-      <div className="mt-6">
+      <Box mt={3}>
         {grows.length ? (
-          <ul className="space-y-2">
+          <List>
             {grows.map(g => (
-              <li key={g.id} className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                <Link to={`/grow/${g.id}`} className="block">
-                  <div className="font-semibold text-gray-800 dark:text-gray-100">{g.name}</div>
-                  {g.location && <div className="text-sm text-gray-500 dark:text-gray-400">{g.location}</div>}
-                  {g.capacity && <div className="text-sm text-gray-500 dark:text-gray-400">Capacidade: {g.capacity}</div>}
-                </Link>
-              </li>
+              <ListItem key={g.id} sx={{ p: 0, mb: 1 }}>
+                <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
+                  <Link to={`/grow/${g.id}`} style={{ textDecoration: 'none' }}>
+                    <Typography fontWeight="bold" color="text.primary">
+                      {g.name}
+                    </Typography>
+                    {g.location && (
+                      <Typography variant="body2" color="text.secondary">
+                        {g.location}
+                      </Typography>
+                    )}
+                    {g.capacity && (
+                      <Typography variant="body2" color="text.secondary">
+                        Capacidade: {g.capacity}
+                      </Typography>
+                    )}
+                  </Link>
+                </Paper>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         ) : (
-          <div className="text-gray-400 dark:text-gray-500 text-center py-8">
-            Nenhum grow cadastrado ainda.<br />
-            <Link to="/novo-grow" className="underline text-green-700 dark:text-green-300">Crie sua primeira estufa</Link>
-          </div>
+          <Typography color="text.secondary" textAlign="center" py={4}>
+            Nenhum grow cadastrado ainda.
+            <br />
+            <Link to="/novo-grow">Crie sua primeira estufa</Link>
+          </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -15,6 +15,7 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
+import { useTranslation } from 'react-i18next';
 import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
@@ -23,6 +24,7 @@ import logger from '../utils/logger';
 const CultivoDetailPage: React.FC = () => {
   const { cultivoId } = useParams<{ cultivoId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [cultivo, setCultivo] = useState<Cultivo | null>(null);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [grows, setGrows] = useState<Grow[]>([]);
@@ -48,12 +50,12 @@ const CultivoDetailPage: React.FC = () => {
         setCultivo(all.find(c => c.id === cultivoId) || null);
         setGrows(await getGrows());
       } catch {
-        setError('Erro ao carregar dados do cultivo.');
+        setError(t('cultivoDetailPage.error_loading_data'));
       } finally {
         setLoading(false);
       }
     })();
-  }, [cultivoId]);
+  }, [cultivoId, t]);
 
   // Fetch plants under this cultivo
   const fetchPlants = async () => {
@@ -62,7 +64,7 @@ const CultivoDetailPage: React.FC = () => {
     try {
       setPlants(await getPlantsByCultivo(cultivoId));
     } catch {
-      setError('Erro ao carregar plantas do cultivo.');
+      setError(t('cultivoDetailPage.error_loading_plants'));
     } finally {
       setLoading(false);
     }
@@ -71,31 +73,31 @@ const CultivoDetailPage: React.FC = () => {
 
   const handlePrintQRCodes = async () => {
     if (!cultivo || plants.length === 0) {
-      showToast({ message: 'Nenhuma planta neste cultivo para imprimir QR codes.', type: 'info' });
+      showToast({ message: t('cultivoDetailPage.no_plants_qr'), type: 'info' });
       return;
     }
     setIsGeneratingPDF(true);
-    showToast({ message: 'Gerando PDF com QR codes...', type: 'info' });
+    showToast({ message: t('cultivoDetailPage.generating_pdf'), type: 'info' });
     try {
       const { generateQRCodesPDF } = await import('../utils/pdfUtils');
       await generateQRCodesPDF(plants, cultivo.name);
     } catch (err: any) {
       console.error('Error generating PDF:', err);
-      showToast({ message: `Erro ao gerar PDF: ${err.message || 'falha desconhecida'}`, type: 'error' });
+      showToast({ message: t('cultivoDetailPage.error_generating_pdf', { error: err.message || t('cultivoDetailPage.unknown_error') }), type: 'error' });
     } finally {
       setIsGeneratingPDF(false);
     }
   };
 
   const handleMassSuccess = () => {
-    showToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
+    showToast({ message: t('cultivoDetailPage.mass_register_success'), type: 'success' });
     setShowMassModal(false);
     fetchPlants(); // Refresh plants after mass registration
   };
 
   const handleMassError = (errorMessage?: string) => {
     showToast({ 
-      message: errorMessage || 'Erro ao registrar em massa', 
+      message: errorMessage || t('cultivoDetailPage.mass_register_error'), 
       type: 'error' 
     });
     setShowMassModal(false);
@@ -107,15 +109,15 @@ const CultivoDetailPage: React.FC = () => {
       await updateCultivo(cultivoId, { growId: selectedGrow });
       setCultivo(c => c ? { ...c, growId: selectedGrow } : c);
       setShowMoveModal(false);
-      showToast({ message: 'Plantio movido com sucesso!', type: 'success' });
+      showToast({ message: t('cultivoDetailPage.move_success'), type: 'success' });
     } catch {
-      showToast({ message: 'Erro ao mover plantio.', type: 'error' });
+      showToast({ message: t('cultivoDetailPage.move_error'), type: 'error' });
     }
   };
 
   const handleFinishCultivo = async () => {
     if (!cultivoId) {
-      setError('ID do cultivo não encontrado');
+      setError(t('cultivoDetailPage.cultivo_id_not_found'));
       return;
     }
     setFinishing(true);
@@ -136,12 +138,12 @@ const CultivoDetailPage: React.FC = () => {
           : p
       ));
       setShowFinishModal(false);
-      showToast({ message: 'Cultivo finalizado e plantas colhidas!', type: 'success' });
+      showToast({ message: t('cultivoDetailPage.finish_success'), type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1200);
     } catch (err: any) {
       console.error(err);
-      setError('Erro ao finalizar cultivo: ' + (err.message || err));
-      showToast({ message: 'Erro ao finalizar cultivo.', type: 'error' });
+      setError(t('cultivoDetailPage.finish_error', { error: err.message || err }));
+      showToast({ message: t('cultivoDetailPage.finish_error_toast'), type: 'error' });
     } finally {
       setFinishing(false);
     }
@@ -149,29 +151,33 @@ const CultivoDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-full p-6">
-        <Loader message="Carregando cultivo..." size="md" />
+      <div className="flex flex-col items-center justify-center min-h-full p-6">
+        <Loader message={t('cultivoDetailPage.loading')} size="md" />
       </div>
     );
   }
+  
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-full p-6">
         <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
-        <span className="text-red-600 font-semibold mb-2">{error}</span>
+        <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
         <Button variant="secondary" onClick={() => window.location.reload()}>
-          Tentar novamente
+          {t('cultivoDetailPage.try_again')}
         </Button>
       </div>
     );
   }
+  
   if (!cultivo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-full p-6">
         <LeafIcon className="w-12 h-12 text-gray-400 mb-3" />
-        <span className="text-gray-500 font-semibold">Cultivo não encontrado.</span>
+        <span className="text-gray-500 dark:text-gray-400 font-semibold text-lg">
+          {t('cultivoDetailPage.not_found')}
+        </span>
         <Button variant="secondary" onClick={() => navigate('/cultivos')}>
-          Voltar para cultivos
+          {t('cultivoDetailPage.back_to_list')}
         </Button>
       </div>
     );
@@ -192,8 +198,8 @@ const CultivoDetailPage: React.FC = () => {
 
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', to: '/' },
-          { label: 'Cultivos', to: '/cultivos' },
+          { label: t('sidebar.dashboard'), to: '/' },
+          { label: t('sidebar.cultivos'), to: '/cultivos' },
           { label: cultivo.name },
         ]}
       />
@@ -211,7 +217,7 @@ const CultivoDetailPage: React.FC = () => {
             <Button
               variant="primary"
               size="icon"
-              title="Nova Planta"
+              title={t('cultivoDetailPage.new_plant')}
               onClick={() => navigate(`/nova-planta?cultivoId=${cultivo.id}`)}
             >
               <PlusIcon className="w-5 h-5" />
@@ -219,7 +225,7 @@ const CultivoDetailPage: React.FC = () => {
             <Button
               variant="secondary"
               size="icon"
-              title="Mover Cultivo"
+              title={t('cultivoDetailPage.move_cultivo')}
               onClick={() => setShowMoveModal(true)}
             >
               <ArrowLeftIcon className="w-5 h-5" />
@@ -229,10 +235,10 @@ const CultivoDetailPage: React.FC = () => {
       </div>
 
       <div className="text-sm text-gray-500 dark:text-gray-400">
-        Início: {new Date(cultivo.startDate).toLocaleDateString()}
+        {t('cultivoDetailPage.start_date')}: {new Date(cultivo.startDate).toLocaleDateString()}
         {cultivo.finalizadoEm && (
           <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full">
-            Finalizado em {new Date(cultivo.finalizadoEm).toLocaleDateString()}
+            {t('cultivoDetailPage.finished_on')} {new Date(cultivo.finalizadoEm).toLocaleDateString()}
           </span>
         )}
       </div>
@@ -262,7 +268,7 @@ const CultivoDetailPage: React.FC = () => {
         className="w-full mt-2"
       >
         <CheckCircleIcon className="w-5 h-5 mr-2" />
-        Finalizar Cultivo
+        {t('cultivoDetailPage.finish_cultivo')}
       </Button>
 
       <MoveCultivoModal

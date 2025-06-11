@@ -3,30 +3,36 @@ import useToast from '../hooks/useToast';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode.react';
 import Button from '../components/Button';
+import Toast from '../components/Toast';
 import { Plant } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function CultivoEtiquetasPage() {
   const { cultivoId } = useParams<{ cultivoId: string }>();
   const [plants, setPlants] = useState<Plant[]>([]);
-  const { showToast, ToastElement } = useToast();
+  const { t } = useTranslation();
+  const [toast, showToast] = useToast();
 
   useEffect(() => {
     if (cultivoId) {
       import('../services/cultivoService').then(({ getPlantsByCultivo }) => {
         getPlantsByCultivo(cultivoId).then(setPlants).catch((err) => {
           setPlants([]);
-          showToast('Erro ao buscar plantas do cultivo: ' + (err.message || err), 'error');
+          showToast({ 
+            message: t('cultivoEtiquetasPage.error_loading_plants', { error: err.message || err }),
+            type: 'error' 
+          });
         });
       });
     }
-  }, [cultivoId]);
+  }, [cultivoId, showToast, t]);
 
   return (
     <div className="p-4">
-      {ToastElement}
+      {toast && <Toast toast={toast} />}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Etiquetas QR do Cultivo</h1>
-        <Button onClick={() => window.print()}>Imprimir</Button>
+        <h1 className="text-2xl font-bold">{t('cultivoEtiquetasPage.title')}</h1>
+        <Button onClick={() => window.print()}>{t('cultivoEtiquetasPage.print')}</Button>
       </div>
       <div className="a4-print-grid">
         {plants.map((plant) => (
@@ -35,8 +41,8 @@ export default function CultivoEtiquetasPage() {
             <div className="text-xs mt-2 text-center">
               <div><b>{plant.name}</b></div>
               <div>{plant.strain}</div>
-              <div>ID: {plant.id}</div>
-              <div>Nasc: {plant.birthDate}</div>
+              <div>{t('cultivoEtiquetasPage.id_label')}: {plant.id}</div>
+              <div>{t('cultivoEtiquetasPage.birth_label')}: {plant.birthDate}</div>
             </div>
           </div>
         ))}

@@ -1,80 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import {
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+} from '@mui/material';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
+import Loader from '../components/Loader';
+import Button from '../components/Button';
+import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import PlusIcon from '../components/icons/PlusIcon';
 import useToast from '../hooks/useToast';
-import PlantaForm from '../components/PlantaForm';
-import { usePlantContext } from '../contexts/PlantContext';
-import {
-  PlantStage,
-  PlantHealthStatus,
-  PlantOperationalStatus,
-} from '../types';
-import { Box, Paper, Typography } from '@mui/material';
+import { Grow } from '../types';
 
-export default function NovaPlantaPage() {
-  const [searchParams] = useSearchParams();
-  const cultivoId = searchParams.get('cultivoId');
-  const [saving, setSaving] = useState(false);
+export default function GrowsPage() {
+  const [grows, setGrows] = useState<Grow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [toast, showToast] = useToast();
   const navigate = useNavigate();
-  const { addPlant, error: plantContextError } = usePlantContext();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    if (!cultivoId) {
-      showToast({ message: 'ID do cultivo não fornecido', type: 'error' });
-      setTimeout(() => navigate('/cultivos'), 2000);
-    }
-  }, [cultivoId, navigate, showToast]);
-
-  const handlePlantaSubmit = async (values: {
-    name: string;
-    strain: string;
-    birthDate: string;
-    substrate: string;
-  }) => {
-    if (!cultivoId) {
-      showToast({ message: 'ID do cultivo não encontrado', type: 'error' });
-      return;
-    }
-    setSaving(true);
-    try {
-      const newPlant = {
-        ...values,
-        currentStage: PlantStage.SEEDLING,
-        healthStatus: PlantHealthStatus.HEALTHY,
-        operationalStatus: PlantOperationalStatus.ACTIVE,
-        cultivoId,
-      };
-      const addedPlant = await addPlant(newPlant);
-      if (addedPlant) {
-        showToast({
-          message: 'Planta adicionada com sucesso!',
-          type: 'success',
-        });
-        setTimeout(() => navigate(`/cultivo/${cultivoId}`), 1400);
-      } else {
-        showToast({
-          message: `Erro ao adicionar planta: ${
-            plantContextError || 'Nenhum detalhe retornado.'
-          }`,
-          type: 'error',
-        });
+    async function fetchData() {
+      try {
+        const { getGrows } = await import('../services/growService');
+        const data = await getGrows();
+        setGrows(data);
+      } catch (e) {
+        console.error('Erro ao buscar grows', e);
+        showToast({ message: t('growsPage.error_load'), type: 'error' });
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      showToast({
-        message: 'Erro ao adicionar planta: ' + (err.message || err),
-        type: 'error',
-      });
-    } finally {
-      setSaving(false);
     }
-  };
+    fetchData();
+  }, [showToast, t]);
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
+        <Loader message={t('growsPage.loading')} size="md" />
+      </Box>
+    );
+  }
 
   return (
     <Box
-      maxWidth="sm"
+      maxWidth="lg"
       mx="auto"
       width="100%"
       minHeight="100%"
@@ -87,38 +71,60 @@ export default function NovaPlantaPage() {
       {toast && <Toast message={toast.message} type={toast.type} />}
 
       <Header
-        title="Nova Planta"
-        onOpenSidebar={() => {}}
-        onOpenAddModal={() => {}}
-        onOpenScannerModal={() => {}}
+        title={t('growsPage.title')}
         showBack
         onBack={() => navigate(-1)}
+        onOpenAddModal={() => navigate('/novo-grow')}
+        onOpenScannerModal={() => {}}
       />
 
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', to: '/' },
-          { label: 'Cultivos', to: '/cultivos' },
-          ...(cultivoId
-            ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }]
-            : []),
-          { label: 'Nova Planta' },
+          { label: t('growsPage.breadcrumb.dashboard'), to: '/' },
+          { label: t('growsPage.breadcrumb.grows') },
         ]}
-        sx={{ px: { xs: 1, sm: 0 }, mb: 2 }}
+        className="px-1 sm:px-0 mb-2"
       />
 
-      <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
-        <Typography
-          variant="h5"
-          color="primary"
-          fontWeight="bold"
-          textAlign="center"
-          mb={3}
-        >
-          Adicionar Nova Planta
-        </Typography>
-        <PlantaForm onSubmit={handlePlantaSubmit} loading={saving} />
-      </Paper>
+      <Typography variant="h4" color="primary" fontWeight="bold">
+        {t('growsPage.title')}
+      </Typography>
+
+      <Box mt={3}>
+        {grows.length ? (
+          <List>
+            {grows.map(g => (
+              <ListItem key={g.id} sx={{ p: 0, mb: 1 }}>
+                <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
+                  <Link to={`/grow/${g.id}`} style={{ textDecoration: 'none' }}>
+                    <Typography fontWeight="bold" color="text.primary">
+                      {g.name}
+                    </Typography>
+                    {g.location && (
+                      <Typography variant="body2" color="text.secondary">
+                        {g.location}
+                      </Typography>
+                    )}
+                    {g.capacity && (
+                      <Typography variant="body2" color="text.secondary">
+                        {t('growsPage.capacity')}: {g.capacity}
+                      </Typography>
+                    )}
+                  </Link>
+                </Paper>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography color="text.secondary" textAlign="center" py={4}>
+            {t('growsPage.no_grows')}
+            <br />
+            <Link to="/novo-grow" style={{ textDecoration: 'underline', color: 'green' }}>
+              {t('growsPage.create_first')}
+            </Link>
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 }

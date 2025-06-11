@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Grow } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import {
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+} from '@mui/material';
 import Header from '../components/Header';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
-import useToast from '../hooks/useToast';
 import Loader from '../components/Loader';
-import { Box, Typography, Paper, List, ListItem } from '@mui/material';
+import Button from '../components/Button';
+import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import PlusIcon from '../components/icons/PlusIcon';
+import useToast from '../hooks/useToast';
+import { Grow } from '../types';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, showToast] = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -22,13 +33,13 @@ export default function GrowsPage() {
         setGrows(data);
       } catch (e) {
         console.error('Erro ao buscar grows', e);
-        showToast({ message: 'Erro ao carregar grows', type: 'error' });
+        showToast({ message: t('growsPage.error_load'), type: 'error' });
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, [showToast]);
+  }, [showToast, t]);
 
   if (loading) {
     return (
@@ -40,79 +51,7 @@ export default function GrowsPage() {
         minHeight="100%"
         p={6}
       >
-        <Loader message="Carregando estufas..." size="md" />
+        <Loader message={t('growsPage.loading')} size="md" />
       </Box>
     );
   }
-
-  return (
-    <Box
-      maxWidth="lg"
-      mx="auto"
-      width="100%"
-      minHeight="100%"
-      display="flex"
-      flexDirection="column"
-      gap={2}
-      bgcolor="background.paper"
-      p={{ xs: 2, sm: 4 }}
-    >
-      {toast && <Toast message={toast.message} type={toast.type} />}
-
-      <Header
-        title="Grows"
-        onOpenSidebar={() => {}}
-        onOpenAddModal={() => navigate('/novo-grow')}
-        onOpenScannerModal={() => {}}
-        showBack
-        onBack={() => navigate(-1)}
-      />
-
-      <Breadcrumbs
-        items={[
-          { label: 'Dashboard', to: '/' },
-          { label: 'Grows' },
-        ]}
-        className="px-1 sm:px-0 mb-2"
-      />
-
-      <Typography variant="h4" color="primary" fontWeight="bold">
-        Meus Grows
-      </Typography>
-
-      <Box mt={3}>
-        {grows.length ? (
-          <List>
-            {grows.map(g => (
-              <ListItem key={g.id} sx={{ p: 0, mb: 1 }}>
-                <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
-                  <Link to={`/grow/${g.id}`} style={{ textDecoration: 'none' }}>
-                    <Typography fontWeight="bold" color="text.primary">
-                      {g.name}
-                    </Typography>
-                    {g.location && (
-                      <Typography variant="body2" color="text.secondary">
-                        {g.location}
-                      </Typography>
-                    )}
-                    {g.capacity && (
-                      <Typography variant="body2" color="text.secondary">
-                        Capacidade: {g.capacity}
-                      </Typography>
-                    )}
-                  </Link>
-                </Paper>
-              </ListItem>
-            ))}
-          </List>
-        ) : (
-          <Typography color="text.secondary" textAlign="center" py={4}>
-            Nenhum grow cadastrado ainda.
-            <br />
-            <Link to="/novo-grow">Crie sua primeira estufa</Link>
-          </Typography>
-        )}
-      </Box>
-    </Box>
-  );
-}

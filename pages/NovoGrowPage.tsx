@@ -6,13 +6,13 @@ import {
   Typography,
   TextField,
   IconButton,
-  Breadcrumbs as MUIBreadcrumbs,
 } from '@mui/material';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { useTranslation } from 'react-i18next';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
@@ -21,6 +21,7 @@ export default function NovoGrowPage() {
   const [saving, setSaving] = useState(false);
   const [toast, showToast] = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,16 +34,10 @@ export default function NovoGrowPage() {
         location: location || undefined,
         capacity: capacity === '' ? undefined : capacity,
       });
-      showToast({
-        message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.',
-        type: 'success',
-      });
+      showToast({ message: t('novoGrowPage.success'), type: 'success' });
       setTimeout(() => navigate(`/novo-cultivo?growId=${newGrow.id}`), 1500);
     } catch (err: any) {
-      showToast({
-        message: 'Erro ao criar grow: ' + (err.message || err),
-        type: 'error',
-      });
+      showToast({ message: t('novoGrowPage.error', { error: err.message || err }), type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -74,58 +69,44 @@ export default function NovoGrowPage() {
         mb={2}
         sx={{ backdropFilter: 'blur(4px)', bgcolor: 'background.paper' }}
       >
-        <IconButton onClick={() => navigate(-1)} aria-label="Voltar" color="primary">
-          <ArrowLeftIcon className="w-7 h-7" />
+        <IconButton onClick={() => navigate(-1)} aria-label={t('novoGrowPage.back')} color="primary">
+          <ArrowLeftIcon />
         </IconButton>
         <Breadcrumbs
           items={[
-            { label: 'Dashboard', to: '/' },
-            { label: 'Grows', to: '/grows' },
-            { label: 'Novo Grow' },
+            { label: t('sidebar.dashboard'), to: '/' },
+            { label: t('sidebar.grows'), to: '/grows' },
+            { label: t('novoGrowPage.title') },
           ]}
         />
       </Box>
 
       <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }} variant="outlined">
-        <Typography
-          variant="h5"
-          color="primary"
-          fontWeight="bold"
-          textAlign="center"
-          mb={3}
-        >
-          Novo Grow
+        <Typography variant="h5" textAlign="center" mb={3}>
+          {t('novoGrowPage.title')}
         </Typography>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          display="flex"
-          flexDirection="column"
-          gap={2}
-        >
+        <Box component="form" onSubmit={handleSubmit} display="flex" flexDirection="column" gap={2}>
           <TextField
             id="growName"
-            label="Nome do Grow"
+            label={t('novoGrowPage.name')}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             required
             fullWidth
           />
           <TextField
             id="growLocation"
-            label="Localização (opcional)"
+            label={t('novoGrowPage.location')}
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={e => setLocation(e.target.value)}
             fullWidth
           />
           <TextField
             id="growCapacity"
-            label="Capacidade (opcional)"
+            label={t('novoGrowPage.capacity')}
             type="number"
             value={capacity}
-            onChange={(e) =>
-              setCapacity(e.target.value === '' ? '' : parseInt(e.target.value))
-            }
+            onChange={e => setCapacity(e.target.value === '' ? '' : parseInt(e.target.value))}
             inputProps={{ min: 0 }}
             fullWidth
           />
@@ -137,7 +118,7 @@ export default function NovoGrowPage() {
               loading={saving}
               disabled={!name}
             >
-              Salvar Grow
+              {t('novoGrowPage.save')}
             </Button>
           </Box>
         </Box>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { usePlantContext } from '../contexts/PlantContext';
+import { useTranslation } from 'react-i18next';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
@@ -21,12 +22,11 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-// ArrowLeftIcon is not used in the provided JSX, so commenting out for now.
-// import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 
 const AllPlantsPage: React.FC = () => {
   const { plants, isLoading, error, updatePlantDetails, refreshPlants } = usePlantContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [selectionMode, setSelectionMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -40,7 +40,6 @@ const AllPlantsPage: React.FC = () => {
       import('../services/cultivoService').then(m => m.getCultivos().then(setCultivos).catch(() => setCultivos([])));
     }
   }, [selectionMode]);
-
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -56,12 +55,12 @@ const AllPlantsPage: React.FC = () => {
     try {
       await Promise.all(Array.from(selectedIds).map(id => updatePlantDetails(id, { cultivoId: selectedCultivo })));
       await refreshPlants();
-      showToast({ message: 'Plantas movidas com sucesso!', type: 'success' });
+      showToast({ message: t('allPlantsPage.move_success'), type: 'success' });
       setSelectionMode(false);
       setSelectedIds(new Set());
       setSelectedCultivo('');
     } catch (err: any) {
-      showToast({ message: 'Erro ao mover plantas: ' + (err.message || err), type: 'error' });
+      showToast({ message: t('allPlantsPage.move_error') + (err.message || err), type: 'error' });
     } finally {
       setMoving(false);
     }
@@ -73,7 +72,7 @@ const AllPlantsPage: React.FC = () => {
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         <Box component="main" sx={{ flexGrow: 1 }}>
           <Header
-            title="Todas as Plantas"
+            title={t('allPlantsPage.title')}
             onOpenSidebar={() => setIsSidebarOpen(true)}
             onOpenAddModal={() => navigate('/nova-planta')}
             onOpenScannerModal={() => navigate('/scanner')}
@@ -84,20 +83,20 @@ const AllPlantsPage: React.FC = () => {
             <Box display="flex" alignItems="center" mb={2}>
               <Breadcrumbs
                 items={[
-                  { label: 'Dashboard', to: '/' },
-                  { label: 'Todas as Plantas' },
+                  { label: t('sidebar.dashboard'), to: '/' },
+                  { label: t('allPlantsPage.title') },
                 ]}
               />
               <Box sx={{ flexGrow: 1 }} />
               {!selectionMode && plants.length > 0 && (
                 <Button variant="secondary" onClick={() => setSelectionMode(true)}>
-                  Mover Plantas
+                  {t('allPlantsPage.move_plants')}
                 </Button>
               )}
             </Box>
             {selectionMode && (
               <Typography variant="body2" color="text.secondary" mb={2}>
-                {selectedIds.size} selecionada(s). Toque nas plantas para selecionar.
+                {t('allPlantsPage.selection', { count: selectedIds.size })}
               </Typography>
             )}
             {isLoading ? (
@@ -110,13 +109,13 @@ const AllPlantsPage: React.FC = () => {
               </Paper>
             ) : plants.length === 0 ? (
               <Paper sx={{ p: 3, textAlign: 'center' }}>
-                <Typography>Nenhuma planta cadastrada ainda.</Typography>
+                <Typography>{t('allPlantsPage.no_plants')}</Typography>
                 <Button
                   variant="primary"
                   sx={{ mt: 2 }}
                   onClick={() => navigate('/nova-planta')}
                 >
-                  Adicionar Nova Planta
+                  {t('allPlantsPage.add_new_plant')}
                 </Button>
               </Paper>
             ) : (
@@ -140,14 +139,14 @@ const AllPlantsPage: React.FC = () => {
       {selectionMode && (
         <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, display: 'flex', gap: 2 }} elevation={3}>
           <FormControl fullWidth size="small">
-            <InputLabel id="cultivo-select-label">Escolha o cultivo</InputLabel>
+            <InputLabel id="cultivo-select-label">{t('allPlantsPage.choose_cultivo')}</InputLabel>
             <Select
               labelId="cultivo-select-label"
               value={selectedCultivo}
-              label="Escolha o cultivo"
+              label={t('allPlantsPage.choose_cultivo')}
               onChange={e => setSelectedCultivo(e.target.value)}
             >
-              <MenuItem value="">Escolha o cultivo</MenuItem>
+              <MenuItem value="">{t('allPlantsPage.choose_cultivo')}</MenuItem>
               {cultivos.map(c => (
                 <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
               ))}
@@ -160,9 +159,9 @@ const AllPlantsPage: React.FC = () => {
             disabled={moving || selectedIds.size === 0 || !selectedCultivo}
             loading={moving}
           >
-            Mover
+            {t('allPlantsPage.move')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>Cancelar</Button>
+          <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }}>{t('allPlantsPage.cancel')}</Button>
         </Paper>
       )}
       {toast && <Toast toast={toast} />}

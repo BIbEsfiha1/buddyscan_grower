@@ -98,5 +98,86 @@
     "no_cultivos": "Nenhum cultivo cadastrado ainda.",
     "create_first": "Crie seu primeiro cultivo",
     "new_cultivo": "Novo Cultivo"
+  },
+  "allPlantsPage": {
+    "title": "Todas as Plantas",
+    "move_plants": "Mover Plantas",
+    "selection": "{{count}} selecionada(s). Toque nas plantas para selecionar.",
+    "no_plants": "Nenhuma planta cadastrada ainda.",
+    "add_new_plant": "Adicionar Nova Planta",
+    "choose_cultivo": "Escolha o cultivo",
+    "move": "Mover",
+    "cancel": "Cancelar",
+    "move_success": "Plantas movidas com sucesso!",
+    "move_error": "Erro ao mover plantas:"
+  },
+  "growsPage": {
+    "title": "Meus Grows",
+    "loading": "Carregando estufas...",
+    "no_grows": "Nenhum grow cadastrado ainda.",
+    "create_first": "Crie sua primeira estufa",
+    "new_grow": "Novo Grow"
+  },
+  "growDetailPage": {
+    "not_found": "Espaço não encontrado",
+    "view_qr": "Ver QR Code",
+    "select_cultivo": "Selecionar Plantio",
+    "mass_action": "Registrar Ação em Massa",
+    "no_cultivos": "Nenhum plantio neste espaço.",
+    "mass_title": "Registro em Massa"
+  },
+  "cultivoDetailPage": {
+    "loading": "Carregando cultivo...",
+    "try_again": "Tentar novamente",
+    "not_found": "Cultivo não encontrado.",
+    "back_to_list": "Voltar para cultivos"
+  },
+  "novoGrowPage": {
+    "title": "Novo Grow",
+    "name": "Nome do Grow",
+    "location": "Localização (opcional)",
+    "capacity": "Capacidade (opcional)",
+    "save": "Salvar Grow"
+  },
+  "cultivoEtiquetasPage": {
+    "title": "Etiquetas QR do Cultivo",
+    "print": "Imprimir"
+  },
+  "novoCultivoPage": {
+    "title": "Novo Cultivo",
+    "info_section": "Informações do Cultivo",
+    "plants_section": "Plantas",
+    "cultivo_name": "Nome do Cultivo",
+    "start_date": "Data de Início",
+    "grow": "Grow / Estufa",
+    "substrate": "Substrato",
+    "notes": "Notas (opcional)",
+    "add_plant": "+ Adicionar Planta",
+    "remove": "Remover",
+    "save": "Salvar Cultivo"
+  },
+  "novaPlantaPage": {
+    "title": "Nova Planta",
+    "add_new_plant": "Adicionar Nova Planta",
+    "error_no_cultivo": "ID do cultivo não fornecido"
+  },
+  "plantDetailPage": {
+    "title": "Detalhes da Planta",
+    "daily_checklist": "Checklist Diário",
+    "diary": "Diário da Planta",
+    "new_entry": "Nova Entrada",
+    "download_qr": "Baixar QR Code",
+    "remove_disease": "Remover Planta por Doença",
+    "confirm_remove": "Tem certeza que deseja remover esta planta por doença?",
+    "reason_optional": "Motivo ou observação (opcional)"
+  },
+  "plantStatisticsPage": {
+    "title": "Estatísticas de {{name}}",
+    "back": "Voltar aos Detalhes",
+    "more_details": "Mais Detalhes da Planta"
+  },
+  "gardenStatisticsPage": {
+    "title": "Estatísticas do Jardim",
+    "back_dashboard": "Voltar ao Dashboard"
   }
 }

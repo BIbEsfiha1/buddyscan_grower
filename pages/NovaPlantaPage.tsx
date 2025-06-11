@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import PlantaForm from '../components/PlantaForm';
 import { usePlantContext } from '../contexts/PlantContext';
@@ -65,33 +66,23 @@ export default function NovaPlantaPage() {
   return (
     <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {toast && <Toast message={toast.message} type={toast.type} />}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
-          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <button onClick={() => navigate('/')} className="hover:underline">Dashboard</button>
-          <span>&gt;</span>
-          <button onClick={() => navigate('/cultivos')} className="hover:underline">Cultivos</button>
-          {cultivoId && (
-            <>
-              <span>&gt;</span>
-              <button 
-                onClick={() => navigate(`/cultivo/${cultivoId}`)} 
-                className="hover:underline"
-              >
-                Cultivo
-              </button>
-            </>
-          )}
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Nova Planta</span>
-        </nav>
-      </div>
+      <Header
+        title="Nova Planta"
+        onOpenSidebar={() => {}}
+        onOpenAddModal={() => {}}
+        onOpenScannerModal={() => {}}
+        showBack
+        onBack={() => navigate(-1)}
+      />
+      <Breadcrumbs
+        items={[
+          { label: 'Dashboard', to: '/' },
+          { label: 'Cultivos', to: '/cultivos' },
+          ...(cultivoId ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }] : []),
+          { label: 'Nova Planta' },
+        ]}
+        className="px-1 sm:px-0 mb-2"
+      />
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">
           Adicionar Nova Planta

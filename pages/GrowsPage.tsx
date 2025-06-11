@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Grow } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
-import PlusIcon from '../components/icons/PlusIcon';
+import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Toast from '../components/Toast';
 import Loader from "../components/Loader";
 
@@ -52,26 +51,21 @@ export default function GrowsPage() {
   return (
     <div className="max-w-lg mx-auto w-full min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {toast && <Toast message={toast.message} type={toast.type} />}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
-          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Grows</span>
-        </nav>
-        <div className="flex-1" />
-        <Link to="/novo-grow">
-          <Button variant="primary" size="icon" className="shadow" title="Novo Grow">
-            <PlusIcon className="w-5 h-5" />
-          </Button>
-        </Link>
-      </div>
+      <Header
+        title="Grows"
+        onOpenSidebar={() => {}}
+        onOpenAddModal={() => navigate('/novo-grow')}
+        onOpenScannerModal={() => {}}
+        showBack
+        onBack={() => navigate(-1)}
+      />
+      <Breadcrumbs
+        items={[
+          { label: 'Dashboard', to: '/' },
+          { label: 'Grows' },
+        ]}
+        className="px-1 sm:px-0 mb-2"
+      />
 
       <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">Meus Grows</h1>
 

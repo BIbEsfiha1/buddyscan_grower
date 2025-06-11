@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { usePlantContext } from '../contexts/PlantContext';
 import PlantCard from '../components/PlantCard';
 import Loader from '../components/Loader';
 import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
@@ -86,15 +87,12 @@ const AllPlantsPage: React.FC = () => {
           />
           <Container sx={{ py: 4 }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary">Dashboard</Typography>
-              </Link>
-              <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>
-                &gt;
-              </Typography>
-              <Typography variant="body2" fontWeight="bold">
-                Todas as Plantas
-              </Typography>
+              <Breadcrumbs
+                items={[
+                  { label: 'Dashboard', to: '/' },
+                  { label: 'Todas as Plantas' },
+                ]}
+              />
               <Box sx={{ flexGrow: 1 }} />
               {!selectionMode && plants.length > 0 && (
                 <Button variant="secondary" onClick={() => setSelectionMode(true)}>

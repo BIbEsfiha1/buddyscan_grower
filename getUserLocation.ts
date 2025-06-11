@@ -12,7 +12,8 @@ export async function getUserLocation(user?: any): Promise<{lat: number, lon: nu
     if (city) {
       // Busca coordenadas da cidade via OpenWeatherMap
       try {
-        const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=12d976552e935e377e75b111d5f6e06a`);
+        const apiKey = process.env.OPENWEATHER_API_KEY;
+        const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${apiKey}`);
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           return { lat: data[0].lat, lon: data[0].lon };

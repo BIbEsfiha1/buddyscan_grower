@@ -11,7 +11,7 @@ This project uses [Material UI](https://mui.com/) for its base styling along wit
 
 1. Install dependencies:
    `npm install`
-2. Copy `.env.example` to `.env.local` and set your secrets like `GEMINI_API_KEY`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+2. Copy `.env.example` to `.env.local` and set your secrets like `GEMINI_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `OPENWEATHER_API_KEY`.
 3. Run the app:
    `npm run dev`
 

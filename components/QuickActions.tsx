@@ -25,7 +25,7 @@ const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }
     onClick={onClick}
     sx={{
       width: 72,
-      height: 72,
+      minHeight: 72,
       borderRadius: '50%',
       flexDirection: 'column',
       alignItems: 'center',
@@ -37,7 +37,15 @@ const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }
     }}
   >
     {icon}
-    <Typography variant="caption" sx={{ mt: 0.5 }}>
+    <Typography
+      variant="caption"
+      display="block"
+      sx={{
+        mt: 0.5,
+        textAlign: 'center',
+        wordBreak: 'break-word',
+      }}
+    >
       {title}
     </Typography>
   </Button>

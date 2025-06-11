@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,24 +15,16 @@ import QuickActions from '../components/QuickActions';
 import PlantCard from '../components/PlantCard';
 import PlantCardSkeleton from '../components/PlantCardSkeleton';
 import Modal from '../components/Modal';
-import Button from '../components/Button';
-import ImageUpload from '../components/ImageUpload';
+import AddPlantModal from '../components/AddPlantModal';
 import QrCodeScanner, { ScanResult } from '../components/QrCodeScanner';
 import { usePlantContext } from '../contexts/PlantContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Plant, PlantStage, PlantHealthStatus, PlantOperationalStatus, NewPlantData, DiaryEntry } from '../types';
-import {
-  PLANT_STAGES_OPTIONS,
-  PLANT_HEALTH_STATUS_OPTIONS,
-  PLANT_OPERATIONAL_STATUS_OPTIONS,
-  CULTIVATION_TYPE_OPTIONS,
-  SUBSTRATE_OPTIONS,
-} from '../constants';
+import { Plant, DiaryEntry } from '../types';
 import { fetchCurrentTemperature } from '../weather';
 import { getUserLocation } from '../getUserLocation';
 
 const DashboardPage: React.FC = () => {
-  const { plants, isLoading, error, addPlant, fetchDiaryEntries } = usePlantContext();
+  const { plants, isLoading, error, fetchDiaryEntries } = usePlantContext();
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -46,24 +38,6 @@ const DashboardPage: React.FC = () => {
   const [recentEntries, setRecentEntries] = useState<DiaryEntry[]>([]);
   const [lastTempUpdate, setLastTempUpdate] = useState(0);
 
-  const initialFormState: NewPlantData = {
-    name: '',
-    strain: '',
-    birthDate: new Date().toISOString().split('T')[0],
-    currentStage: PlantStage.SEEDLING,
-    healthStatus: PlantHealthStatus.HEALTHY,
-    operationalStatus: PlantOperationalStatus.ACTIVE,
-    cultivationType: CULTIVATION_TYPE_OPTIONS[0].value as Plant['cultivationType'],
-    substrate: '',
-    estimatedHarvestDate: '',
-    notes: '',
-    imageUrl: undefined,
-  };
-  const [newPlantForm, setNewPlantForm] = useState<NewPlantData>(initialFormState);
-  const [, setNewPlantImageFile] = useState<File | null>(null);
-  const [newPlantImageBase64, setNewPlantImageBase64] = useState<string | null>(null);
-  const [isAddingPlant, setIsAddingPlant] = useState(false);
-  const [addPlantError, setAddPlantError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStats() {
@@ -106,53 +80,12 @@ const DashboardPage: React.FC = () => {
     (p.strain && p.strain.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewPlantForm(prev => ({ ...prev, [name]: value }));
+  const handlePlantAdded = (plant: Plant) => {
+    setIsAddModalOpen(false);
+    setTimeout(() => navigate(`/plant/${plant.id}`), 100);
   };
 
-  const handleImageUploaded = (file: File, base64: string) => {
-    setNewPlantImageFile(file);
-    setNewPlantImageBase64(base64);
-  };
 
-  const handleImageRemoved = () => {
-    setNewPlantImageFile(null);
-    setNewPlantImageBase64(null);
-  };
-
-  const handleAddPlant = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setAddPlantError(null);
-    if (!newPlantForm.name || !newPlantForm.strain || !newPlantForm.birthDate) {
-      setAddPlantError("Campos marcados com * são obrigatórios.");
-      return;
-    }
-    setIsAddingPlant(true);
-    const plantDataToSave: NewPlantData = {
-      ...newPlantForm,
-      imageUrl: newPlantImageBase64 || undefined,
-      substrate: newPlantForm.substrate || undefined,
-      estimatedHarvestDate: newPlantForm.estimatedHarvestDate || undefined,
-      notes: newPlantForm.notes || undefined,
-      cultivationType: newPlantForm.cultivationType || undefined,
-    };
-    try {
-      const added = await addPlant(plantDataToSave);
-      if (added) {
-        setIsAddModalOpen(false);
-        setNewPlantForm(initialFormState);
-        setNewPlantImageFile(null);
-        setNewPlantImageBase64(null);
-        setTimeout(() => navigate(`/plant/${added.id}`), 100);
-      } else {
-        setAddPlantError('Erro ao adicionar planta.');
-      }
-    } catch (err: any) {
-      setAddPlantError(err?.message || 'Erro inesperado');
-    }
-    setIsAddingPlant(false);
-  };
 
   const handleScanSuccess = (result: ScanResult) => {
     if (result.type === 'plant' && result.plant) {
@@ -293,87 +226,11 @@ const DashboardPage: React.FC = () => {
         </Container>
       </Box>
 
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('dashboard.add_modal_title')} maxWidth="xl">
-        <form onSubmit={handleAddPlant} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-0.5">{t('form.name')} *</label>
-              <input type="text" id="name" name="name" value={newPlantForm.name} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div>
-              <label htmlFor="strain" className="block text-sm font-medium mb-0.5">{t('form.strain')} *</label>
-              <input type="text" id="strain" name="strain" value={newPlantForm.strain} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div>
-              <label htmlFor="birthDate" className="block text-sm font-medium mb-0.5">{t('form.birth_date')} *</label>
-              <input type="date" id="birthDate" name="birthDate" value={newPlantForm.birthDate} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div>
-              <label htmlFor="currentStage" className="block text-sm font-medium mb-0.5">{t('form.current_stage')} *</label>
-              <select id="currentStage" name="currentStage" value={newPlantForm.currentStage} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
-                {PLANT_STAGES_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="healthStatus" className="block text-sm font-medium mb-0.5">{t('form.health_status')} *</label>
-              <select id="healthStatus" name="healthStatus" value={newPlantForm.healthStatus} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
-                {PLANT_HEALTH_STATUS_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="operationalStatus" className="block text-sm font-medium mb-0.5">{t('form.operational_status')} *</label>
-              <select id="operationalStatus" name="operationalStatus" value={newPlantForm.operationalStatus} onChange={handleInputChange} required className="w-full px-3 py-2 border rounded-md">
-                {PLANT_OPERATIONAL_STATUS_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="cultivationType" className="block text-sm font-medium mb-0.5">{t('form.cultivation_type')}</label>
-              <select id="cultivationType" name="cultivationType" value={newPlantForm.cultivationType || ''} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md">
-                <option value="">{t('form.select_option')}</option>
-                {CULTIVATION_TYPE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="substrate" className="block text-sm font-medium mb-0.5">{t('form.substrate')}</label>
-              <select id="substrate" name="substrate" value={newPlantForm.substrate} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md">
-                {SUBSTRATE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="estimatedHarvestDate" className="block text-sm font-medium mb-0.5">{t('form.estimated_harvest')}</label>
-              <input type="date" id="estimatedHarvestDate" name="estimatedHarvestDate" value={newPlantForm.estimatedHarvestDate || ''} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div className="md:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium mb-0.5">{t('form.notes')}</label>
-              <textarea id="notes" name="notes" value={newPlantForm.notes || ''} onChange={handleInputChange} rows={3} className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div className="md:col-span-2">
-              <ImageUpload onImageUploaded={handleImageUploaded} onImageRemoved={handleImageRemoved} label={t('form.main_photo')} />
-            </div>
-          </div>
-          {addPlantError && (
-            <Typography color="error">{addPlantError}</Typography>
-          )}
-          <div className="flex justify-end pt-4 space-x-3">
-            <Button type="button" variant="secondary" size="md" onClick={() => setIsAddModalOpen(false)}>
-              {t('actions.cancel')}
-            </Button>
-            <Button type="submit" variant="primary" size="md" loading={isAddingPlant}>
-              {t('actions.save')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <AddPlantModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handlePlantAdded}
+      />
 
       <Modal isOpen={isScannerModalOpen} onClose={() => setIsScannerModalOpen(false)} title={t('header.scan_qr')} maxWidth="sm">
         {scannerError && (

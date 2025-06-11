@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
-import { Box, Typography, TextField, Breadcrumbs, IconButton, Paper } from '@mui/material';
+import useToast from '../hooks/useToast';
+import {
+  Box,
+  Typography,
+  TextField,
+  Breadcrumbs,
+  IconButton,
+  Paper,
+} from '@mui/material';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [capacity, setCapacity] = useState<number | ''>('');
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,19 +27,40 @@ export default function NovoGrowPage() {
     setSaving(true);
     try {
       const { addGrow } = await import('../services/growService');
-      const newGrow = await addGrow({ name, location: location || undefined, capacity: capacity === '' ? undefined : capacity });
-      setToast({ message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.', type: 'success' });
+      const newGrow = await addGrow({
+        name,
+        location: location || undefined,
+        capacity: capacity === '' ? undefined : capacity,
+      });
+      showToast({
+        message: 'Grow criado com sucesso! Cadastre seu primeiro cultivo.',
+        type: 'success',
+      });
       setTimeout(() => navigate(`/novo-cultivo?growId=${newGrow.id}`), 1500);
     } catch (err: any) {
-      setToast({ message: 'Erro ao criar grow: ' + (err.message || err), type: 'error' });
+      showToast({
+        message: 'Erro ao criar grow: ' + (err.message || err),
+        type: 'error',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Box maxWidth="sm" mx="auto" width="100%" minHeight="100%" display="flex" flexDirection="column" gap={2} p={{ xs: 2, sm: 4 }}>
+    <Box
+      maxWidth="sm"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      p={{ xs: 2, sm: 4 }}
+      bgcolor="background.paper"
+    >
       {toast && <Toast message={toast.message} type={toast.type} />}
+
       <Box
         position="sticky"
         top={0}
@@ -60,7 +82,8 @@ export default function NovoGrowPage() {
           <Typography color="text.primary">Novo Grow</Typography>
         </Breadcrumbs>
       </Box>
-      <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
+
+      <Paper sx={{ p: { xs: 2, sm: 3 }, flex: 1 }} variant="outlined">
         <Typography variant="h5" color="primary" fontWeight="bold" textAlign="center" mb={3}>
           Novo Grow
         </Typography>
@@ -69,7 +92,7 @@ export default function NovoGrowPage() {
             id="growName"
             label="Nome do Grow"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             required
             fullWidth
           />
@@ -77,7 +100,7 @@ export default function NovoGrowPage() {
             id="growLocation"
             label="Localização (opcional)"
             value={location}
-            onChange={e => setLocation(e.target.value)}
+            onChange={(e) => setLocation(e.target.value)}
             fullWidth
           />
           <TextField
@@ -85,7 +108,9 @@ export default function NovoGrowPage() {
             label="Capacidade (opcional)"
             type="number"
             value={capacity}
-            onChange={e => setCapacity(e.target.value === '' ? '' : parseInt(e.target.value))}
+            onChange={(e) =>
+              setCapacity(e.target.value === '' ? '' : parseInt(e.target.value))
+            }
             inputProps={{ min: 0 }}
             fullWidth
           />

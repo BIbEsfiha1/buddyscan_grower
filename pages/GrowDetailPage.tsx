@@ -6,6 +6,7 @@ import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/Button';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import { addMassDiaryEntry } from '../services/plantService';
@@ -26,10 +27,11 @@ export default function GrowDetailPage() {
   const [grow, setGrow] = useState<Grow | null>(null);
   const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedCultivo, setSelectedCultivo] = useState<Cultivo | null>(null);
   const [showMassModal, setShowMassModal] = useState(false);
+
   const [massNotes, setMassNotes] = useState('');
   const [massWateringVolume, setMassWateringVolume] = useState('');
   const [massWateringType, setMassWateringType] = useState('');
@@ -47,8 +49,8 @@ export default function GrowDetailPage() {
         const [growList, cultivosList] = await Promise.all([getGrows(), getCultivos()]);
         setGrow(growList.find(g => g.id === growId) || null);
         setCultivos(cultivosList.filter(c => c.growId === growId));
-      } catch (err) {
-        setToast({ message: 'Erro ao carregar dados', type: 'error' });
+      } catch {
+        showToast({ message: 'Erro ao carregar dados', type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -77,15 +79,17 @@ export default function GrowDetailPage() {
         wateringVolume: massWateringVolume ? Number(massWateringVolume) : undefined,
         wateringType: massWateringType || undefined,
         fertilizationType: massFertilizationType || undefined,
-        fertilizationConcentration: massFertilizationConcentration ? Number(massFertilizationConcentration) : undefined,
+        fertilizationConcentration: massFertilizationConcentration
+          ? Number(massFertilizationConcentration)
+          : undefined,
         photoperiod: massPhotoperiod || undefined,
         sprayProduct: massSprayProduct || undefined,
         sprayAmount: massSprayAmount ? Number(massSprayAmount) : undefined,
         stage: PlantStage.VEGETATIVE,
       });
-      setToast({ message: 'Ação registrada em massa com sucesso', type: 'success' });
+      showToast({ message: 'Ação registrada em massa com sucesso', type: 'success' });
     } catch (e: any) {
-      setToast({ message: e.message || 'Erro ao registrar ação em massa', type: 'error' });
+      showToast({ message: e.message || 'Erro ao registrar ação em massa', type: 'error' });
     } finally {
       setShowMassModal(false);
     }
@@ -93,7 +97,14 @@ export default function GrowDetailPage() {
 
   if (loading) {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
         <Loader message="Carregando espaço..." size="md" />
       </Box>
     );
@@ -101,15 +112,33 @@ export default function GrowDetailPage() {
 
   if (!grow) {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
         Espaço não encontrado
       </Box>
     );
   }
 
   return (
-    <Box maxWidth="lg" mx="auto" width="100%" minHeight="100%" display="flex" flexDirection="column" gap={2} bgcolor="background.paper" p={{ xs: 2, sm: 4 }}>
+    <Box
+      maxWidth="lg"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
+    >
       {toast && <Toast message={toast.message} type={toast.type} />}
+
       <Box
         position="sticky"
         top={0}
@@ -138,12 +167,19 @@ export default function GrowDetailPage() {
         </Link>
       </Box>
 
-      <Typography variant="h5" color="primary" fontWeight="bold" mt={2} mb={1}>
+      <Typography variant="h5" color="primary" fontWeight="bold">
         {grow.name}
       </Typography>
       {grow.location && <Typography variant="body2" color="text.secondary">{grow.location}</Typography>}
       {grow.capacity && <Typography variant="body2" color="text.secondary">Capacidade: {grow.capacity}</Typography>}
-      <Button variant="secondary" size="sm" onClick={() => setShowQrModal(true)} sx={{ mt: 1, width: 'max-content' }}>Ver QR Code</Button>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => setShowQrModal(true)}
+        sx={{ mt: 1, width: 'max-content' }}
+      >
+        Ver QR Code
+      </Button>
 
       <Box mt={3}>
         {cultivos.length ? (
@@ -151,7 +187,13 @@ export default function GrowDetailPage() {
             {cultivos.map(c => (
               <ListItem key={c.id} sx={{ p: 0, mb: 1 }}>
                 <Paper sx={{ p: 2, width: '100%' }} variant="outlined">
-                  <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" gap={2}>
+                  <Box
+                    display="flex"
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ sm: 'center' }}
+                    justifyContent="space-between"
+                    gap={2}
+                  >
                     <Box>
                       <Typography fontWeight="bold">{c.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -159,7 +201,7 @@ export default function GrowDetailPage() {
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
-                      <Link to={`/cultivo/${c.id}`}> 
+                      <Link to={`/cultivo/${c.id}`}>
                         <Button variant="primary" size="sm">Selecionar Plantio</Button>
                       </Link>
                       <Button variant="secondary" size="sm" onClick={() => openMassModal(c)}>
@@ -175,11 +217,11 @@ export default function GrowDetailPage() {
           <Typography color="text.secondary">Nenhum plantio neste espaço.</Typography>
         )}
       </Box>
-      {grow && (
-        <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code do Espaço">
-          <GrowQrCodeDisplay grow={grow} />
-        </Modal>
-      )}
+
+      <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code do Espaço">
+        <GrowQrCodeDisplay grow={grow} />
+      </Modal>
+
       {selectedCultivo && (
         <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
           <Box display="flex" flexDirection="column" gap={2} p={2}>
@@ -238,7 +280,19 @@ export default function GrowDetailPage() {
             />
             <Box display="flex" gap={1} mt={1}>
               <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
-              <Button variant="primary" onClick={handleMassRegister} disabled={!massNotes && !massWateringVolume && !massFertilizationType && !massPhotoperiod && !massSprayProduct}>Salvar</Button>
+              <Button
+                variant="primary"
+                onClick={handleMassRegister}
+                disabled={
+                  !massNotes &&
+                  !massWateringVolume &&
+                  !massFertilizationType &&
+                  !massPhotoperiod &&
+                  !massSprayProduct
+                }
+              >
+                Salvar
+              </Button>
             </Box>
           </Box>
         </Modal>

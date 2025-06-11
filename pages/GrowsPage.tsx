@@ -5,7 +5,8 @@ import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import Toast from '../components/Toast';
-import Loader from "../components/Loader";
+import useToast from '../hooks/useToast';
+import Loader from '../components/Loader';
 import {
   Box,
   Typography,
@@ -19,7 +20,7 @@ import {
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function GrowsPage() {
         setGrows(data);
       } catch (e) {
         console.error('Erro ao buscar grows', e);
+        showToast({ message: 'Erro ao carregar grows', type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -37,30 +39,35 @@ export default function GrowsPage() {
     fetchData();
   }, []);
 
-  const refresh = async () => {
-    const { getGrows } = await import('../services/growService');
-    const data = await getGrows();
-    setGrows(data);
-  };
-
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [toast]);
-
   if (loading) {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100%" p={6}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100%"
+        p={6}
+      >
         <Loader message="Carregando estufas..." size="md" />
       </Box>
     );
   }
 
   return (
-    <Box maxWidth="lg" mx="auto" width="100%" minHeight="100%" display="flex" flexDirection="column" gap={2} bgcolor="background.paper" p={{ xs: 2, sm: 4 }}>
+    <Box
+      maxWidth="lg"
+      mx="auto"
+      width="100%"
+      minHeight="100%"
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      bgcolor="background.paper"
+      p={{ xs: 2, sm: 4 }}
+    >
       {toast && <Toast message={toast.message} type={toast.type} />}
+
       <Box
         position="sticky"
         top={0}
@@ -89,7 +96,7 @@ export default function GrowsPage() {
         </Link>
       </Box>
 
-      <Typography variant="h4" color="primary" fontWeight="bold" mt={2} mb={2}>
+      <Typography variant="h4" color="primary" fontWeight="bold">
         Meus Grows
       </Typography>
 

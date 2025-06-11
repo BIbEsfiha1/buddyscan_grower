@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 import { SUBSTRATE_OPTIONS } from '../constants';
 import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
@@ -17,7 +18,7 @@ export default function NovoCultivoPage() {
   const [growId, setGrowId] = useState(initialGrowId);
   const [plants, setPlants] = useState<{ name: string; strain: string }[]>([{ name: '', strain: '' }]);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, showToast] = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,11 +69,11 @@ export default function NovoCultivoPage() {
       };
       await addCultivo(cultivoData);
       setSaving(false);
-      setToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
+      showToast({ message: 'Cultivo criado com sucesso!', type: 'success' });
       setTimeout(() => navigate('/cultivos'), 1800);
     } catch (err: any) {
       setSaving(false);
-      setToast({ message: 'Erro ao salvar cultivo: ' + (err.message || err), type: 'error' });
+      showToast({ message: 'Erro ao salvar cultivo: ' + (err.message || err), type: 'error' });
     }
   }
 
@@ -82,7 +83,7 @@ export default function NovoCultivoPage() {
   return (
     <div className="mx-auto w-full max-w-3xl lg:max-w-5xl min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900 p-2 sm:p-4">
       {/* Toast global */}
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       {/* Breadcrumbs e botão de voltar */}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md mb-2">

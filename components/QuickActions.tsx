@@ -25,15 +25,27 @@ const QuickAction: React.FC<QuickActionProps> = ({ title, icon, color, onClick }
     onClick={onClick}
     sx={{
       width: 72,
-      height: 72,
+      minHeight: 72,
       borderRadius: '50%',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      textTransform: 'none',
+      whiteSpace: 'normal',
+      lineHeight: 1,
+      p: 1
     }}
   >
     {icon}
-    <Typography variant="caption" sx={{ mt: 0.5 }}>
+    <Typography
+      variant="caption"
+      display="block"
+      sx={{
+        mt: 0.5,
+        textAlign: 'center',
+        wordBreak: 'break-word',
+      }}
+    >
       {title}
     </Typography>
   </Button>
@@ -59,13 +71,11 @@ const QuickActions: React.FC<QuickActionsProps> = ({
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: {
-          xs: 'repeat(3, 1fr)',
-          sm: 'repeat(5, 1fr)'
-        },
+        gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
         gap: 2,
         justifyItems: 'center',
-        maxWidth: 360,
+        width: '100%',
+        maxWidth: 500,
         mx: 'auto'
       }}
     >

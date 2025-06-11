@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Cultivo } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Box, Container, Grid, Paper, Typography } from '@mui/material';
+import { Cultivo } from '../types';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
 import LeafIcon from '../components/icons/LeafIcon';
-import Loader from "../components/Loader";
+import Loader from '../components/Loader';
 
 const CultivosPage: React.FC = () => {
   const { t } = useTranslation();
@@ -41,78 +42,96 @@ const CultivosPage: React.FC = () => {
     }
   }, [toast]);
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-full p-6">
-      <Loader message={t('cultivosPage.loading')} size="md" />
-    </div>
-  );
-  if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-full p-6">
-      <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
-      <span className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">{error}</span>
-      <Button variant="secondary" onClick={() => window.location.reload()}>{t('cultivosPage.try_again')}</Button>
-    </div>
-  );
+  if (loading)
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" p={3}>
+        <Loader message={t('cultivosPage.loading')} size="md" />
+      </Box>
+    );
+  if (error)
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" p={3}>
+        <LeafIcon className="w-12 h-12 text-red-400 mb-3" />
+        <Typography color="error" sx={{ mb: 2, fontWeight: 600 }}>{error}</Typography>
+        <Button variant="secondary" onClick={() => window.location.reload()}>
+          {t('cultivosPage.try_again')}
+        </Button>
+      </Box>
+    );
 
   const hasCultivos = cultivos.length > 0;
 
   return (
-    <div className="max-w-lg mx-auto w-full p-2 sm:p-4 min-h-full flex flex-col gap-3 bg-white dark:bg-slate-900">
-      {/* Toast global */}
+    <Container maxWidth="sm" sx={{ py: 2 }}>
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      {/* Breadcrumbs e botão de novo cultivo */}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 flex items-center gap-2 py-2 px-1 sm:px-0 -mx-2 sm:mx-0 backdrop-blur-md">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition focus:outline-none focus:ring-2 focus:ring-green-400"
-          aria-label="Voltar"
-        >
-          <ArrowLeftIcon className="w-7 h-7 text-green-700" />
-        </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">{t('sidebar.cultivos')}</span>
-        </nav>
-        <div className="flex-1" />
-        <Link to="/novo-cultivo">
-          <Button variant="primary" size="icon" className="shadow" title={t('cultivosPage.new_cultivo')}>
-            <span className="text-xl font-bold">+</span>
-          </Button>
+      <Box sx={{ position: 'sticky', top: 0, bgcolor: 'background.default', zIndex: 20, py: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
+          <ArrowLeftIcon className="w-6 h-6" />
+        </Button>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <Typography variant="body2" color="text.secondary">Dashboard</Typography>
         </Link>
-      </div>
+        <Typography variant="body2" color="text.secondary" sx={{ mx: 0.5 }}>
+          &gt;
+        </Typography>
+        <Typography variant="body2" fontWeight="bold" color="primary.main">
+          {t('sidebar.cultivos')}
+        </Typography>
+        <Box sx={{ flexGrow: 1 }} />
+        <Button variant="primary" size="icon" onClick={() => navigate('/novo-cultivo')} title={t('cultivosPage.new_cultivo')}>
+          <Typography component="span" sx={{ fontSize: 20, fontWeight: 'bold', lineHeight: 1 }}>+</Typography>
+        </Button>
+      </Box>
 
-      <h1 className="text-2xl font-extrabold text-green-700 dark:text-green-300 mt-4 mb-2">
+      <Typography variant="h5" fontWeight="bold" color="primary.main" sx={{ mt: 3, mb: 2 }}>
         {hasCultivos ? t('cultivosPage.title_with_count', { count: cultivos.length }) : t('cultivosPage.title')}
-      </h1>
+      </Typography>
 
-      {/* Lista de cultivos */}
-      <div className="mt-2">
-        {hasCultivos ? (
-          <div className="grid grid-cols-1 gap-3">
-            {cultivos.map((cultivo) => (
-              <Link to={`/cultivo/${cultivo.id}`} key={cultivo.id} className="block group">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl group-hover:shadow-green-300/40 dark:group-hover:shadow-green-500/30 transition-all duration-300 overflow-hidden hover:-translate-y-2 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-40 border border-gray-200 dark:border-slate-700 p-5 flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-lg text-slate-900 dark:text-slate-100 truncate">{cultivo.name}</span>
-                    {cultivo.finalizadoEm ? (
-                      <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs font-bold">{t('cultivosPage.finalizado')}</span>
-                    ) : null}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{t('cultivosPage.inicio')}: {new Date(cultivo.startDate).toLocaleDateString()}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-gray-400 dark:text-gray-500 text-center py-8">
-            {t('cultivosPage.no_cultivos')}<br />
-            <Link to="/novo-cultivo" className="underline text-green-700 dark:text-green-300">{t('cultivosPage.create_first')}</Link>
-          </div>
-        )}
-      </div>
-    </div>
+      {hasCultivos ? (
+        <Grid container spacing={2}>
+          {cultivos.map(cultivo => (
+            <Grid item xs={12} key={cultivo.id}>
+              <Paper
+                component={Link}
+                to={`/cultivo/${cultivo.id}`}
+                sx={{
+                  display: 'block',
+                  p: 2,
+                  textDecoration: 'none',
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 3,
+                  transition: 'transform 0.2s',
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 }
+                }}
+              >
+                <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                  <Typography variant="subtitle1" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {cultivo.name}
+                  </Typography>
+                  {cultivo.finalizadoEm && (
+                    <Typography variant="caption" color="success.main" sx={{ ml: 1 }}>
+                      {t('cultivosPage.finalizado')}
+                    </Typography>
+                  )}
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {t('cultivosPage.inicio')}: {new Date(cultivo.startDate).toLocaleDateString()}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography color="text.secondary">{t('cultivosPage.no_cultivos')}</Typography>
+          <Button variant="primary" sx={{ mt: 2 }} onClick={() => navigate('/novo-cultivo')}>
+            {t('cultivosPage.create_first')}
+          </Button>
+        </Paper>
+      )}
+    </Container>
   );
 };
 

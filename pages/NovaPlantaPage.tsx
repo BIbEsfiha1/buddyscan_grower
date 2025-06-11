@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
 import PlantaForm from '../components/PlantaForm';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { usePlantContext } from '../contexts/PlantContext';
 import { PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
@@ -73,24 +74,14 @@ export default function NovaPlantaPage() {
         >
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
         </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <button onClick={() => navigate('/')} className="hover:underline">Dashboard</button>
-          <span>&gt;</span>
-          <button onClick={() => navigate('/cultivos')} className="hover:underline">Cultivos</button>
-          {cultivoId && (
-            <>
-              <span>&gt;</span>
-              <button 
-                onClick={() => navigate(`/cultivo/${cultivoId}`)} 
-                className="hover:underline"
-              >
-                Cultivo
-              </button>
-            </>
-          )}
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Nova Planta</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Cultivos', to: '/cultivos' },
+            ...(cultivoId ? [{ label: 'Cultivo', to: `/cultivo/${cultivoId}` }] : []),
+            { label: 'Nova Planta' },
+          ]}
+        />
       </div>
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">

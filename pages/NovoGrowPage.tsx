@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
@@ -49,13 +50,13 @@ export default function NovoGrowPage() {
         >
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
         </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/grows" className="hover:underline">Grows</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Novo Grow</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Grows', to: '/grows' },
+            { label: 'Novo Grow' },
+          ]}
+        />
       </div>
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-6 text-center">Novo Grow</h1>

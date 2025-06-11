@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import Toast from '../components/Toast';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { SUBSTRATE_OPTIONS } from '../constants';
 import { Grow, PlantStage, PlantHealthStatus, PlantOperationalStatus } from '../types';
 
@@ -93,13 +94,13 @@ export default function NovoCultivoPage() {
         >
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
         </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/cultivos" className="hover:underline">Cultivos</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">Novo Cultivo</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Cultivos', to: '/cultivos' },
+            { label: 'Novo Cultivo' },
+          ]}
+        />
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-4 sm:p-6 flex-1 flex flex-col">

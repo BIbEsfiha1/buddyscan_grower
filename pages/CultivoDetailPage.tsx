@@ -11,6 +11,7 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
@@ -271,13 +272,13 @@ const CultivoDetailPage: React.FC = () => {
         >
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
         </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/cultivos" className="hover:underline">Cultivos</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">{cultivo.name}</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Cultivos', to: '/cultivos' },
+            { label: cultivo.name },
+          ]}
+        />
       </div>
 
       {/* Título e status */}

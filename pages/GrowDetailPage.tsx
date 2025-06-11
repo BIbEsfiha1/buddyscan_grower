@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
 import Modal from '../components/Modal';
+import Breadcrumbs from '../components/Breadcrumbs';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import { addMassDiaryEntry } from '../services/plantService';
 
@@ -108,13 +109,13 @@ export default function GrowDetailPage() {
         >
           <ArrowLeftIcon className="w-7 h-7 text-green-700" />
         </button>
-        <nav className="text-xs text-gray-500 dark:text-gray-400 flex gap-1">
-          <Link to="/" className="hover:underline">Dashboard</Link>
-          <span>&gt;</span>
-          <Link to="/grows" className="hover:underline">Grows</Link>
-          <span>&gt;</span>
-          <span className="font-bold text-green-700 dark:text-green-300">{grow.name}</span>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: '/' },
+            { label: 'Grows', to: '/grows' },
+            { label: grow.name },
+          ]}
+        />
         <div className="flex-1" />
         <Link to={`/novo-cultivo?growId=${grow.id}`}>
           <Button variant="primary" size="icon" className="shadow" title="Novo Plantio">

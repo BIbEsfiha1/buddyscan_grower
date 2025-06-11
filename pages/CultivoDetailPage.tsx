@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import Loader from "../components/Loader";
 import PlantCard from '../components/PlantCard';
+import MassRegisterModal from '../components/grow/MassRegisterModal';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
@@ -26,14 +27,6 @@ const CultivoDetailPage: React.FC = () => {
   const [grows, setGrows] = useState<Grow[]>([]);
   const [selectedGrow, setSelectedGrow] = useState<string>('');
   const [showMassModal, setShowMassModal] = useState(false);
-  const [massNotes, setMassNotes] = useState('');
-  const [massWateringVolume, setMassWateringVolume] = useState('');
-  const [massWateringType, setMassWateringType] = useState('');
-  const [massFertilizationType, setMassFertilizationType] = useState('');
-  const [massFertilizationConcentration, setMassFertilizationConcentration] = useState('');
-  const [massPhotoperiod, setMassPhotoperiod] = useState('');
-  const [massSprayProduct, setMassSprayProduct] = useState('');
-  const [massSprayAmount, setMassSprayAmount] = useState('');
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -126,34 +119,14 @@ const CultivoDetailPage: React.FC = () => {
     }
   };
 
-  const handleMassRegister = async () => {
-    if (!cultivoId) return;
-    try {
-      const { addMassDiaryEntry } = await import('../services/plantService');
-      await addMassDiaryEntry(cultivoId, {
-        notes: massNotes,
-        stage: plants[0]?.currentStage || PlantStage.SEEDLING,
-        wateringVolume: massWateringVolume ? parseFloat(massWateringVolume) : undefined,
-        wateringType: massWateringType || undefined,
-        fertilizationType: massFertilizationType || undefined,
-        fertilizationConcentration: massFertilizationConcentration ? parseFloat(massFertilizationConcentration) : undefined,
-        photoperiod: massPhotoperiod || undefined,
-        sprayProduct: massSprayProduct || undefined,
-        sprayAmount: massSprayAmount ? parseFloat(massSprayAmount) : undefined,
-      });
-      setToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
-      setShowMassModal(false);
-      setMassNotes('');
-      setMassWateringVolume('');
-      setMassWateringType('');
-      setMassFertilizationType('');
-      setMassFertilizationConcentration('');
-      setMassPhotoperiod('');
-      setMassSprayProduct('');
-      setMassSprayAmount('');
-    } catch (err) {
-      setToast({ message: 'Erro ao registrar em massa', type: 'error' });
-    }
+  const handleMassSuccess = () => {
+    setToast({ message: 'Registro aplicado a todas as plantas', type: 'success' });
+    setShowMassModal(false);
+  };
+
+  const handleMassError = () => {
+    setToast({ message: 'Erro ao registrar em massa', type: 'error' });
+    setShowMassModal(false);
   };
 
   const handleFinishCultivo = async () => {
@@ -364,69 +337,14 @@ const CultivoDetailPage: React.FC = () => {
         )}
       </div>
 
-      <Modal isOpen={showMassModal} onClose={() => setShowMassModal(false)} title="Registro em Massa" maxWidth="sm">
-        <div className="flex flex-col gap-3 p-2">
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Volume de Rega (L)"
-            value={massWateringVolume}
-            onChange={e => setMassWateringVolume(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Tipo de Água/Solução"
-            value={massWateringType}
-            onChange={e => setMassWateringType(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Tipo de Fertilizante"
-            value={massFertilizationType}
-            onChange={e => setMassFertilizationType(e.target.value)}
-          />
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Concentração do Fertilizante"
-            value={massFertilizationConcentration}
-            onChange={e => setMassFertilizationConcentration(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Fotoperíodo (ex: 12/12)"
-            value={massPhotoperiod}
-            onChange={e => setMassPhotoperiod(e.target.value)}
-          />
-          <input
-            type="text"
-            className="p-2 border rounded"
-            placeholder="Produto de Pulverização"
-            value={massSprayProduct}
-            onChange={e => setMassSprayProduct(e.target.value)}
-          />
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Quantidade Pulverizada"
-            value={massSprayAmount}
-            onChange={e => setMassSprayAmount(e.target.value)}
-          />
-          <textarea
-            className="p-2 border rounded"
-            placeholder="Notas"
-            value={massNotes}
-            onChange={e => setMassNotes(e.target.value)}
-          />
-          <div className="flex gap-3 mt-2">
-            <Button variant="secondary" onClick={() => setShowMassModal(false)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleMassRegister} disabled={!massNotes && !massWateringVolume && !massFertilizationType && !massPhotoperiod && !massSprayProduct}>Salvar</Button>
-          </div>
-        </div>
-      </Modal>
+      <MassRegisterModal
+        cultivoId={cultivo.id}
+        isOpen={showMassModal}
+        onClose={() => setShowMassModal(false)}
+        plantStage={plants[0]?.currentStage || PlantStage.SEEDLING}
+        onSuccess={handleMassSuccess}
+        onError={handleMassError}
+      />
 
       {/* Botão de finalizar cultivo */}
       <Button

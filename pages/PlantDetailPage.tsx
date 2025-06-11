@@ -11,7 +11,7 @@ import { usePlantContext } from '../contexts/PlantContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import LeafIcon from '../components/icons/LeafIcon';
-import Toast from '../components/Toast';
+import useToast from '../hooks/useToast';
 
 const PlantDetailPage: React.FC = () => {
   const { plantId } = useParams<{ plantId: string }>();
@@ -40,7 +40,7 @@ const PlantDetailPage: React.FC = () => {
   const [cultivos, setCultivos] = useState<{ id: string; name: string }[]>([]);
   const [selectedCultivo, setSelectedCultivo] = useState<string | undefined>(undefined);
   const [movingCultivo, setMovingCultivo] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const { showToast, ToastElement } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDiaryEntryModal, setShowDiaryEntryModal] = useState(false);
   const [isSavingDiaryEntry, setIsSavingDiaryEntry] = useState(false);
@@ -112,10 +112,10 @@ const PlantDetailPage: React.FC = () => {
         return;
       } else {
         const err = await res.json();
-        alert('Erro ao excluir planta: ' + (err.error || res.status));
+        showToast('Erro ao excluir planta: ' + (err.error || res.status), 'error');
       }
     } catch (e: any) {
-      alert('Erro inesperado ao excluir planta: ' + (e.message || e));
+      showToast('Erro inesperado ao excluir planta: ' + (e.message || e), 'error');
     }
   };
 
@@ -152,7 +152,7 @@ const PlantDetailPage: React.FC = () => {
       try {
         await updatePlantDetails(plantId, payload);
       } catch (err: any) {
-        setToast({ message: 'Erro ao atualizar checklist: ' + (err.message || err), type: 'error' });
+        showToast('Erro ao atualizar checklist: ' + (err.message || err), 'error');
       }
     }
   };
@@ -219,23 +219,18 @@ const PlantDetailPage: React.FC = () => {
         const entries = await getDiaryEntries(plantId);
         setDiaryEntries(entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
         setShowDiaryEntryModal(false);
-        setToast({ message: 'Entrada do diário salva!', type: 'success' });
+        showToast('Entrada do diário salva!', 'success');
       } else {
-        setToast({ message: 'Erro ao salvar entrada no diário.', type: 'error' });
+        showToast('Erro ao salvar entrada no diário.', 'error');
       }
     } catch (err: any) {
-      setToast({ message: `Erro: ${err.message || 'Falha ao salvar entrada.'}`, type: 'error' });
+      showToast(`Erro: ${err.message || 'Falha ao salvar entrada.'}`, 'error');
     } finally {
       setIsSavingDiaryEntry(false);
     }
   };
 
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
+
 
 
   if (!plant) {
@@ -291,7 +286,7 @@ const PlantDetailPage: React.FC = () => {
           showBack
           onBack={() => navigate(-1)}
         />
-          {toast && <Toast message={toast.message} type={toast.type} />}
+          {ToastElement}
           <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-6 lg:px-8 pt-6">
             {plant && (
               <div style={{ display: 'none' }}>
@@ -378,10 +373,10 @@ const PlantDetailPage: React.FC = () => {
                           try {
                             await updatePlantDetails(plantId, { cultivoId: selectedCultivo });
                             await loadPlantData();
-                            setToast({ message: 'Planta movida!', type: 'success' });
+                            showToast('Planta movida!', 'success');
                             setSelectedCultivo(undefined);
                           } catch (err: any) {
-                            setToast({ message: 'Erro ao mover planta: ' + (err.message || err), type: 'error' });
+                            showToast('Erro ao mover planta: ' + (err.message || err), 'error');
                           }
                           setMovingCultivo(false);
                         }}

@@ -29,6 +29,18 @@ export const PLANT_OPERATIONAL_STATUS_OPTIONS = [
   { value: PlantOperationalStatus.ARCHIVED, label: 'Arquivada' },
 ];
 
+export const PLANT_HEALTH_STATUS_LABELS: Record<PlantHealthStatus, string> =
+  PLANT_HEALTH_STATUS_OPTIONS.reduce((acc, { value, label }) => {
+    acc[value as PlantHealthStatus] = label;
+    return acc;
+  }, {} as Record<PlantHealthStatus, string>);
+
+export const PLANT_OPERATIONAL_STATUS_LABELS: Record<PlantOperationalStatus, string> =
+  PLANT_OPERATIONAL_STATUS_OPTIONS.reduce((acc, { value, label }) => {
+    acc[value as PlantOperationalStatus] = label;
+    return acc;
+  }, {} as Record<PlantOperationalStatus, string>);
+
 export const CULTIVATION_TYPE_OPTIONS = [
   { value: 'Indoor', label: 'Indoor' },
   { value: 'Outdoor', label: 'Outdoor' },

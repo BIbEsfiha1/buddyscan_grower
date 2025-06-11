@@ -64,7 +64,7 @@ const CultivosPage: React.FC = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       <Header
         title={t('sidebar.cultivos')}

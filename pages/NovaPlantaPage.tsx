@@ -68,7 +68,7 @@ export default function GrowsPage() {
       bgcolor="background.paper"
       p={{ xs: 2, sm: 4 }}
     >
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       <Header
         title={t('growsPage.title')}

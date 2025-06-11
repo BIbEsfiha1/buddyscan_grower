@@ -55,7 +55,7 @@ export default function NovoGrowPage() {
       bgcolor="background.paper"
       p={{ xs: 2, sm: 4 }}
     >
-      {toast && <Toast message={toast.message} type={toast.type} />}
+      {toast && <Toast toast={toast} />}
 
       <Box
         position="sticky"

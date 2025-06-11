@@ -202,7 +202,7 @@ const PlantDetailPage: React.FC = () => {
           showBack
           onBack={()=>navigate(-1)}
         />
-        {toast && <Toast message={toast.message} type={toast.type} />}
+        {toast && <Toast toast={toast} />}
         <main className="flex-1 max-w-7xl mx-auto w-full p-4">
           {/* QRCode hidden for download*/}
           <div style={{ display:'none' }}>

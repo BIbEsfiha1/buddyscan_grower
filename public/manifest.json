@@ -2,7 +2,7 @@
   "name": "BuddyScan",
   "short_name": "BuddyScan",
   "description": "Gerencie suas plantas com BuddyScan.",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#16a34a",
@@ -18,15 +18,15 @@
       "sizes": "512x512",
       "type": "image/png"
     },
-    {
-      "src": "logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+      {
+        "src": "/logo.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/logo.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
   ]
 }

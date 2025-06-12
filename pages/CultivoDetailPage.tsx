@@ -92,14 +92,11 @@ const CultivoDetailPage: React.FC = () => {
   const handleMassSuccess = () => {
     showToast({ message: t('cultivoDetailPage.mass_register_success'), type: 'success' });
     setShowMassModal(false);
-    fetchPlants(); // Refresh plants after mass registration
+    fetchPlants();
   };
 
   const handleMassError = (errorMessage?: string) => {
-    showToast({ 
-      message: errorMessage || t('cultivoDetailPage.mass_register_error'), 
-      type: 'error' 
-    });
+    showToast({ message: errorMessage || t('cultivoDetailPage.mass_register_error'), type: 'error' });
     setShowMassModal(false);
   };
 

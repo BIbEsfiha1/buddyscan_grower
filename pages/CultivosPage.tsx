@@ -22,7 +22,7 @@ const CultivosPage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    async function fetchCultivos() {
+    async function fetchCultivosData() {
       try {
         const data = await getCultivos();
         if (mounted) setCultivos(data);
@@ -32,7 +32,7 @@ const CultivosPage: React.FC = () => {
         if (mounted) setLoading(false);
       }
     }
-    fetchCultivos();
+    fetchCultivosData();
     return () => { mounted = false; };
   }, []);
 

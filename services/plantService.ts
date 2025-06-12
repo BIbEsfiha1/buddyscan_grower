@@ -3,6 +3,7 @@
 import { Plant, DiaryEntry, NewPlantData } from '../types';
 import netlifyIdentity from 'netlify-identity-widget';
 import logger from '../utils/logger';
+import { convertKeysToCamelCase } from '../utils/caseUtils';
 
 const API_BASE_URL = '/.netlify/functions';
 
@@ -86,20 +87,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
 };
 
 // --- Funções utilitárias para conversão de snake_case para camelCase ---
-function snakeToCamel(s: string) {
-  return s.replace(/_([a-z])/g, g => g[1].toUpperCase());
-}
-
-export function convertKeysToCamelCase(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map(v => convertKeysToCamelCase(v));
-  } else if (obj && typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [snakeToCamel(k), convertKeysToCamelCase(v)])
-    );
-  }
-  return obj;
-}
+// As funções foram movidas para '../utils/caseUtils' para evitar dependências circulares
 
 // --- Funções CRUD para Plantas ---
 

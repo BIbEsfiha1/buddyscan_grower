@@ -5,7 +5,7 @@ import ImageUpload from './ImageUpload';
 import useAIDiagnosis from '../hooks/useAIDiagnosis';
 import Loader from './Loader';
 import Button from './Button';
-import netlifyIdentity from 'netlify-identity-widget';
+import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 import { updateDiaryEntry, getDiaryEntries } from '../services/plantService';
 import { useParams } from 'react-router-dom';
 import mergeAIDiagnoses from '../utils/mergeAIDiagnoses';
@@ -105,7 +105,8 @@ const DiaryEntryForm: React.FC<DiaryEntryFormProps> = ({ plantCurrentStage, onSu
   };
 
   const uploadImage = async (file: File, base64: string) => {
-    const user = netlifyIdentity.currentUser();
+    const ni = await loadNetlifyIdentity();
+    const user = ni.currentUser();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const token = user?.token?.access_token;
     if (token) headers['Authorization'] = `Bearer ${token}`;

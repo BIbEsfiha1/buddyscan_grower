@@ -1,28 +1,31 @@
-export enum PlantStage {
-  SEEDLING = 'Muda',
-  VEGETATIVE = 'Vegetativo',
-  FLOWERING = 'Floração',
-  DRYING = 'Secagem',
-  CURING = 'Cura',
-  MOTHER = 'Planta Mãe',
-}
+export const PlantStage = {
+  SEEDLING: 'Muda',
+  VEGETATIVE: 'Vegetativo',
+  FLOWERING: 'Floração',
+  DRYING: 'Secagem',
+  CURING: 'Cura',
+  MOTHER: 'Planta Mãe'
+} as const;
+export type PlantStage = typeof PlantStage[keyof typeof PlantStage];
 
-export enum PlantHealthStatus {
-  HEALTHY = 'Saudável',
-  PEST_ALERT = 'Alerta de Praga',
-  NUTRIENT_DEFICIENCY = 'Deficiência Nutricional',
-  DISEASE_SUSPECTED = 'Suspeita de Doença',
-  RECOVERING = 'Em Recuperação',
-  OBSERVATION = 'Em Observação',
-}
+export const PlantHealthStatus = {
+  HEALTHY: 'Saudável',
+  PEST_ALERT: 'Alerta de Praga',
+  NUTRIENT_DEFICIENCY: 'Deficiência Nutricional',
+  DISEASE_SUSPECTED: 'Suspeita de Doença',
+  RECOVERING: 'Em Recuperação',
+  OBSERVATION: 'Em Observação'
+} as const;
+export type PlantHealthStatus = typeof PlantHealthStatus[keyof typeof PlantHealthStatus];
 
-export enum PlantOperationalStatus {
-  ACTIVE = 'Ativa',
-  HARVESTED = 'Colhida',
-  LOST = 'Perdida',
-  PAUSED = 'Pausada', // e.g. mother plant being rested
-  ARCHIVED = 'Arquivada', // For completed/lost plants that are no longer active but kept for records
-}
+export const PlantOperationalStatus = {
+  ACTIVE: 'Ativa',
+  HARVESTED: 'Colhida',
+  LOST: 'Perdida',
+  PAUSED: 'Pausada', // e.g. mother plant being rested
+  ARCHIVED: 'Arquivada' // For completed/lost plants that are no longer active but kept for records
+} as const;
+export type PlantOperationalStatus = typeof PlantOperationalStatus[keyof typeof PlantOperationalStatus];
 
 export interface Grow {
   id: string;

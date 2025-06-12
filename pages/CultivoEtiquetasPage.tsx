@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { Plant } from '../types';
 import { useTranslation } from 'react-i18next';
+import { getPlantsByCultivo } from '../services/cultivoService';
 
 export default function CultivoEtiquetasPage() {
   const { cultivoId } = useParams<{ cultivoId: string }>();
@@ -15,13 +16,11 @@ export default function CultivoEtiquetasPage() {
 
   useEffect(() => {
     if (cultivoId) {
-      import('../services/cultivoService').then(({ getPlantsByCultivo }) => {
-        getPlantsByCultivo(cultivoId).then(setPlants).catch((err) => {
-          setPlants([]);
-          showToast({ 
-            message: t('cultivoEtiquetasPage.error_loading_plants', { error: err.message || err }),
-            type: 'error' 
-          });
+      getPlantsByCultivo(cultivoId).then(setPlants).catch((err) => {
+        setPlants([]);
+        showToast({
+          message: t('cultivoEtiquetasPage.error_loading_plants', { error: err.message || err }),
+          type: 'error'
         });
       });
     }

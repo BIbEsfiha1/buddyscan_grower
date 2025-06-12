@@ -17,7 +17,7 @@ import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import { useTranslation } from 'react-i18next';
-import { getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
+import { getPlantsByCultivo, updateCultivo, getCultivos } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
 import logger from '../utils/logger';
@@ -46,7 +46,6 @@ const CultivoDetailPage: React.FC = () => {
     setLoading(true);
     (async () => {
       try {
-        const { getCultivos } = await import('../services/cultivoService');
         const all = await getCultivos();
         setCultivo(all.find(c => c.id === cultivoId) || null);
         setGrows(await getGrows());

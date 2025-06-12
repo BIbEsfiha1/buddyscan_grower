@@ -12,6 +12,7 @@ import Button from '../components/Button';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import { Cultivo } from '../types';
+import { getCultivos } from '../services/cultivoService';
 import {
   Box,
   Container,
@@ -38,7 +39,7 @@ const AllPlantsPage: React.FC = () => {
 
   React.useEffect(() => {
     if (selectionMode) {
-      import('../services/cultivoService').then(m => m.getCultivos().then(setCultivos).catch(() => setCultivos([])));
+      getCultivos().then(setCultivos).catch(() => setCultivos([]));
     }
   }, [selectionMode]);
 

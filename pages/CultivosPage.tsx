@@ -10,6 +10,7 @@ import Toast from '../components/Toast';
 import LeafIcon from '../components/icons/LeafIcon';
 import Loader from '../components/Loader';
 import ErrorBanner from '../components/ErrorBanner';
+import { getCultivos } from '../services/cultivoService';
 
 const CultivosPage: React.FC = () => {
   const { t } = useTranslation();
@@ -21,19 +22,17 @@ const CultivosPage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    async function fetchCultivos() {
+    async function fetchCultivosData() {
       try {
-        const { getCultivos } = await import('../services/cultivoService');
         const data = await getCultivos();
         if (mounted) setCultivos(data);
       } catch {
-        // Error handled, variable not used
         setError(t('cultivosPage.error_loading'));
       } finally {
         if (mounted) setLoading(false);
       }
     }
-    fetchCultivos();
+    fetchCultivosData();
     return () => { mounted = false; };
   }, []);
 

@@ -16,6 +16,8 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import { useTranslation } from 'react-i18next';
 import { usePlantContext } from '../contexts/PlantContext';
 import { SUBSTRATE_OPTIONS } from '../constants';
+import { getGrows } from '../services/growService';
+import { addCultivo } from '../services/cultivoService';
 import {
   Grow,
   PlantStage,
@@ -48,7 +50,6 @@ export default function NovoCultivoPage() {
   useEffect(() => {
     (async () => {
       try {
-        const { getGrows } = await import('../services/growService');
         const data = await getGrows();
         setGrows(data);
       } catch (e) {
@@ -78,7 +79,6 @@ export default function NovoCultivoPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const { addCultivo } = await import('../services/cultivoService');
       const plantsToSend = plants
         .filter(p => p.name && p.strain)
         .map(p => ({

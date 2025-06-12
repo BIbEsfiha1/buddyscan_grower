@@ -1,13 +1,12 @@
 import { Cultivo, Plant } from '../types';
-import { convertKeysToCamelCase } from './plantService';
-import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
+import { convertKeysToCamelCase } from '../utils/caseUtils';
+import netlifyIdentity from 'netlify-identity-widget';
 import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   try {
-    const netlifyIdentity = await loadNetlifyIdentity();
     const user = netlifyIdentity.currentUser();
     if (!user) {
       netlifyIdentity.open('login');
@@ -85,7 +84,6 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
 
 export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; substrate?: string; growId?: string; plants?: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
   try {
-    const netlifyIdentity = await loadNetlifyIdentity();
     const user = netlifyIdentity.currentUser();
     if (!user) {
       netlifyIdentity.open('login');

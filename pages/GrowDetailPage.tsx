@@ -15,6 +15,8 @@ import Modal from '../components/Modal';
 import GrowQrCodeDisplay from '../components/GrowQrCodeDisplay';
 import MassRegisterModal from '../components/grow/MassRegisterModal';
 import { addMassDiaryEntry } from '../services/plantService';
+import { getGrows } from '../services/growService';
+import { getCultivos } from '../services/cultivoService';
 import { Box, Typography, Paper, List, ListItem, IconButton } from '@mui/material';
 
 export default function GrowDetailPage() {
@@ -35,8 +37,6 @@ export default function GrowDetailPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { getGrows } = await import('../services/growService');
-        const { getCultivos } = await import('../services/cultivoService');
         const [growList, cultivosList] = await Promise.all([
           getGrows(),
           getCultivos(),

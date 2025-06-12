@@ -17,6 +17,7 @@ import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import useToast from '../hooks/useToast';
 import { Grow } from '../types';
+import { getGrows } from '../services/growService';
 
 export default function GrowsPage() {
   const [grows, setGrows] = useState<Grow[]>([]);
@@ -28,7 +29,6 @@ export default function GrowsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { getGrows } = await import('../services/growService');
         const data = await getGrows();
         setGrows(data);
       } catch (e) {

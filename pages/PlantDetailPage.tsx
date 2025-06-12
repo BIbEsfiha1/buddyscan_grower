@@ -20,6 +20,7 @@ import LeafIcon from '../components/icons/LeafIcon';
 import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import { useTranslation } from 'react-i18next';
+import { getCultivos } from '../services/cultivoService';
 
 const PlantDetailPage: React.FC = () => {
   const { plantId } = useParams<{ plantId: string }>();
@@ -101,8 +102,7 @@ const PlantDetailPage: React.FC = () => {
   }, [plantId, plant]);
 
   useEffect(() => {
-    import('../services/cultivoService')
-      .then(({ getCultivos }) => getCultivos())
+    getCultivos()
       .then(data => setCultivos(data))
       .catch(() => setCultivos([]));
   }, []);

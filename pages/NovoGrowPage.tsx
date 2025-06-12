@@ -13,6 +13,7 @@ import Toast from '../components/Toast';
 import useToast from '../hooks/useToast';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useTranslation } from 'react-i18next';
+import { addGrow } from '../services/growService';
 
 export default function NovoGrowPage() {
   const [name, setName] = useState('');
@@ -28,7 +29,6 @@ export default function NovoGrowPage() {
     if (!name) return;
     setSaving(true);
     try {
-      const { addGrow } = await import('../services/growService');
       const newGrow = await addGrow({
         name,
         location: location || undefined,

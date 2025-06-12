@@ -16,6 +16,8 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import { useTranslation } from 'react-i18next';
 import { usePlantContext } from '../contexts/PlantContext';
 import { SUBSTRATE_OPTIONS } from '../constants';
+import { addCultivo } from '../services/cultivoService';
+import { getGrows } from '../services/growService';
 import {
   Grow,
   PlantStage,
@@ -46,15 +48,9 @@ export default function NovoCultivoPage() {
 
   // Fetch available grows
   useEffect(() => {
-    (async () => {
-      try {
-        const { getGrows } = await import('../services/growService');
-        const data = await getGrows();
-        setGrows(data);
-      } catch (e) {
-        console.error('Erro ao carregar grows', e);
-      }
-    })();
+    getGrows()
+      .then(setGrows)
+      .catch(e => console.error('Erro ao carregar grows', e));
   }, []);
 
   const updatePlant = (
@@ -78,7 +74,6 @@ export default function NovoCultivoPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const { addCultivo } = await import('../services/cultivoService');
       const plantsToSend = plants
         .filter(p => p.name && p.strain)
         .map(p => ({

@@ -17,7 +17,7 @@ import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import LeafIcon from '../components/icons/LeafIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import { useTranslation } from 'react-i18next';
-import { getPlantsByCultivo, updateCultivo, getCultivos } from '../services/cultivoService';
+import { getCultivos, getPlantsByCultivo, updateCultivo } from '../services/cultivoService';
 import { getGrows } from '../services/growService';
 import { updatePlant } from '../services/plantService';
 import logger from '../utils/logger';
@@ -92,14 +92,11 @@ const CultivoDetailPage: React.FC = () => {
   const handleMassSuccess = () => {
     showToast({ message: t('cultivoDetailPage.mass_register_success'), type: 'success' });
     setShowMassModal(false);
-    fetchPlants(); // Refresh plants after mass registration
+    fetchPlants();
   };
 
   const handleMassError = (errorMessage?: string) => {
-    showToast({ 
-      message: errorMessage || t('cultivoDetailPage.mass_register_error'), 
-      type: 'error' 
-    });
+    showToast({ message: errorMessage || t('cultivoDetailPage.mass_register_error'), type: 'error' });
     setShowMassModal(false);
   };
 

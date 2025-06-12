@@ -16,13 +16,15 @@ export default function CultivoEtiquetasPage() {
 
   useEffect(() => {
     if (cultivoId) {
-      getPlantsByCultivo(cultivoId).then(setPlants).catch((err) => {
-        setPlants([]);
-        showToast({
-          message: t('cultivoEtiquetasPage.error_loading_plants', { error: err.message || err }),
-          type: 'error'
+      getPlantsByCultivo(cultivoId)
+        .then(setPlants)
+        .catch((err) => {
+          setPlants([]);
+          showToast({
+            message: t('cultivoEtiquetasPage.error_loading_plants', { error: err.message || err }),
+            type: 'error'
+          });
         });
-      });
     }
   }, [cultivoId, showToast, t]);
 

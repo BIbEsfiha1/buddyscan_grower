@@ -1,9 +1,10 @@
 import { Cultivo, Plant } from '../types';
 import { convertKeysToCamelCase } from '../utils/caseUtils';
-import netlifyIdentity from 'netlify-identity-widget';
+import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
+const netlifyIdentity = loadNetlifyIdentity();
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   try {
@@ -20,7 +21,6 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       throw new Error('Sessão expirada. Por favor, faça login novamente.');
     }
 
-    // Ensure headers exist and set content type for JSON
     const headers = new Headers(options.headers);
     if (!headers.has('Content-Type') && options.body) {
       headers.set('Content-Type', 'application/json');
@@ -28,15 +28,14 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     headers.set('Authorization', `Bearer ${token}`);
 
     logger.log(`[fetchWithAuth] Sending ${options.method || 'GET'} to ${endpoint}`, options.body);
-    
+
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
       ...options,
       headers,
     });
 
     const responseText = await response.text();
-    let responseData;
-    
+    let responseData: any;
     try {
       responseData = responseText ? JSON.parse(responseText) : {};
     } catch (e) {
@@ -54,35 +53,40 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
       netlifyIdentity.open('login');
       throw new Error('Sessão expirada. Por favor, faça login novamente.');
     }
-
     if (response.status === 403) {
       throw new Error('Você não tem permissão para acessar este recurso.');
     }
-
     if (response.status === 404) {
       throw new Error('Recurso não encontrado.');
     }
-
     if (response.status >= 500) {
       console.error('Server error:', responseData);
       throw new Error('Erro interno do servidor. Por favor, tente novamente mais tarde.');
     }
-
     if (!response.ok) {
-      const errorMessage = responseData.error || 
-                         responseData.message || 
-                         `Erro na requisição: ${response.statusText}`;
+      const errorMessage = responseData.error ||
+        responseData.message ||
+        `Erro na requisição: ${response.statusText}`;
       throw new Error(errorMessage);
     }
 
     return responseData;
   } catch (error) {
     console.error(`[fetchWithAuth] Error in ${endpoint}:`, error);
-    throw error; // Re-throw to be handled by the caller
+    throw error;
   }
 };
 
-export const addCultivo = async (cultivoData: { name: string; startDate: string; notes?: string; substrate?: string; growId?: string; plants?: Omit<Plant, 'id' | 'qrCodeValue'>[] }): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
+export const addCultivo = async (
+  cultivoData: {
+    name: string;
+    startDate: string;
+    notes?: string;
+    substrate?: string;
+    growId?: string;
+    plants?: Omit<Plant, 'id' | 'qrCodeValue'>[];
+  }
+): Promise<{ cultivo: Cultivo; plants?: Plant[] }> => {
   try {
     const user = netlifyIdentity.currentUser();
     if (!user) {
@@ -90,7 +94,6 @@ export const addCultivo = async (cultivoData: { name: string; startDate: string;
       throw new Error('Usuário não autenticado. Por favor, faça login.');
     }
 
-    // Get the user ID from the JWT token
     const token = user.token?.access_token;
     if (!token) {
       netlifyIdentity.logout();
@@ -98,22 +101,18 @@ export const addCultivo = async (cultivoData: { name: string; startDate: string;
       throw new Error('Sessão expirada. Por favor, faça login novamente.');
     }
 
-    // The user ID will be extracted from the JWT token in the Netlify function
     const bodyData: any = {
       ...cultivoData,
-      // Ensure startDate is properly formatted
       startDate: new Date(cultivoData.startDate).toISOString(),
     };
     if (!bodyData.plants) delete bodyData.plants;
 
     const result = await fetchWithAuth('addCultivo', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyData),
     });
-    
+
     return result;
   } catch (error) {
     console.error('Error in addCultivo:', error);
@@ -125,15 +124,13 @@ export const getCultivos = async (): Promise<Cultivo[]> => {
   try {
     logger.log('[getCultivos] Fetching cultivos');
     const result = await fetchWithAuth('getCultivos');
-    
-    // Ensure all dates are properly parsed
     const cultivos = Array.isArray(result) ? result : [];
-    return cultivos.map((cultivo: any) => ({
-      ...cultivo,
-      startDate: cultivo.start_date || cultivo.startDate,
-      finalizadoEm: cultivo.finalizado_em || cultivo.finalizadoEm,
-      createdAt: cultivo.created_at || cultivo.createdAt,
-      updatedAt: cultivo.updated_at || cultivo.updatedAt,
+    return cultivos.map((c: any) => ({
+      ...c,
+      startDate: c.start_date || c.startDate,
+      finalizadoEm: c.finalizado_em || c.finalizadoEm,
+      createdAt: c.created_at || c.createdAt,
+      updatedAt: c.updated_at || c.updatedAt,
     }));
   } catch (error) {
     console.error('Error in getCultivos:', error);
@@ -154,53 +151,51 @@ export const getPlantsByCultivo = async (cultivoId: string): Promise<Plant[]> =>
     );
 
     const plants = Array.isArray(result) ? result : [];
-    // Map snake_case to camelCase and ensure qrCodeValue is preserved
-    return plants.map((plant: any) => ({
-      ...plant,
-      qrCodeValue: plant.qr_code_value || plant.qrCodeValue,
-      birthDate: plant.birth_date || plant.birthDate,
-      lastDailyCheckDate: plant.last_daily_check_date || plant.lastDailyCheckDate,
-      estimatedHarvestDate: plant.estimated_harvest_date || plant.estimatedHarvestDate,
-      createdAt: plant.created_at || plant.createdAt,
-      updatedAt: plant.updated_at || plant.updatedAt,
+    return plants.map((p: any) => ({
+      ...p,
+      qrCodeValue: p.qr_code_value || p.qrCodeValue,
+      birthDate: p.birth_date || p.birthDate,
+      lastDailyCheckDate: p.last_daily_check_date || p.lastDailyCheckDate,
+      estimatedHarvestDate: p.estimated_harvest_date || p.estimatedHarvestDate,
+      createdAt: p.created_at || p.createdAt,
+      updatedAt: p.updated_at || p.updatedAt,
     }));
   } catch (error) {
     console.error(`Error in getPlantsByCultivo for cultivo ${cultivoId}:`, error);
-    // Return empty array instead of throwing to prevent UI breaking
     return [];
   }
 };
 
 export const getCultivoById = async (cultivoId: string): Promise<Cultivo | null> => {
-  const result = await fetchWithAuth(`getCultivo?id=${encodeURIComponent(cultivoId)}`);
+  const result = await fetchWithAuth(
+    `getCultivo?id=${encodeURIComponent(cultivoId)}`
+  );
   return result ? convertKeysToCamelCase(result) : null;
 };
 
-export const updateCultivo = async (cultivoId: string, cultivoData: Partial<Omit<Cultivo, 'id'>> & { plants?: any[] }): Promise<Cultivo> => {
+export const updateCultivo = async (
+  cultivoId: string,
+  cultivoData: Partial<Omit<Cultivo, 'id'>> & { plants?: any[] }
+): Promise<Cultivo> => {
   try {
-    // Create a new object to avoid mutating the original
     const updateData = { ...cultivoData };
-    
-    // Remove any undefined values to avoid sending them to the API
     Object.keys(updateData).forEach(key => {
       if (updateData[key as keyof typeof updateData] === undefined) {
         delete updateData[key as keyof typeof updateData];
       }
     });
 
-    logger.log('[updateCultivo] Sending update data:', { id: cultivoId, ...updateData });
-    
+    logger.log('[updateCultivo] Sending update data:', {
+      id: cultivoId,
+      ...updateData,
+    });
+
     const result = await fetchWithAuth('updateCultivo', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: cultivoId,
-        ...updateData
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: cultivoId, ...updateData }),
     });
-    
+
     return result;
   } catch (error) {
     console.error('Error in updateCultivo:', error);

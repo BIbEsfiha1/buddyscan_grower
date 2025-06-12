@@ -1,15 +1,13 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import type { User } from 'netlify-identity-widget';
-import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
-
-let netlifyIdentity: awaited<ReturnType<typeof loadNetlifyIdentity>>;
-loadNetlifyIdentity().then((mod) => {
-  netlifyIdentity = mod;
-});
+import netlifyIdentity, { User } from 'netlify-identity-widget';
 
 // Inicialize sempre, fora do React, para garantir funcionamento em mobile
-// Inicialize o widget de forma assíncrona
-loadNetlifyIdentity();
+if (!(window as any).__netlifyIdentityInitialized) {
+  netlifyIdentity.init({
+    APIUrl: "https://buddyscan-app.windsurf.build/.netlify/identity"
+  });
+  (window as any).__netlifyIdentityInitialized = true;
+}
 
 
 interface AuthContextType {
@@ -26,49 +24,45 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(netlifyIdentity.currentUser());
   const isLoggedIn = !!user;
 
   useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    loadNetlifyIdentity().then((ni) => {
-      const handleLogin = (userOrError?: User | Error) => {
-        if (userOrError && !(userOrError instanceof Error)) {
-          setUser(userOrError as User);
-          ni.close();
-        } else if (userOrError instanceof Error) {
-          console.error('Login error:', userOrError);
-        }
-      };
+    // Não inicialize novamente aqui, já foi feito globalmente
+    const handleLogin = (userOrError?: User | Error) => {
+      if (userOrError && !(userOrError instanceof Error)) {
+        setUser(userOrError as User);
+        netlifyIdentity.close(); // Close the modal on login
+      } else if (userOrError instanceof Error) {
+        console.error('Login error:', userOrError);
+        // Optionally, set an error state here to display to the user
+      }
+    };
 
-      const handleLogout = () => {
-        setUser(null);
-      };
+    const handleLogout = () => {
+      setUser(null);
+    };
 
-      ni.on('login', handleLogin);
-      ni.on('logout', handleLogout);
+    netlifyIdentity.on('login', handleLogin); 
+    netlifyIdentity.on('logout', handleLogout);
 
-      setUser(ni.currentUser());
-
-      cleanup = () => {
-        ni.off('login', handleLogin);
-        ni.off('logout', handleLogout);
-      };
-    });
+    // Check current user on mount
+    setUser(netlifyIdentity.currentUser());
 
     return () => {
-      cleanup?.();
+      netlifyIdentity.off('login', handleLogin); 
+      netlifyIdentity.off('logout', handleLogout);
     };
   }, []);
 
   const login = () => {
-    loadNetlifyIdentity().then((ni) => ni.open('login'));
+    netlifyIdentity.open('login');
   };
 
 
 
   const logout = () => {
-    loadNetlifyIdentity().then((ni) => ni.logout());
+    netlifyIdentity.logout();
   };
 
   return (

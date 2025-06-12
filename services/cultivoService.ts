@@ -1,5 +1,5 @@
 import { Cultivo, Plant } from '../types';
-import { convertKeysToCamelCase } from './plantService';
+import { convertKeysToCamelCase } from '../utils/caseUtils';
 import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 import logger from '../utils/logger';
 

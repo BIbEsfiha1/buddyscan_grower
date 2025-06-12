@@ -1,9 +1,10 @@
 import { Grow } from '../types';
-import netlifyIdentity from 'netlify-identity-widget';
+import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 
 const API_BASE_URL = '/.netlify/functions';
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
+  const netlifyIdentity = await loadNetlifyIdentity();
   const user = netlifyIdentity.currentUser();
   if (!user) {
     netlifyIdentity.open('login');

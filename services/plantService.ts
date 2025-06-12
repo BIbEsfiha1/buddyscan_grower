@@ -1,7 +1,7 @@
 // MOCK Data Service - Simulates backend API calls
 
 import { Plant, DiaryEntry, NewPlantData } from '../types';
-import netlifyIdentity from 'netlify-identity-widget';
+import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
@@ -9,6 +9,7 @@ const API_BASE_URL = '/.netlify/functions';
 // Helper para realizar chamadas autenticadas
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   try {
+    const netlifyIdentity = await loadNetlifyIdentity();
     const user = netlifyIdentity.currentUser();
     if (!user) {
       netlifyIdentity.open('login');

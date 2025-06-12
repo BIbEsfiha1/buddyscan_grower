@@ -4,6 +4,7 @@ import { Plant, DiaryEntry, NewPlantData } from '../types';
 import netlifyIdentity from 'netlify-identity-widget';
 import logger from '../utils/logger';
 import { convertKeysToCamelCase } from '../utils/caseUtils';
+import { convertKeysToCamelCase } from '../utils/caseUtils';
 
 const API_BASE_URL = '/.netlify/functions';
 
@@ -60,21 +61,7 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     if (response.status === 403) {
-      throw new Error('Você não tem permissão para acessar este recurso.');
-    }
-
-    if (response.status === 404) {
-      throw new Error('Recurso não encontrado.');
-    }
-
-    if (response.status >= 500) {
-      console.error('Server error:', responseData);
-      throw new Error('Erro interno do servidor. Por favor, tente novamente mais tarde.');
-    }
-
-    if (!response.ok) {
-      const errorMessage = responseData.error || 
-                         responseData.message || 
+// --- Funções utilitárias ---
                          `Erro na requisição: ${response.statusText}`;
       throw new Error(errorMessage);
     }
@@ -202,3 +189,5 @@ export const deleteDiaryEntry = async (plantId: string, entryId: string): Promis
   });
   return true;
 };
+
+export { convertKeysToCamelCase } from '../utils/caseUtils';

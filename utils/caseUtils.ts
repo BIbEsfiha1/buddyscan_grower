@@ -1,5 +1,5 @@
 export function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, g => g[1].toUpperCase());
+  return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
 }
 
 export function convertKeysToCamelCase(obj: any): any {

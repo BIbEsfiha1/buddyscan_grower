@@ -1,30 +1,54 @@
 import { Grow } from '../types';
-import netlifyIdentity from 'netlify-identity-widget';
+import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 
 const API_BASE_URL = '/.netlify/functions';
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
-  const user = netlifyIdentity.currentUser();
-  if (!user) {
-    netlifyIdentity.open('login');
-    throw new Error('Usuário não autenticado.');
+  const netlifyIdentity = loadNetlifyIdentity();
+  try {
+    const user = netlifyIdentity.currentUser();
+    if (!user) {
+      netlifyIdentity.open('login');
+      throw new Error('Usuário não autenticado.');
+    }
+
+    const token = user.token?.access_token;
+    if (!token) {
+      netlifyIdentity.logout();
+      netlifyIdentity.open('login');
+      throw new Error('Sessão expirada.');
+    }
+
+    const headers = new Headers(options.headers);
+    headers.set('Authorization', `Bearer ${token}`);
+    if (!headers.has('Content-Type') && options.body) {
+      headers.set('Content-Type', 'application/json');
+    }
+
+    const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
+      ...options,
+      headers,
+    });
+
+    const responseText = await res.text();
+    let responseData: any = {};
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      console.error('[growService] Erro ao ler resposta JSON:', responseText);
+    }
+
+    if (!res.ok) {
+      const message =
+        responseData.error || responseData.message || 'Erro na requisição';
+      throw new Error(message);
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error(`[growService] Erro em ${endpoint}:`, error);
+    throw error;
   }
-  const token = user.token?.access_token;
-  if (!token) {
-    netlifyIdentity.logout();
-    netlifyIdentity.open('login');
-    throw new Error('Sessão expirada.');
-  }
-  const headers = new Headers(options.headers);
-  headers.set('Authorization', `Bearer ${token}`);
-  if (!headers.has('Content-Type') && options.body) {
-    headers.set('Content-Type', 'application/json');
-  }
-  const res = await fetch(`${API_BASE_URL}/${endpoint}`, { ...options, headers });
-  if (!res.ok) {
-    throw new Error('Erro na requisição');
-  }
-  return res.json();
 };
 
 export const getGrows = async (): Promise<Grow[]> => {

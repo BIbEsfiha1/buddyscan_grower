@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/deleteDiaryEntry.test.js"
+    "test": "node --test"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

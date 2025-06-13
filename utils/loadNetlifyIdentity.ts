@@ -4,8 +4,16 @@ let identityInstance: typeof netlifyIdentity | null = null;
 
 export function loadNetlifyIdentity() {
   if (!identityInstance) {
-    // A inicialização já ocorre no AuthProvider. Apenas forneça a instância
-    // única para outros módulos quando solicitado.
+    // Inicializa o widget apenas uma vez no ambiente de browser
+    if (typeof window !== 'undefined' && !(window as any).__netlifyIdentityInitialized) {
+      netlifyIdentity.init();
+      (window as any).__netlifyIdentityInitialized = true;
+    }
+    // Em ambientes não-browser, faz uma inicialização única também
+    else if (typeof window === 'undefined') {
+      netlifyIdentity.init();
+    }
+
     identityInstance = netlifyIdentity;
   }
 

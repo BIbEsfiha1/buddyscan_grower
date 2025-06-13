@@ -9,7 +9,7 @@ export function loadNetlifyIdentity() {
       netlifyIdentity.init();
       (window as any).__netlifyIdentityInitialized = true;
     }
-    // Também inicializa em ambientes não-browser, caso necessário
+    // Em ambientes não-browser, faz uma inicialização única também
     else if (typeof window === 'undefined') {
       netlifyIdentity.init();
     }

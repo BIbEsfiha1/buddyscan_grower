@@ -4,9 +4,9 @@ import { loadNetlifyIdentity } from '../utils/loadNetlifyIdentity';
 import logger from '../utils/logger';
 
 const API_BASE_URL = '/.netlify/functions';
-const netlifyIdentity = loadNetlifyIdentity();
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
+  const netlifyIdentity = loadNetlifyIdentity();
   try {
     const user = netlifyIdentity.currentUser();
     if (!user) {

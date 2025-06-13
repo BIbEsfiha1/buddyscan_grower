@@ -6,10 +6,10 @@ import logger from '../utils/logger';
 import { convertKeysToCamelCase } from '../utils/caseUtils';
 
 const API_BASE_URL = '/.netlify/functions';
-const netlifyIdentity = loadNetlifyIdentity();
 
 // Helper para realizar chamadas autenticadas
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
+  const netlifyIdentity = loadNetlifyIdentity();
   try {
     const user = netlifyIdentity.currentUser();
     if (!user) {
